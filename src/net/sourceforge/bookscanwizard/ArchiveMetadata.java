@@ -29,6 +29,7 @@ import javax.swing.table.TableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import net.sourceforge.bookscanwizard.op.Metadata;
+import net.sourceforge.bookscanwizard.op.SaveToArchive;
 
 public class ArchiveMetadata extends javax.swing.JDialog {
     private static final String[] columnNames = {"Name", "Value"};
@@ -70,13 +71,13 @@ public class ArchiveMetadata extends javax.swing.JDialog {
         jLabel9 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
         jLabel10 = new javax.swing.JLabel();
-        jTextField6 = new javax.swing.JTextField();
+        jAccess = new javax.swing.JTextField();
         jLabel11 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         jLabel12 = new javax.swing.JLabel();
         jButton3 = new javax.swing.JButton();
-        jTextField7 = new javax.swing.JTextField();
+        jSecret = new javax.swing.JTextField();
         jButton2 = new javax.swing.JButton();
         jLabel13 = new javax.swing.JLabel();
         jIdentifier = new javax.swing.JTextField();
@@ -99,7 +100,7 @@ public class ArchiveMetadata extends javax.swing.JDialog {
         jLabel4.setText("Title");
 
         jDescription.setColumns(20);
-        jDescription.setFont(new java.awt.Font("Tahoma", 0, 13)); // NOI18N
+        jDescription.setFont(new java.awt.Font("Tahoma", 0, 13));
         jDescription.setRows(5);
         jScrollPane1.setViewportView(jDescription);
 
@@ -146,8 +147,6 @@ public class ArchiveMetadata extends javax.swing.JDialog {
         jLabel10.setText("Access Key");
         jLabel10.setToolTipText("This is the access key that is used to save to the Internet Archive");
 
-        jTextField6.setText("$access$");
-
         jLabel11.setText("Secret Key");
         jLabel11.setToolTipText("This is the secret key to save to the internet archive");
 
@@ -166,10 +165,9 @@ public class ArchiveMetadata extends javax.swing.JDialog {
             }
         });
 
-        jTextField7.setText("$secret$");
-        jTextField7.addActionListener(new java.awt.event.ActionListener() {
+        jSecret.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField7ActionPerformed(evt);
+                jSecretActionPerformed(evt);
             }
         });
 
@@ -228,11 +226,11 @@ public class ArchiveMetadata extends javax.swing.JDialog {
                                             .addGroup(layout.createSequentialGroup()
                                                 .addComponent(jLabel11)
                                                 .addGap(18, 18, 18)
-                                                .addComponent(jTextField7, javax.swing.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE))
+                                                .addComponent(jSecret, javax.swing.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE))
                                             .addGroup(layout.createSequentialGroup()
                                                 .addComponent(jLabel10)
                                                 .addGap(18, 18, 18)
-                                                .addComponent(jTextField6, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                                .addComponent(jAccess, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 122, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(jButton2)
@@ -259,7 +257,7 @@ public class ArchiveMetadata extends javax.swing.JDialog {
                         .addGap(18, 18, 18)
                         .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jLabel2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 19, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 15, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jIdentifier, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel13))
@@ -300,11 +298,11 @@ public class ArchiveMetadata extends javax.swing.JDialog {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel10)
-                            .addComponent(jTextField6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jAccess, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel11)
-                            .addComponent(jTextField7, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(jSecret, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jTestItem)
                         .addGap(18, 18, 18)
@@ -330,9 +328,9 @@ public class ArchiveMetadata extends javax.swing.JDialog {
         // TODO add your handling code here:
 }//GEN-LAST:event_jTestItemActionPerformed
 
-    private void jTextField7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField7ActionPerformed
+    private void jSecretActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jSecretActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField7ActionPerformed
+    }//GEN-LAST:event_jSecretActionPerformed
 
     private void jLabel2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MouseClicked
         try {
@@ -410,6 +408,7 @@ public class ArchiveMetadata extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextField jAccess;
     private javax.swing.JTextField jAuthor;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
@@ -433,11 +432,10 @@ public class ArchiveMetadata extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTextField jSecret;
     private javax.swing.JTextField jSubject;
     private javax.swing.JTable jTable1;
     private javax.swing.JCheckBox jTestItem;
-    private javax.swing.JTextField jTextField6;
-    private javax.swing.JTextField jTextField7;
     private javax.swing.JTextField jTitle;
     // End of variables declaration//GEN-END:variables
 
@@ -468,6 +466,8 @@ public class ArchiveMetadata extends javax.swing.JDialog {
      */
     private void saveToConfig() {
         try {
+            SaveToArchive.setDefaultKeys(jAccess.getText(), jSecret.getText());
+
             ArrayList<String[]> data = new ArrayList<String[]>();
             for (String[] row : rows) {
                 if (row[0] != null && row[0].length() > 0) {

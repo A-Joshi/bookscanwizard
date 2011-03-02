@@ -25,6 +25,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.imageio.IIOImage;
@@ -53,6 +55,8 @@ import org.w3c.dom.NodeList;
 public class SaveToArchive extends Operation implements ProgressListener {
     private static ZipOutputStream zipOut;
     private static boolean abortRequested;
+    private static String defaultAccess;
+    private static String defaultSecret;
     private ImageWriter writer = (ImageWriter) ImageIO.getImageWritersByFormatName("jpeg 2000").next();
     private JProgressBar progressBar;
 
@@ -90,8 +94,23 @@ public class SaveToArchive extends Operation implements ProgressListener {
         zipOut = null;
         writer.dispose();
         String[] args = getTextArgs();
-        String access = args[0];
-        String secret = args[1];
+        String access = null;
+        String secret = null;
+        if (args.length > 0) {
+            access = args[0];
+        }
+        if (args.length > 1) {
+            secret = args[1];
+        }
+        if (access == null) {
+            access = defaultAccess;
+        }
+        if (secret == null) {
+            secret = defaultSecret;
+        }
+        if (access == null || secret == null || access.isEmpty() || secret.isEmpty()) {
+            throw new UserException("The archive access and secret keys must not be null");
+        }
         final ArchiveTransfer transfer = new ArchiveTransfer(access, secret);
         transfer.setMetaData(Metadata.getMetaData());
         if (!BSW.isBatchMode()) {
@@ -104,12 +123,11 @@ public class SaveToArchive extends Operation implements ProgressListener {
                 }
             });
         }
-
-        System.out.println("beginning transfer");
+        Logger.getLogger(SaveToArchive.class.getName()).log(Level.INFO, "Begin saving to archive");
         transfer.saveToArchive(BSW.getFileFromCurrentDir("bswArchive.zip"));
-        System.out.println("ending transfer");
+        Logger.getLogger(SaveToArchive.class.getName()).log(Level.INFO, "Finished saving to archive");
     }
-
+    
     private void writeJpeg2000Image(RenderedImage image, OutputStream out) throws IOException {
         ImageTypeSpecifier spec = ImageTypeSpecifier.createFromRenderedImage(image);
         J2KImageWriteParam paramJ2K = new J2KImageWriteParam();
@@ -165,5 +183,10 @@ public class SaveToArchive extends Operation implements ProgressListener {
 
     public static void abortRequested() {
         abortRequested = true;
+    }
+
+    public static void setDefaultKeys(String access, String secret) {
+        SaveToArchive.defaultAccess = access;
+        SaveToArchive.defaultSecret = secret;
     }
 }

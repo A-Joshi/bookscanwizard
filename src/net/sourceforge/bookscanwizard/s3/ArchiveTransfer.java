@@ -143,11 +143,11 @@ public class ArchiveTransfer {
 
     public static void checkMetaData(Map<String, String> metaData) {
         for(String key : requiredMetaData) {
-           if (!metaData.containsKey(key)) {
+           String value = metaData.get(key);
+           if (value == null || value.isEmpty() ) {
                throw new UserException(key+" missing. It is a required metadata item");
            }
         }
-
     }
 
     /**
@@ -178,7 +178,7 @@ public class ArchiveTransfer {
             }
         }
         for (Map.Entry<String, String> entry : headers.entrySet()) {
-            str.append(entry.getKey()+":"+entry.getValue()+"\n");
+            str.append(entry.getKey()).append(":").append(entry.getValue()).append("\n");
         }
         str.append(request.getURI().getPath());
         String toSign = str.toString();
