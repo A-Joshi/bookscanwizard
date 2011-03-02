@@ -51,6 +51,7 @@ abstract public class Operation {
     protected PageSet pageSet;
 
     static List<Operation> getOperations(String config) throws  Exception {
+        BSW.instance().fireNewConfigListeners();
         PageSet pageSet = new PageSet();
         ArrayList<Operation> operations = new ArrayList<Operation>();
         BufferedReader reader = new BufferedReader(new StringReader(config));
@@ -134,6 +135,29 @@ abstract public class Operation {
 
     protected void init(String args, BufferedReader reader) {
         this.arguments = args.trim();
+        int start = 0;
+        while (true) {
+            int pos = arguments.indexOf("$");
+            if (pos < 0) {
+                break;
+            }
+            int end = arguments.indexOf("$", pos+1);
+            if (end < 0) {
+                break;
+            }
+            String value = null;
+            String key = arguments.substring(pos+1, end);
+            if (key.isEmpty()) {
+                value = "$";
+            } else {
+                value = BSW.getProperty(key);
+            }
+            if (key != null) {
+                arguments = arguments.substring(0, start) + value + arguments.substring(end+1);
+            } else {
+                start = end;
+            }
+        }
     }
 
     final protected String[] getTextArgs() {

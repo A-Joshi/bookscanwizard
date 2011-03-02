@@ -808,6 +808,14 @@ public class BSW {
         return mainFrame;
     }
 
+    static String getProperty(String key) {
+        String value = System.getProperty(key);
+        if (value == null) {
+            value = System.getenv(key);
+        }
+        return value;
+    }
+
     private void autoLevels(boolean separateRGB) throws Exception {
         String config = new ConfigAutoLevels().getConfig(getConfigImage(),separateRGB);
         insertConfig(config, false, false);
@@ -930,14 +938,13 @@ public class BSW {
         return previewedImage;
     }
 
-    private void fireNewConfigListeners() {
+    public void fireNewConfigListeners() {
         for (NewConfigListener listener : newConfigListeners) {
             listener.newConfig();
         }
     }
     private void removePage() throws Exception {
         String line = getConfigEntry().getCurrentLineOrSelection();
-        System.out.println(line);
         if (line.endsWith("\n")) {
             line = line.substring(0, line.length()-1);
         }
@@ -949,10 +956,10 @@ public class BSW {
         }
     }
 
-    private void upload() {
+    private void upload() throws Exception {
+        getConfig(getConfigEntry().getText());
         JDialog dialog = new ArchiveMetadata(mainFrame, true);
         dialog.setVisible(true);
-        System.out.println("done");
     }
 
     private static void usage() {

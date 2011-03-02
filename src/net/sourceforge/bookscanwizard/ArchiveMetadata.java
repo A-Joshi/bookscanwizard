@@ -19,6 +19,7 @@
 package net.sourceforge.bookscanwizard;
 
 import java.awt.Desktop;
+import java.awt.KeyboardFocusManager;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Map;
@@ -37,6 +38,8 @@ public class ArchiveMetadata extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         updateGui();
+        jDescription.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
+        jDescription.setFocusTraversalKeys(KeyboardFocusManager.BACKWARD_TRAVERSAL_KEYS, null);
     }
 
     /** This method is called from within the constructor to
@@ -96,7 +99,7 @@ public class ArchiveMetadata extends javax.swing.JDialog {
         jLabel4.setText("Title");
 
         jDescription.setColumns(20);
-        jDescription.setFont(new java.awt.Font("Tahoma", 0, 13));
+        jDescription.setFont(new java.awt.Font("Tahoma", 0, 13)); // NOI18N
         jDescription.setRows(5);
         jScrollPane1.setViewportView(jDescription);
 

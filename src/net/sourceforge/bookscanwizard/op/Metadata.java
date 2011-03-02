@@ -36,7 +36,6 @@ public class Metadata extends Operation{
     static {
         BSW.instance().addNewConfigListener(new NewConfigListener(){
             public void newConfig() {
-                System.out.println("clear");
                 metaData.clear();
             }
         });
