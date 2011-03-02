@@ -1,3 +1,5 @@
+package net.sourceforge.bookscanwizard.unwarp;
+
 /*
  *
  * Copyright (c) 2011 by Steve Devore
@@ -15,7 +17,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-package net.sourceforge.bookscanwizard.dewarp;
+
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
@@ -41,7 +43,7 @@ import net.sourceforge.bookscanwizard.op.GaussianBlur;
 import net.sourceforge.bookscanwizard.util.Interpolate;
 
 /**
- * This is a proof of concept for dewarping based on a green laser line.
+ * This is a proof of concept for unwarping based on a green laser line.
  */
 public class LaserUnwarp {
     private static final boolean DEBUG = false;
@@ -245,16 +247,20 @@ public class LaserUnwarp {
      * Renders the blips as a thin line image.
      */
     private RenderedImage debugCenterLineImage(RenderedImage img, int[][] blips) {
-        WritableRaster raster = img.getColorModel().createCompatibleWritableRaster(img.getWidth(), img.getHeight());
-        int[] pixel = {1};
-        int height = img.getHeight();
-        for (int y = 0; y < height; y++) {
-            for (int i = 0; i < blips[y].length; i++) {
-                pixel[0] = 1;
-                raster.setPixel(blips[y][i], y, pixel);
+        if (DEBUG) {
+            return null;
+        } else {
+            WritableRaster raster = img.getColorModel().createCompatibleWritableRaster(img.getWidth(), img.getHeight());
+            int[] pixel = {1};
+            int height = img.getHeight();
+            for (int y = 0; y < height; y++) {
+                for (int i = 0; i < blips[y].length; i++) {
+                    pixel[0] = 1;
+                    raster.setPixel(blips[y][i], y, pixel);
+                }
             }
+            return new BufferedImage(img.getColorModel(), raster, false, null);
         }
-        return new BufferedImage(img.getColorModel(), raster, false, null);
     }
 
     /**
