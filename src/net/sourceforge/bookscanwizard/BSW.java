@@ -18,6 +18,7 @@
 
 package net.sourceforge.bookscanwizard;
 
+import net.sourceforge.bookscanwizard.op.SaveToArchive;
 import javax.media.jai.TileCache;
 import net.sourceforge.bookscanwizard.op.Pages;
 import java.util.regex.Matcher;
@@ -112,6 +113,7 @@ public class BSW {
     /** Set to true if it is in the middle of an abort */
     private volatile boolean abort;
     private static final List<NewConfigListener> newConfigListeners = new ArrayList<NewConfigListener>();
+    private boolean inPreview;
 
     static {
         LogManager.getLogManager().reset();
@@ -414,6 +416,8 @@ public class BSW {
             } else if ("print_qr_codes".equals(cmd)) {
                 JDialog dialog = new PrintCodesDialog(getMainFrame(), false);
                 dialog.setVisible(true);
+            } else if ("upload".equals(cmd)) {
+                upload();
             } else if ("expand_barcode_operations".equals(cmd)) {
                 preview();
                 insertConfigNoPreview(Barcodes.getConfiguration(), true, false);
@@ -486,6 +490,7 @@ public class BSW {
             out.close();
             scriptFile.setExecutable(true);
         }
+
     }
 
     public synchronized void runBatch(String configText) throws Exception {
@@ -510,6 +515,7 @@ public class BSW {
         tileCache.flush();
         if (!isBatchMode()) {
             JProgressBar bar = getMainFrame().getProgressBar();
+            getMainFrame().setStatusLabel("Running...");
             bar.setVisible(true);
             bar.setMinimum(0);
             bar.setMaximum(files.size());
@@ -593,7 +599,8 @@ public class BSW {
 
     public void abort() {
         abort = true;
-        //threadPool.shutdownNow();
+        SaveToArchive.abortRequested();
+        threadPool.shutdownNow();
         try {
             threadPool.awaitTermination(30, TimeUnit.SECONDS);
         } catch (InterruptedException ex) {
@@ -752,6 +759,10 @@ public class BSW {
         this.postScale = postScale;
     }
 
+    public boolean isInPreview() {
+        return inPreview;
+    }
+
     public static BSW instance() {
         return instance;
     }
@@ -864,14 +875,19 @@ public class BSW {
         }
 
         public RenderedImage getPreviewProcessedImage() throws Exception {
-            checkConfig();
-            if (previewProcessedImage == null) {
-                RenderedImage img = getPreviewImage();
-                img = Operation.previewOperations(previewHolder, img);
-                if (PageSet.getSourceFiles() != null) {
-                    previewProcessedImage = img;
-                    mainFrame.setPageList(PageSet.getSourceFiles());
+            inPreview = true;
+            try {
+                checkConfig();
+                if (previewProcessedImage == null) {
+                    RenderedImage img = getPreviewImage();
+                    img = Operation.previewOperations(previewHolder, img);
+                    if (PageSet.getSourceFiles() != null) {
+                        previewProcessedImage = img;
+                        mainFrame.setPageList(PageSet.getSourceFiles());
+                    }
                 }
+            } finally {
+                inPreview = false;
             }
             return previewProcessedImage;
         }
@@ -931,6 +947,12 @@ public class BSW {
         } else {
             insertConfig("RemovePages = " + previewedImage.getPreviewHolder().getName(), false, false);
         }
+    }
+
+    private void upload() {
+        JDialog dialog = new ArchiveMetadata(mainFrame, true);
+        dialog.setVisible(true);
+        System.out.println("done");
     }
 
     private static void usage() {

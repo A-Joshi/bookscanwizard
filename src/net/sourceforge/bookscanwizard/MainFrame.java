@@ -63,6 +63,7 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -79,6 +80,7 @@ import javax.swing.UIManager;
 public class MainFrame extends JFrame {
     private final ViewerPanel viewerPanel;
     private final ConfigEntry configEntry;
+    private final JLabel status;
 
     private JComboBox pageListBox = new JComboBox() {
         @Override
@@ -306,6 +308,14 @@ public class MainFrame extends JFrame {
         });
         toolsMenu.add(horizontalLayout);
 
+        toolsMenu.add(new JSeparator());
+
+        menuItem  = new JMenuItem("Upload to the Archive...");
+        menuItem.setToolTipText("Uploads this book to the Internet Archive");
+        menuItem.setActionCommand("upload");
+        menuItem.addActionListener(menuHandler);
+        toolsMenu.add(menuItem);
+
         JMenu helpMenu = new JMenu("Help");
         helpMenu.setMnemonic(KeyEvent.VK_H);
         menuBar.add(helpMenu);
@@ -462,8 +472,11 @@ public class MainFrame extends JFrame {
         zoomOut.setToolTipText("Zooms out on the previewed image");
         zoomOut.setActionCommand("zoomOut");
         zoomOut.addActionListener(menuHandler);
+
         buttonPanel.add(zoomOut);
         buttonPanel.add(Box.createHorizontalStrut(10));
+        status = new JLabel();
+        buttonPanel.add(status);
         final JPanel spacer = new JPanel();
         spacer.setPreferredSize(new Dimension(2000,1));
         buttonPanel.add(spacer);
@@ -473,6 +486,7 @@ public class MainFrame extends JFrame {
             public void setVisible(boolean visible) {
                 spacer.setVisible(!visible);
                 super.setVisible(visible);
+                status.setVisible(visible);
             }
         };
         progressBar.setVisible(false);
@@ -654,6 +668,10 @@ public class MainFrame extends JFrame {
 
     public BoundsHelper getBoundsHelper() {
         return boundsListener;
+    }
+
+    public void setStatusLabel(String status) {
+        this.status.setText(status);
     }
 
     private void invokeAction(String name, JComponent c, ActionEvent e) {
