@@ -38,6 +38,8 @@ public class SetTiffOptions extends Operation {
                 compressionType = TIFFEncodeParam.COMPRESSION_DEFLATE;
              } else if (type.equals("GROUP4")) {
                 compressionType = TIFFEncodeParam.COMPRESSION_GROUP4;
+             } else if (type.equals("JPEG")) {
+                compressionType = TIFFEncodeParam.COMPRESSION_JPEG_TTN2;
             } else {
                 throw new UserException("Could not find compression type "+type);
             }

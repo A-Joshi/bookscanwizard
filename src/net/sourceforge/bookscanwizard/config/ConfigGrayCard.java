@@ -22,8 +22,7 @@ import java.awt.image.RenderedImage;
 import java.text.DecimalFormat;
 import javax.media.jai.Histogram;
 import javax.media.jai.JAI;
-import net.sourceforge.bookscanwizard.op.ImageStatistics;
-
+import net.sourceforge.bookscanwizard.Operation;
 
 public class ConfigGrayCard {
     private DecimalFormat formatter = new DecimalFormat("#.#");
@@ -36,7 +35,7 @@ public class ConfigGrayCard {
         for (int i=0; i < means.length; i++) {
             double mean = means[i];
 
-            retVal.append(formatter.format((ImageStatistics.GRAY_STANDARD - mean) * 100D / 255D));
+            retVal.append(formatter.format((Operation.GRAY_STANDARD - mean) * 100D / 255D));
             retVal.append(", ");
         }
         retVal.setLength(retVal.length() - 2);

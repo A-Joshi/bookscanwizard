@@ -35,11 +35,11 @@ public class Brightness extends Operation implements ColorOp {
     public RenderedImage performOperation(FileHolder holder, RenderedImage img) {
         double[] values =getArgs();
         for (int i=0; i < values.length; i++) {
-            values[i] = getArgs()[i] * 255 / 100;
+            values[i] = 1 + (getArgs()[i] / 100);
         }
         ParameterBlock pb = new ParameterBlock();
         pb.addSource(img);
         pb.add(values);
-        return JAI.create("addconst", pb);
+        return JAI.create("multiplyconst", pb);
     }
 }

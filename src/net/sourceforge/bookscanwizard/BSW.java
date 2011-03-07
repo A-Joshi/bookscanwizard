@@ -146,6 +146,9 @@ public class BSW {
             } else if (arg.equals("-barcodes")) {
                 ReadCodes.main(Arrays.copyOfRange(args, 1, args.length));
                 return;
+            } else if (arg.equals("-upload")) {
+                SaveToArchive saveToArchive = new SaveToArchive();
+                saveToArchive.saveToArchive(Arrays.copyOfRange(args, 1, args.length));
             } else if (arg.equals("-version")) {
                 System.out.println("BookScanWizard, by Steve Devore, version "+AboutDialog.VERSION+".");
                 return;
@@ -990,6 +993,10 @@ public class BSW {
             "         black and white image.  Defualt is 35.\n"+
             "      -scale: If this is defined, the images will be scaled down before\n"+
             "         scanning, which will make it faster.  Default is 1 (no scaling).\n"+
+            "   -upload filename.zip accessKey secretKey:  Uploads this zip file to archive.org\n"+
+            "       filename.zip:  The zip file that contains the images and the meta.xml file\n"+
+            "      accessKey :  The user access key of the account to upload under\n"+
+            "      secretKey : The secret key of the account\n"+
             "\n"+
             "   -batch config_name\n"+
             "       Runs the preprocessor from the command line without bring up the gui.\n"+

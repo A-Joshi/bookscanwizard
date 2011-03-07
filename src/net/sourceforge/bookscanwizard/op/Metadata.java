@@ -18,13 +18,23 @@
 
 package net.sourceforge.bookscanwizard.op;
 
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import net.sourceforge.bookscanwizard.BSW;
 import net.sourceforge.bookscanwizard.NewConfigListener;
 import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.UserException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  *
@@ -53,5 +63,26 @@ public class Metadata extends Operation{
 
     public static Map<String,String> getMetaData() {
         return metaData;
+    }
+
+    public static void getMetaDataAsXML(OutputStream os) throws Exception {
+       DocumentBuilderFactory fact = DocumentBuilderFactory.newInstance();
+        DocumentBuilder bd = fact.newDocumentBuilder();
+        Document doc = bd.newDocument();
+        Element root = (Element) doc.createElement("metadata");
+        doc.appendChild(root);
+        for (Map.Entry<String,String> entry : getMetaData().entrySet()) {
+           Element e = doc.createElement(entry.getKey());
+           root.appendChild(e);
+           e.appendChild(doc.createTextNode(entry.getValue()));
+        }
+        TransformerFactory tFactory = TransformerFactory.newInstance();
+        tFactory.setAttribute("indent-number", 2);
+        Transformer transformer = tFactory.newTransformer();
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+
+        DOMSource source = new DOMSource(doc);
+        StreamResult result =  new StreamResult(os);
+        transformer.transform(source, result);
     }
 }

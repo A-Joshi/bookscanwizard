@@ -18,6 +18,7 @@
 
 package net.sourceforge.bookscanwizard;
 
+import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -28,11 +29,15 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.media.jai.ImageLayout;
+import javax.media.jai.JAI;
 
 /**
  * The master Operation type
  */
 abstract public class Operation {
+    public static int GRAY_STANDARD = 100;
+
     /**
      * The operation should be followed by an =, but a : or a space are also valid.
      */
@@ -333,5 +338,20 @@ abstract public class Operation {
         }
         String[] retVal = new String[list.size()];
         return list.toArray(retVal);
+    }
+
+    /**
+     * Use the full image as the tile size.  This is helpful in working around
+     * various JAI bugs.
+     */
+    protected static RenderingHints useFullTile(RenderedImage img, RenderingHints hints) {
+        if (hints == null) {
+            hints = new RenderingHints(null);
+        }
+        ImageLayout imageLayout = new ImageLayout();
+        imageLayout.setTileWidth(img.getWidth());
+        imageLayout.setTileHeight(img.getHeight());
+        hints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
+        return hints;
     }
 }

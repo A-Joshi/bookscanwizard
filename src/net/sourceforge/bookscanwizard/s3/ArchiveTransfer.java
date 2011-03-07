@@ -24,14 +24,17 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import net.sourceforge.bookscanwizard.AboutDialog;
 import net.sourceforge.bookscanwizard.UserException;
 import org.apache.commons.codec.binary.Base64;
@@ -47,6 +50,10 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.CoreProtocolPNames;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * A class to help with book uploads to archive.org.
@@ -58,7 +65,7 @@ public class ArchiveTransfer {
     private static final boolean LOW_SECURITY = false;
     private static final String HEADER_CHARSET = "UTF-8";
 
-    private HashMap<String,String> metaData;
+    private HashMap<String,String> metaData = new HashMap<String,String>();
     private String awsAccessKey;
     private String awsSecretKey;
     private ProgressListener progressListener;
@@ -66,6 +73,11 @@ public class ArchiveTransfer {
     public ArchiveTransfer(String accessKey, String secretKey) {
         this.awsAccessKey = accessKey;
         this.awsSecretKey = secretKey;
+
+        // add default metadat
+        this.metaData.put("mediatype", "texts");
+        this.metaData.put("collection", "opensource");
+        this.metaData.put("bookscanwizard", AboutDialog.VERSION);
     }
 
     private static final String[] requiredMetaData = new String[] {
@@ -75,8 +87,8 @@ public class ArchiveTransfer {
     };
 
     public static void main(String[] args) throws Exception {
-        ArchiveTransfer test = new ArchiveTransfer("BzzVcWXjXPJbgpxo", "DFzKyXlkM7THK7Rg");
-        HashMap<String,String> p = new HashMap<String,String>();
+        ArchiveTransfer test = new ArchiveTransfer("", "");
+/*        HashMap<String,String> p = new HashMap<String,String>();
         p.put("title", "Big Book of Fairy Tales");
         p.put("creator", "Gustave Doré");
         p.put("noindex", "true");
@@ -85,25 +97,22 @@ public class ArchiveTransfer {
         p.put("subject", "Fairy Tales");
         p.put("description", "Children's book of fairy tales");
         p.put("keywords", "Fairy Tales");
-        test.setMetaData(p);
+        test.setMetaData(p);*/
 
 //        System.out.println("is: "+test.isItem());
 
-//        test.saveToArchive(new File("c:/books/done/fairy/bswArchive.zip"));
-        test.saveToArchive(null);
+        test.saveToArchive(new File("c:/books/done/fairy/bswArchive.zip"));
+//        test.saveToArchive(null);
     }
 
     public void setMetaData(Map<String,String> metaData) {
         this.metaData = new HashMap<String,String>();
-        this.metaData.put("mediatype", "texts");
-        this.metaData.put("collection", "opensource");
-        this.metaData.put("bookscanwizard", AboutDialog.VERSION);
         this.metaData.putAll(metaData);
     }
 
     public String getArchiveId() {
         String id = metaData.get("identifier");
-        if (id == null) {
+        if (id == null || id.isEmpty()) {
             id = createIdentifier();
             metaData.put("identifier", id);
         }
@@ -123,7 +132,9 @@ public class ArchiveTransfer {
         this.progressListener = progressListener;
     }
 
-    public void saveToArchive(File zipFile) throws IOException {
+    public void saveToArchive(File zipFile) throws Exception {
+        readMetadataFromZip(zipFile);
+
         DefaultHttpClient httpclient = new DefaultHttpClient();
 
         String bucketName = getArchiveId();
@@ -132,7 +143,6 @@ public class ArchiveTransfer {
             put = new HttpPut("http://s3.us.archive.org/"+bucketName);
             ByteArrayEntity byteEntity = new ByteArrayEntity(new byte[0]);
             put.setEntity(byteEntity);
-            put.setHeader(PREFIX+"ignore-preexisting-bucket", "1");
         } else {
             if (!zipFile.isFile()) {
                 throw new FileNotFoundException(zipFile.toString());
@@ -145,6 +155,7 @@ public class ArchiveTransfer {
             put.setHeader(fileEntity.getContentType());
             put.setHeader(PREFIX+"auto-make-bucket", "1");
         }
+        put.setHeader(PREFIX+"ignore-preexisting-bucket", "1");
         for (Map.Entry<String,String> entry : metaData.entrySet()) {
             if (!entry.getKey().equals("identifier")) {
                 put.setHeader(PREFIX+"meta-"+entry.getKey(), entry.getValue());
@@ -233,4 +244,37 @@ public class ArchiveTransfer {
         title=title.replace(" " , "");
         return title;
     }
+
+    private void readMetadataFromZip(File zipFile) throws Exception {
+        ZipFile zipF = new ZipFile(zipFile);
+        ZipEntry entry = zipF.getEntry("meta.xml");
+        if (entry == null) {
+            return;
+        }
+        InputStream is = zipF.getInputStream(entry);
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document doc = db.parse(is);
+        Element root = doc.getDocumentElement();
+        NodeList nodeList = root.getChildNodes();
+        for (int i=0; i < nodeList.getLength(); i++) {
+            Node node = nodeList.item(i);
+            if (node instanceof Element) {
+                Element e = (Element) node;
+                String key = node.getNodeName();
+                String value = e.getTextContent();
+                metaData.put(key, value);
+            }
+        }
+    }
+
+    /** Other headers not currently used
+     *
+     * Don't run the derive task:
+     *   x-archive-queue-derive:0
+     *
+     * Delete derived files
+     *   x-archive-cascade-delete:1
+     *
+     */
 }

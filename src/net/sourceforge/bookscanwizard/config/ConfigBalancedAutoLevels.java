@@ -22,7 +22,7 @@ import java.awt.image.RenderedImage;
 import java.text.DecimalFormat;
 import javax.media.jai.Histogram;
 import javax.media.jai.JAI;
-import net.sourceforge.bookscanwizard.op.ImageStatistics;
+import net.sourceforge.bookscanwizard.Operation;
 
 /**
  * Maximizes the color range while keeping the mid range set at the current
@@ -48,7 +48,7 @@ public class ConfigBalancedAutoLevels {
             double scale = 255D / (whiteLevels[i] - blackLevels[i]);
             double offset = 255D * blackLevels[i] / (blackLevels[i] - whiteLevels[i]);
 
-            double newGray = offset + ImageStatistics.GRAY_STANDARD * scale;
+            double newGray = offset + Operation.GRAY_STANDARD * scale;
             gamma.append(formatter.format(newGray)).append(", ");
         }
         retVal.setLength(retVal.length() - 2);

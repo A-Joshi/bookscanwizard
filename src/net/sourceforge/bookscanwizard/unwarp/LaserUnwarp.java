@@ -46,7 +46,7 @@ import net.sourceforge.bookscanwizard.util.Interpolate;
  * This is a proof of concept for unwarping based on a green laser line.
  */
 public class LaserUnwarp {
-    private static final boolean DEBUG = false;
+    private static final boolean DEBUG = true;
 
     private static String base;
     /**
@@ -63,7 +63,9 @@ public class LaserUnwarp {
      * The color of the line.  The green laser seems to be exactly green in
      * the RGB spectrum.
      */
-    private static float GREEN_HUE = getHue(Color.green);
+//    private static float MATCH_HUE = getHue(Color.green);
+    // red laser
+    private static float MATCH_HUE = getHue(new Color(244,133,205));
 
     /**
      *  The distance in inches from the camera to the base.
@@ -148,11 +150,11 @@ public class LaserUnwarp {
 
 
     public static void main(String[] args) throws Exception {
-        File input = new File("C:\\test\\update\\corrected");
-        File output = new File("C:\\test\\update\\corrected\\processed");
+        File input = new File("C:\\test\\blender");
+        File output = new File("C:\\test\\blender\\processed");
         output.mkdirs();
         for (File f : input.listFiles()) {
-            if (f.getName().toLowerCase().endsWith(".tif") && f.getName().contains("0880")) { //
+            if (f.getName().toLowerCase().endsWith(".jpg") && f.getName().contains("laser")) { //
                 System.out.println(f.getName());
                 processFile(f, output);
             }
@@ -247,7 +249,7 @@ public class LaserUnwarp {
      * Renders the blips as a thin line image.
      */
     private RenderedImage debugCenterLineImage(RenderedImage img, int[][] blips) {
-        if (DEBUG) {
+        if (!DEBUG) {
             return null;
         } else {
             WritableRaster raster = img.getColorModel().createCompatibleWritableRaster(img.getWidth(), img.getHeight());
@@ -387,7 +389,7 @@ public class LaserUnwarp {
     private static boolean isColorGreen(int[] pixel) {
         float[] hsb = new float[3];
         Color.RGBtoHSB(pixel[0], pixel[1], pixel[2], hsb);
-        return hueMatches(hsb[0], GREEN_HUE) && hsb[1] > .2;
+        return hueMatches(hsb[0], MATCH_HUE) && hsb[1] > .2;
     }
 
     private static float getHue(Color color) {

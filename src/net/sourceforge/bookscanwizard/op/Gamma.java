@@ -45,7 +45,7 @@ public class Gamma extends Operation implements ColorOp {
             avg /= bands;
             for (int i = 0; i < bands; i++) {
                 double original = getArgs()[i] * 255 / 100;
-                double gamma = calcAdjustment(original, ImageStatistics.GRAY_STANDARD);
+                double gamma = calcAdjustment(original, GRAY_STANDARD);
                 logger.info("gamma: "+original+" "+gamma+" "+adjust(original, gamma));
                 byte[] gammaRow = new byte[256];
                 for (int j = 0; j <= 255; j++) {

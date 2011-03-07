@@ -18,35 +18,19 @@
 
 package net.sourceforge.bookscanwizard.op;
 
-import com.sun.media.imageio.plugins.jpeg2000.J2KImageWriteParam;
-import java.awt.image.RenderedImage;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriter;
-import javax.imageio.metadata.IIOMetadata;
-import javax.imageio.metadata.IIOMetadataNode;
-import javax.imageio.stream.ImageOutputStream;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 import net.sourceforge.bookscanwizard.BSW;
-import net.sourceforge.bookscanwizard.FileHolder;
 import net.sourceforge.bookscanwizard.Operation;
-import net.sourceforge.bookscanwizard.PageSet;
 import net.sourceforge.bookscanwizard.UserException;
 import net.sourceforge.bookscanwizard.s3.ArchiveTransfer;
 import net.sourceforge.bookscanwizard.s3.ProgressListener;
-import net.sourceforge.bookscanwizard.util.Utils;
-import org.w3c.dom.NodeList;
 
 /**
  *
@@ -72,35 +56,21 @@ public class SaveToArchive extends Operation implements ProgressListener {
     }
 
     @Override
-    protected RenderedImage performOperation(FileHolder holder, RenderedImage img) throws Exception {
-        if (!holder.isDeleted() && !BSW.instance().isInPreview()) {
-            synchronized(SaveToArchive.class) {
-                if (zipOut == null) {
-                    File f = BSW.getFileFromCurrentDir("bswArchive.zip");
-                    zipOut = new ZipOutputStream(new FileOutputStream(f));
-                }
-                zipOut.putNextEntry(new ZipEntry(holder.getName()+".jp2"));
-                img = Utils.renderedToBuffered(img);
-                writeJpeg2000Image(img, zipOut);
-                zipOut.closeEntry();
-            }
-        }
-        return img;
+    public void postOperation() throws Exception {
+        String[] args = getTextArgs();
+        saveToArchive(args);
     }
 
-    @Override
-    public void postOperation() throws Exception {
-        zipOut.close();
-        zipOut = null;
-        writer.dispose();
-        String[] args = getTextArgs();
+    public void saveToArchive(String[] args) throws Exception {
         String access = null;
         String secret = null;
-        if (args.length > 0) {
-            access = args[0];
-        }
+        String fileName = args[0];
+
         if (args.length > 1) {
-            secret = args[1];
+            access = args[1];
+        }
+        if (args.length > 2) {
+            secret = args[2];
         }
         if (access == null) {
             access = defaultAccess;
@@ -112,7 +82,6 @@ public class SaveToArchive extends Operation implements ProgressListener {
             throw new UserException("The archive access and secret keys must not be null");
         }
         final ArchiveTransfer transfer = new ArchiveTransfer(access, secret);
-        transfer.setMetaData(Metadata.getMetaData());
         if (!BSW.isBatchMode()) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -124,54 +93,8 @@ public class SaveToArchive extends Operation implements ProgressListener {
             });
         }
         Logger.getLogger(SaveToArchive.class.getName()).log(Level.INFO, "Begin saving to archive");
-        transfer.saveToArchive(BSW.getFileFromCurrentDir("bswArchive.zip"));
+        transfer.saveToArchive(BSW.getFileFromCurrentDir(fileName));
         Logger.getLogger(SaveToArchive.class.getName()).log(Level.INFO, "Finished saving to archive");
-    }
-    
-    private void writeJpeg2000Image(RenderedImage image, OutputStream out) throws IOException {
-        ImageTypeSpecifier spec = ImageTypeSpecifier.createFromRenderedImage(image);
-        J2KImageWriteParam paramJ2K = new J2KImageWriteParam();
-        paramJ2K.setLossless(false);
-        paramJ2K.setFilter(J2KImageWriteParam.FILTER_97);
-        paramJ2K.setEncodingRate(.5);
-        IIOMetadata metadata = writer.getDefaultImageMetadata(spec, paramJ2K);
-
-        metadata = setDpi(metadata, PageSet.getDestinationDPI());
-        IIOImage ioImage = new IIOImage(image, null, metadata);
-        ImageOutputStream ios = ImageIO.createImageOutputStream(out);
-        writer.setOutput(ios);
-        writer.write(null, ioImage, paramJ2K);
-        ios.close();
-    }
-
-    private IIOMetadata setDpi(IIOMetadata meta, int dpi) throws IOException {
-        IIOMetadataNode nodes = (IIOMetadataNode) meta.getAsTree("javax_imageio_1.0");
-        NodeList nl;
-        IIOMetadataNode dim;
-
-        nl = nodes.getElementsByTagName("Dimension");
-        if ((nl != null) && (nl.getLength() > 0)) {
-            dim = (IIOMetadataNode) nl.item(0);
-        } else {
-            dim = new IIOMetadataNode("Dimension");
-            nodes.appendChild(dim);
-        }
-
-        nl = nodes.getElementsByTagName("HorizontalPixelSize");
-        if ((nl == null) || (nl.getLength() == 0)) {
-            IIOMetadataNode horz = new IIOMetadataNode("HorizontalPixelSize");
-            dim.appendChild(horz);
-            horz.setAttribute("value", Float.toString(25.4F / dpi));
-        }
-
-        nl = nodes.getElementsByTagName("VerticalPixelSize");
-        if ((nl == null) || (nl.getLength() == 0)) {
-            IIOMetadataNode horz = new IIOMetadataNode("VerticalPixelSize");
-            dim.appendChild(horz);
-            horz.setAttribute("value", Float.toString(25.4F / dpi));
-        }
-        meta.mergeTree("javax_imageio_1.0", nodes);
-        return meta;
     }
 
     public void updateProgress(double pctComplete) {
