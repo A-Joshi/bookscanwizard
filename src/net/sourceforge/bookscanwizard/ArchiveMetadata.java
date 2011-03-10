@@ -509,6 +509,16 @@ public class ArchiveMetadata extends javax.swing.JDialog {
             if (oldPos < 0) {
                 oldPos = entry.getText().length();
             }
+            str.append("\n");
+            if (entry.getText().indexOf("CreateArchiveZip") < 0) {
+                str.append(
+                        "CreateArchiveZip = archive.zip 10:1\n"
+                );
+            }
+            if (entry.getText().indexOf("SaveToArchive") < 0) {
+                str.append("# Uncomment the following line to send to the archive as part of this job.\n"+
+                           "#SaveToArchive = archive.zip xxxxxxxxxxxxxxxxx xxxxxxxxxxx\n");
+            }
             doc.insertString(oldPos, str.toString(), null);
         } catch (BadLocationException e) {
             throw new RuntimeException(e);

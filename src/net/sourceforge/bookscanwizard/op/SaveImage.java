@@ -70,6 +70,7 @@ public class SaveImage extends Operation  {
     @Override
     protected RenderedImage performOperation(FileHolder holder, RenderedImage img) throws Exception {
         if (!holder.isDeleted() && !BSW.instance().isInPreview()) {
+            savedImages = true;
             String[] args = getTextArgs();
             String format = "tiff";
             if (args.length > 0) {
@@ -139,7 +140,7 @@ public class SaveImage extends Operation  {
         }
         FileOutputStream fos = new FileOutputStream(destFile+".jp2");
         try {
-            writeJpeg2000Image(img, fos, dpi, rate);
+            writeJpeg2000Image(img, fos, dpi, getCompression());
         } finally {
             fos.close();
         }
@@ -205,5 +206,20 @@ public class SaveImage extends Operation  {
         }
         meta.mergeTree("javax_imageio_1.0", nodes);
         return meta;
+    }
+
+    private float getCompression() {
+        float compression = 1f/10f;
+        String[] args = getTextArgs();
+        if (args.length > 1) {
+            String arg = args[1];
+            int pos = arg.indexOf(":");
+            if (pos > 0) {
+                compression = Float.parseFloat(arg.substring(pos+1)) / Float.parseFloat(arg.substring(0, pos));
+            } else {
+                compression = Float.parseFloat(args[1]);
+            }
+        }
+        return compression;
     }
 }

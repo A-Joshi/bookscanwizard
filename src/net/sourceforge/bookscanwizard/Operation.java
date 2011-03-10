@@ -50,6 +50,11 @@ abstract public class Operation {
 
     private static List<Operation> allOperations;
 
+    /**
+     * indicates whether a save operation as been performed.
+     */
+    protected static boolean savedImages;
+
     protected String arguments;
     private static final Properties properties = new Properties();
     private OpDefinition definition;
@@ -269,7 +274,6 @@ abstract public class Operation {
         }
         return retVal;
     }
-
 
     public static RenderedImage performOperations(FileHolder holder, RenderedImage img) throws Exception {
         for (Operation op : allOperations) {

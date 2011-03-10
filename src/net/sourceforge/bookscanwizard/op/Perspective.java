@@ -32,6 +32,7 @@ import net.sourceforge.bookscanwizard.FileHolder;
 import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.PerspectiveOp;
 import net.sourceforge.bookscanwizard.UserException;
+import net.sourceforge.bookscanwizard.util.Utils;
 
 /**
  * Assuming that 4 coordinates are defined, starting at the top left, and

@@ -42,17 +42,11 @@ import org.w3c.dom.Element;
  */
 public class Metadata extends Operation{
     private static HashMap<String,String> metaData = new HashMap<String,String>();
-
-    static {
-        BSW.instance().addNewConfigListener(new NewConfigListener(){
-            public void newConfig() {
-                metaData.clear();
-            }
-        });
-    }
+    private static boolean init;
 
     @Override
     protected List<Operation> setup(List<Operation> operationList) throws Exception {
+        init();
         int pos = arguments.indexOf(":");
         if (pos < 0) {
             throw new UserException("Metadata missing : separator");
@@ -84,5 +78,16 @@ public class Metadata extends Operation{
         DOMSource source = new DOMSource(doc);
         StreamResult result =  new StreamResult(os);
         transformer.transform(source, result);
+    }
+
+    synchronized private static void init() {
+        if (!init) {
+            init = true;
+            BSW.instance().addNewConfigListener(new NewConfigListener(){
+                public void newConfig() {
+                    metaData.clear();
+                }
+            });
+        }
     }
 }

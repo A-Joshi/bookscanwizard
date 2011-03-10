@@ -77,7 +77,7 @@ public class ArchiveTransfer {
         // add default metadat
         this.metaData.put("mediatype", "texts");
         this.metaData.put("collection", "opensource");
-        this.metaData.put("bookscanwizard", AboutDialog.VERSION);
+        this.metaData.put("postprocessor", "BookScanWizard: "+AboutDialog.VERSION);
     }
 
     private static final String[] requiredMetaData = new String[] {

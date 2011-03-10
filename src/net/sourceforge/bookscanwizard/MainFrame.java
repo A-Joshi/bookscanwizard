@@ -101,7 +101,6 @@ public class MainFrame extends JFrame {
 
     private JDialog aboutDialog;
     private OperationList operationList;
-    private JCheckBox previewToCursor;
 
     private final JCheckBoxMenuItem showDebuggingInfo;
     private JSplitPane splitPane;
@@ -310,9 +309,15 @@ public class MainFrame extends JFrame {
 
         toolsMenu.add(new JSeparator());
 
-        menuItem  = new JMenuItem("Upload to the Archive...");
-        menuItem.setToolTipText("Uploads this book to the Internet Archive");
+        menuItem  = new JMenuItem("Prepare for uploading...");
+        menuItem.setToolTipText("Prepares the book for uploading to the Internet Archive");
         menuItem.setActionCommand("upload");
+        menuItem.addActionListener(menuHandler);
+        toolsMenu.add(menuItem);
+
+        menuItem  = new JMenuItem("Upload to the Archive");
+        menuItem.setToolTipText("Uploads this book to the Internet Archive");
+        menuItem.setActionCommand("upload_to_archive");
         menuItem.addActionListener(menuHandler);
         toolsMenu.add(menuItem);
 
@@ -368,20 +373,8 @@ public class MainFrame extends JFrame {
         buttonPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         cp.add(buttonPanel);
 
-        previewToCursor = new JCheckBox();
-        previewToCursor.setText("To cursor");
-        previewToCursor.setToolTipText("<html><body>If it is checked, then it will display the configuration up to the text cursor.<br>Otherwise, the preview will display the results for the entire configuration.</body></html>");
-        previewToCursor.setSelected(true);
-        previewToCursor.setActionCommand("preview_to_cursor");
-        previewToCursor.addActionListener(menuHandler);
-        previewToCursor.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                configEntry.repaint();
-            }
-        });
-        buttonPanel.add(previewToCursor);
         buttonPanel.add(Box.createHorizontalStrut(2));
-        
+
         JButton previewButton = new JButton("Preview");
         previewButton.setToolTipText("Previews the configuration");
         previewButton.setActionCommand("preview");
@@ -628,14 +621,6 @@ public class MainFrame extends JFrame {
 
     public OperationList getOperationList() {
         return operationList;
-    }
-
-    public boolean isPreviewToCursor() {
-        return previewToCursor.isSelected();
-    }
-
-    public JCheckBox getPreviewToCursor() {
-        return previewToCursor;
     }
 
     public JCheckBoxMenuItem getShowDebuggingInfo() {

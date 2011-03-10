@@ -20,6 +20,7 @@ package net.sourceforge.bookscanwizard;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -27,6 +28,7 @@ import java.awt.event.MouseListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -52,6 +54,7 @@ import javax.swing.text.ViewFactory;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
+import net.sourceforge.bookscanwizard.op.CreateArchiveZip;
 
 public class ConfigEntry extends JTextArea {
 
@@ -74,20 +77,45 @@ public class ConfigEntry extends JTextArea {
         setOpaque(false);
         menuHandler = handler;
 
-        final JPopupMenu popup = new JPopupMenu() {
+        final JLabel estimateZipSize = new JLabel() {
+            @Override
+            public void setVisible(boolean visible) {
+                if (visible) {
+                    setFont(getFont().deriveFont(14).deriveFont(Font.BOLD));
+                }
+                super.setVisible(visible);
+            }
+        };
 
+        final JPopupMenu popup = new JPopupMenu() {
             @Override
             public void show(Component invoker, int x, int y) {
-                boolean barcode = getCurrentLineOrSelection().contains("Barcodes");
-                popupItemBarcode.setVisible(barcode);
-                popupItemPoints.setVisible(!barcode);
+                String text = getCurrentLineOrSelection();
+                boolean found = text.contains("Barcodes");
+                popupItemBarcode.setVisible(found);
+                popupItemPoints.setVisible(!found);
+                found = text.contains("CreateArchiveZip");
+                if (found) {
+                    try {
+                        CreateArchiveZip op = (CreateArchiveZip) Operation.getStandaloneOp(text);
+                        estimateZipSize.setText(op.estimateZipSize());
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                estimateZipSize.setVisible(found);
+                popupItemPoints.setVisible(!found);
+
                 super.show(invoker, x, y);
             }
         };
+        popup.add(estimateZipSize);
+
         popupItemPoints = new JMenuItem("Copy points to viewer");
         popupItemPoints.setActionCommand("copy_points_to_viewer");
         popupItemPoints.addActionListener(menuHandler);
         popup.add(popupItemPoints);
+        estimateZipSize.setFont(popupItemPoints.getFont());
 
         popupItemBarcode = new JMenuItem("Expand Barcode Operations");
         popupItemBarcode.setActionCommand("expand_barcode_operations");
@@ -159,17 +187,13 @@ public class ConfigEntry extends JTextArea {
     }
 
     public String getConfigToPreview() {
-        if (!BSW.instance().getMainFrame().isPreviewToCursor()) {
-            return getText();
-        } else {
-            int pos = Math.max(0, getCaret().getDot());
-            String txt = getText().substring(0, pos);
-            int endLine = getText().indexOf("\n", pos);
-            if (endLine > 0) {
-                txt = txt + getText().substring(pos, endLine);
-            }
-            return txt;
+        int pos = Math.max(0, getCaret().getDot());
+        String txt = getText().substring(0, pos);
+        int endLine = getText().indexOf("\n", pos);
+        if (endLine > 0) {
+            txt = txt + getText().substring(pos, endLine);
         }
+        return txt;
     }
 
     public String getCurrentLineOrSelection() {
@@ -313,23 +337,18 @@ public class ConfigEntry extends JTextArea {
     @Override
     protected void paintComponent(Graphics g) {
         g.setColor(getBackground());
-        if (BSW.instance().getMainFrame().isPreviewToCursor()) {
-            try {
-                int line = getLineOfOffset(getSelectionEnd());
-                if (line != lastLine) {
-                    lastLine = line;
-                    repaint();
-                }
-                int pos = (line+1) * getRowHeight() +2;
-                g.fillRect(0, 0, getWidth(), pos);
-                g.setColor(GRAYED_OUT);
-                g.fillRect(0, pos+1, getWidth(), getHeight()- pos);
-            } catch (BadLocationException e) {
-                throw new RuntimeException(e);
+        try {
+            int line = getLineOfOffset(getSelectionEnd());
+            if (line != lastLine) {
+                lastLine = line;
+                repaint();
             }
-        } else {
-            lastLine = -1;
-            g.fillRect(0, 0, getWidth(), getHeight());
+            int pos = (line+1) * getRowHeight() +2;
+            g.fillRect(0, 0, getWidth(), pos);
+            g.setColor(GRAYED_OUT);
+            g.fillRect(0, pos+1, getWidth(), getHeight()- pos);
+        } catch (BadLocationException e) {
+            throw new RuntimeException(e);
         }
         super.paintComponent(g);
     }

@@ -18,26 +18,17 @@
 
 package net.sourceforge.bookscanwizard.op;
 
-import com.sun.media.imageio.plugins.jpeg2000.J2KImageWriteParam;
+import java.awt.Dimension;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.Iterator;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
-import javax.imageio.ImageTypeSpecifier;
 import javax.imageio.ImageWriter;
-import javax.imageio.metadata.IIOMetadata;
-import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.spi.ImageWriterSpi;
-import javax.imageio.stream.ImageOutputStream;
 import net.sourceforge.bookscanwizard.BSW;
 import net.sourceforge.bookscanwizard.FileHolder;
 import net.sourceforge.bookscanwizard.Operation;
@@ -46,7 +37,6 @@ import net.sourceforge.bookscanwizard.UserException;
 import net.sourceforge.bookscanwizard.s3.ArchiveTransfer;
 import net.sourceforge.bookscanwizard.util.ImageUtilities;
 import net.sourceforge.bookscanwizard.util.Utils;
-import org.w3c.dom.NodeList;
 
 /**
  *
@@ -55,6 +45,10 @@ import org.w3c.dom.NodeList;
 public class CreateArchiveZip extends Operation  {
     private static ZipOutputStream zipOut;
     private static ImageWriter writer;
+    private static Dimension lastImageSize;
+    private static int layerCount;
+    private static List<FileHolder> lastFiles;
+
     static {
         ImageUtilities.allowNativeCodec("jpeg2000", ImageWriterSpi.class, false);
         Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpeg2000");
@@ -73,11 +67,15 @@ public class CreateArchiveZip extends Operation  {
 
     @Override
     protected RenderedImage performOperation(FileHolder holder, RenderedImage img) throws Exception {
+        lastImageSize = new Dimension(img.getWidth(), img.getHeight());
+        layerCount = img.getColorModel().getNumComponents();
+        lastFiles = getPageSet().getFileHolders();
         if (!holder.isDeleted() && !BSW.instance().isInPreview()) {
             synchronized(SaveToArchive.class) {
+                String[] args = getTextArgs();
                 if (zipOut == null) {
-                    if (getTextArgs().length == 0) {
-                        throw new UserException("CreateArchveZip missing filename");
+                    if (args.length == 0) {
+                        throw new UserException("CreateArchiveZip missing filename");
                     }
                     File f = BSW.getFileFromCurrentDir(getTextArgs()[0]);
                     zipOut = new ZipOutputStream(new FileOutputStream(f));
@@ -88,11 +86,47 @@ public class CreateArchiveZip extends Operation  {
                 ZipEntry zipEntry = new ZipEntry(holder.getName()+".jp2");
                 zipOut.putNextEntry(zipEntry);
                 img = Utils.renderedToBuffered(img);
-                SaveImage.writeJpeg2000Image(img, zipOut, PageSet.getDestinationDPI(), 1f/10f);
+                SaveImage.writeJpeg2000Image(img, zipOut, PageSet.getDestinationDPI(), getCompression());
                 zipOut.closeEntry();
             }
         }
         return img;
+    }
+
+    private float getCompression() {
+        float compression = 1f/10f;
+        String[] args = getTextArgs();
+        if (args.length > 1) {
+            String arg = args[1];
+            int pos = arg.indexOf(":");
+            if (pos > 0) {
+                compression = Float.parseFloat(arg.substring(pos+1)) / Float.parseFloat(arg.substring(0, pos));
+            } else {
+                compression = Float.parseFloat(args[1]);
+            }
+        }
+        return compression;
+    }
+
+    public String estimateZipSize() {
+        if (!BSW.instance().getMainFrame().isShowCrops()) {
+            return "Show Crops must be checked to estimate size";
+        }
+        float compression = getCompression();
+        if (compression >= 1) {
+            compression = .3f;
+        } else if (compression > .2) {
+            compression = .2f;
+        }
+        BSW.instance();
+        int ct = 0;
+        for (FileHolder h : lastFiles) {
+            if (!h.isDeleted()) {
+                ct++;
+            }
+        }
+        long size = (long) (lastImageSize.getHeight() * lastImageSize.getWidth() * layerCount * ct * compression)/1024/1024;
+        return "Estimated size of zip file is "+size +"M, containing "+ct+" files.";
     }
 
     @Override

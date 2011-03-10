@@ -54,8 +54,6 @@ public class PrefsHelper {
             Runtime.getRuntime().addShutdownHook(savePrefs);
             BSW bsw = BSW.instance();
             MainFrame mainFrame = bsw.getMainFrame();
-            boolean previewToCursor = prefs.getBoolean("previewToCursor", false);
-            mainFrame.getPreviewToCursor().setSelected(previewToCursor);
             boolean opListVisible = prefs.getBoolean("operationListVisible", true);
             mainFrame.getOperationList().setVisible(opListVisible);
             float scale = prefs.getFloat("scale", 1);
@@ -95,7 +93,6 @@ public class PrefsHelper {
     private static void savePreferences() {
         BSW bsw = BSW.instance();
         MainFrame mainFrame = bsw.getMainFrame();
-        prefs.putBoolean("previewToCursor", mainFrame.isPreviewToCursor());
         prefs.putBoolean("operationListVisible", mainFrame.getOperationList().isVisible());
         prefs.putFloat("scale", bsw.getPostScale());
         putObject("mainBounds", mainFrame.getBoundsHelper().getUnmaximizedBounds());

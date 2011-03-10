@@ -679,18 +679,13 @@ public class BSW {
 
     private void processFile(List<Operation> operations, FileHolder holder, File destFile) throws Exception {
         RenderedImage image = null;
-        Operation lastOp = null;
         for (Operation op : operations) {
             if (!holder.isDeleted() && op.getPageSet().getFileHolders().contains(holder)) {
                 if (image == null) {
                     image = ImageIO.read(holder.getFile());
                 }
                 image = op.performOperation(holder, image);
-                lastOp = op;
             }
-        }
-        if (image != null && !holder.isDeleted()) {
-            saveFile(lastOp.getPageSet(), image, holder, destFile);
         }
         tileCache.removeTiles(image);
         if (!isBatchMode()) {
@@ -701,24 +696,6 @@ public class BSW {
                 }
             });
         }
-    }
-
-    public void saveFile(PageSet pageSet, RenderedImage image, FileHolder holder, File file) {
-        int dpi = PageSet.getDestinationDPI();
-        if (dpi == 0) {
-            dpi = (int) holder.getDPI();
-        }
-        // saves the image to a tiff file
-        TIFFEncodeParam param = new TIFFEncodeParam();
-        param.setCompression( pageSet.getCompressionType());
-
-        TIFFField[] extras = new TIFFField[3];
-        extras[0] = new TIFFField(TAG_X_RESOLUTION, TIFFField.TIFF_RATIONAL, 1, new long[][] {{dpi, 1},{0 ,0}});
-        extras[1] = new TIFFField(TAG_Y_RESOLUTION, TIFFField.TIFF_RATIONAL, 1, new long[][] {{dpi, 1},{0 ,0}});
-        extras[2] = new TIFFField(TAG_RESOLUTION_UNIT, TIFFField.TIFF_SHORT, 1, new char[] { RESOLUTION_UNIT_INCH});
-        param.setExtraFields(extras);
-        JAI.create("filestore", image, file.toString(), "TIFF", param);
-        logger.log(Level.INFO, "saved {0}", file.getName());
     }
 
     private void newBatch() throws Exception {
