@@ -25,8 +25,6 @@ import java.util.regex.Matcher;
 import net.sourceforge.bookscanwizard.config.ConfigBalancedAutoLevels;
 import java.util.logging.LogRecord;
 import net.sourceforge.bookscanwizard.util.ProcessHelper;
-import com.sun.media.jai.codec.TIFFEncodeParam;
-import com.sun.media.jai.codec.TIFFField;
 import java.awt.Event;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -79,10 +77,6 @@ import net.sourceforge.bookscanwizard.qr.PrintCodesDialog;
 import net.sourceforge.bookscanwizard.qr.ReadCodes;
 import net.sourceforge.bookscanwizard.qr.SplitBooks;
 import net.sourceforge.bookscanwizard.start.NewBook;
-import static com.sun.media.imageio.plugins.tiff.BaselineTIFFTagSet.TAG_X_RESOLUTION;
-import static com.sun.media.imageio.plugins.tiff.BaselineTIFFTagSet.TAG_Y_RESOLUTION;
-import static com.sun.media.imageio.plugins.tiff.BaselineTIFFTagSet.TAG_RESOLUTION_UNIT;
-import static com.sun.media.imageio.plugins.tiff.BaselineTIFFTagSet.RESOLUTION_UNIT_INCH;
 
 /**
  * The main program

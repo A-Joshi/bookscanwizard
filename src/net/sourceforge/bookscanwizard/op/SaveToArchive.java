@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipOutputStream;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriter;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 import net.sourceforge.bookscanwizard.BSW;
@@ -41,7 +39,7 @@ public class SaveToArchive extends Operation implements ProgressListener {
     private static boolean abortRequested;
     private static String defaultAccess;
     private static String defaultSecret;
-    private ImageWriter writer = (ImageWriter) ImageIO.getImageWritersByFormatName("jpeg 2000").next();
+
     private JProgressBar progressBar;
 
     @Override
@@ -111,5 +109,13 @@ public class SaveToArchive extends Operation implements ProgressListener {
     public static void setDefaultKeys(String access, String secret) {
         SaveToArchive.defaultAccess = access;
         SaveToArchive.defaultSecret = secret;
+    }
+
+    public static String getAccessKey() {
+        return defaultAccess;
+    }
+
+    public static String getSecretKey() {
+        return defaultSecret;
     }
 }

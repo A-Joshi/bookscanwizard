@@ -37,7 +37,7 @@ import net.sourceforge.bookscanwizard.UserException;
  * that the distance to page remains the same, and the FocalLength accurately
  * represents the relative zoom level.
  */
-public class EstimateDPI extends Operation implements DpiSetter {
+public class EstimateDPI extends Operation {
     private static final String INVALID = "There must be two different zoom levels for both the right and left cameras to use this feature";
     private double x0;
     private double y0;
@@ -164,9 +164,5 @@ public class EstimateDPI extends Operation implements DpiSetter {
         for (int i=0; i < dpiInfo.length; i++) {
             dpiInfo[i] = info.get(i);
         }
-    }
-
-    public float getDPI() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

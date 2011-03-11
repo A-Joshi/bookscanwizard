@@ -22,20 +22,21 @@ import java.awt.Desktop;
 import java.awt.KeyboardFocusManager;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import net.sourceforge.bookscanwizard.op.Metadata;
+import net.sourceforge.bookscanwizard.op.Metadata.KeyValue;
 import net.sourceforge.bookscanwizard.op.SaveToArchive;
 
 public class ArchiveMetadata extends javax.swing.JDialog {
     private static final String[] columnNames = {"Name", "Value"};
     private ArrayList<String[]> rows = new ArrayList<String[]>();
 
-    public ArchiveMetadata(java.awt.Frame parent, boolean modal) {
+    public ArchiveMetadata(java.awt.Frame parent, boolean modal) throws Exception {
         super(parent, modal);
         initComponents();
         updateGui();
@@ -395,7 +396,12 @@ public class ArchiveMetadata extends javax.swing.JDialog {
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                ArchiveMetadata dialog = new ArchiveMetadata(new javax.swing.JFrame(), true);
+                ArchiveMetadata dialog;
+                try {
+                    dialog = new ArchiveMetadata(new javax.swing.JFrame(), true);
+                } catch (Exception ex) {
+                    throw new RuntimeException(ex);
+                }
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {
@@ -442,23 +448,45 @@ public class ArchiveMetadata extends javax.swing.JDialog {
     /**
      * Updates this gui with the configured metadata.
      */
-    private void updateGui() {
-        Map<String,String> data = Metadata.getMetaData();
-        TreeMap<String,String> customData = new TreeMap<String,String>();
-        customData.putAll(data);
+    private void updateGui() throws Exception {
+        List<Metadata.KeyValue> data = Metadata.getMetaData();
+        ArrayList<Metadata.KeyValue> customData = new ArrayList<Metadata.KeyValue>(data);
+        Collections.sort(customData);
+        String config = BSW.instance().getMainFrame().getConfigEntry().getText();
+        for (Operation op : Operation.getOperations(config)) {
+            if (op instanceof SaveToArchive) {
+                String[] opArgs = op.getTextArgs();
+                if (opArgs.length > 2) {
+                    jAccess.setText(opArgs[1]);
+                    jSecret.setText(opArgs[2]);
+                } else {
+                    jAccess.setText(SaveToArchive.getAccessKey());
+                    jAccess.setText(SaveToArchive.getSecretKey());
+                }
+            }
+        }
 
-        jIdentifier.setText(customData.remove("identifier"));
-        jTitle.setText(customData.remove("title"));
-        jAuthor.setText(customData.remove("creator"));
-        jDate.setText(customData.remove("date"));
-        jSubject.setText(customData.remove("subject"));
-        jDescription.setText(customData.remove("description"));
-        jKeywords.setText(customData.remove("keywords"));
-        jTestItem.setSelected("true".equalsIgnoreCase(customData.remove("noindex")));
+        jIdentifier.setText(getAndRemove(customData, "identifier"));
+        jTitle.setText(getAndRemove(customData, "title"));
+        jAuthor.setText(getAndRemove(customData, "creator"));
+        jDate.setText(getAndRemove(customData, "date"));
+        jSubject.setText(getAndRemove(customData, "subject"));
+        jDescription.setText(getAndRemove(customData, "description"));
+        jKeywords.setText(getAndRemove(customData, "keywords"));
+        jTestItem.setSelected("true".equalsIgnoreCase(getAndRemove(customData, "noindex")));
         rows.clear();
-        for (Map.Entry<String,String> entry : customData.entrySet()) {
+        for (KeyValue entry : customData) {
             rows.add(new String[] {entry.getKey(), entry.getValue()});
         }
+    }
+
+    private String getAndRemove(List<KeyValue> list, String key) {
+        int pos = list.indexOf(new KeyValue(key));
+        String retVal = null;
+        if (pos >= 0) {
+            retVal = list.remove(pos).getValue();
+        }
+        return retVal;
     }
 
     /**
@@ -469,11 +497,6 @@ public class ArchiveMetadata extends javax.swing.JDialog {
             SaveToArchive.setDefaultKeys(jAccess.getText(), jSecret.getText());
 
             ArrayList<String[]> data = new ArrayList<String[]>();
-            for (String[] row : rows) {
-                if (row[0] != null && row[0].length() > 0) {
-                    data.add(row);
-                }
-            }
             data.add(new String[]{"identifier", jIdentifier.getText()});
             data.add(new String[]{"title", jTitle.getText()});
             data.add(new String[]{"creator", jAuthor.getText()});
@@ -483,6 +506,11 @@ public class ArchiveMetadata extends javax.swing.JDialog {
             data.add(new String[]{"keywords", jKeywords.getText()});
             if (jTestItem.isSelected()) {
                 data.add(new String[]{"noindex", "true"});
+            }
+            for (String[] row : rows) {
+                if (row[0] != null && row[0].length() > 0) {
+                    data.add(row);
+                }
             }
             StringBuilder str = new StringBuilder();
             for (String[] row: data) {
@@ -517,7 +545,7 @@ public class ArchiveMetadata extends javax.swing.JDialog {
             }
             if (entry.getText().indexOf("SaveToArchive") < 0) {
                 str.append("# Uncomment the following line to send to the archive as part of this job.\n"+
-                           "#SaveToArchive = archive.zip xxxxxxxxxxxxxxxxx xxxxxxxxxxx\n");
+                           "#SaveToArchive = archive.zip "+jAccess.getText()+" "+jSecret.getText()+"\n");
             }
             doc.insertString(oldPos, str.toString(), null);
         } catch (BadLocationException e) {

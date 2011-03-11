@@ -25,8 +25,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.zip.ZipEntry;
@@ -37,6 +38,10 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import net.sourceforge.bookscanwizard.AboutDialog;
 import net.sourceforge.bookscanwizard.UserException;
+import net.sourceforge.bookscanwizard.op.Metadata;
+import net.sourceforge.bookscanwizard.op.Metadata.KeyValue;
+import net.sourceforge.bookscanwizard.util.LazyHashMap;
+import net.sourceforge.bookscanwizard.util.Sequence;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -64,8 +69,9 @@ public class ArchiveTransfer {
     private static final SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
     private static final boolean LOW_SECURITY = false;
     private static final String HEADER_CHARSET = "UTF-8";
+    private static final boolean SKIP_DERIVE = false;
 
-    private HashMap<String,String> metaData = new HashMap<String,String>();
+    private LazyHashMap<String,List<String>> metadata = new LazyHashMap<String,List<String>>(ArrayList.class);
     private String awsAccessKey;
     private String awsSecretKey;
     private ProgressListener progressListener;
@@ -73,11 +79,6 @@ public class ArchiveTransfer {
     public ArchiveTransfer(String accessKey, String secretKey) {
         this.awsAccessKey = accessKey;
         this.awsSecretKey = secretKey;
-
-        // add default metadat
-        this.metaData.put("mediatype", "texts");
-        this.metaData.put("collection", "opensource");
-        this.metaData.put("postprocessor", "BookScanWizard: "+AboutDialog.VERSION);
     }
 
     private static final String[] requiredMetaData = new String[] {
@@ -102,19 +103,25 @@ public class ArchiveTransfer {
 //        System.out.println("is: "+test.isItem());
 
         test.saveToArchive(new File("c:/books/done/fairy/bswArchive.zip"));
-//        test.saveToArchive(null);
     }
 
-    public void setMetaData(Map<String,String> metaData) {
-        this.metaData = new HashMap<String,String>();
-        this.metaData.putAll(metaData);
+    private void addDefaults() {
+        KeyValue[] defaults = {
+            new KeyValue("mediatype", "texts"),
+            new KeyValue("collection", "opensource"),
+            new KeyValue("postprocessor", "BookScanWizard: "+AboutDialog.VERSION)};
+        for (KeyValue entry : defaults) {
+            if (metadata.getFirstItem(entry.getKey()) == null) {
+                metadata.getOrCreate(entry.getKey()).add(entry.getValue());
+            }
+        }
     }
 
     public String getArchiveId() {
-        String id = metaData.get("identifier");
+        String id = (String) metadata.getFirstItem("identifier");
         if (id == null || id.isEmpty()) {
             id = createIdentifier();
-            metaData.put("identifier", id);
+            metadata.getOrCreate("identifier").add(id);
         }
         return id;
     }
@@ -134,9 +141,15 @@ public class ArchiveTransfer {
 
     public void saveToArchive(File zipFile) throws Exception {
         readMetadataFromZip(zipFile);
+        addDefaults();
+        // save just the metadat first, to verify that a connection can be made
+        saveToArchiveInt(null);
+        // then upload the file
+        saveToArchiveInt(zipFile);
+    }
 
+    private void saveToArchiveInt(File zipFile) throws Exception {
         DefaultHttpClient httpclient = new DefaultHttpClient();
-
         String bucketName = getArchiveId();
         HttpPut put;
         if (zipFile == null) {
@@ -153,12 +166,22 @@ public class ArchiveTransfer {
             entity.setProgressListener(progressListener);
             put.setEntity(entity);
             put.setHeader(fileEntity.getContentType());
-            put.setHeader(PREFIX+"auto-make-bucket", "1");
         }
+        put.setHeader(PREFIX+"auto-make-bucket", "1");
         put.setHeader(PREFIX+"ignore-preexisting-bucket", "1");
-        for (Map.Entry<String,String> entry : metaData.entrySet()) {
+        if (SKIP_DERIVE) {
+            put.setHeader(PREFIX+"queue-derive", "0");
+        }
+        for (Map.Entry<String,List<String>> entry : metadata.entrySet()) {
             if (!entry.getKey().equals("identifier")) {
-                put.setHeader(PREFIX+"meta-"+entry.getKey(), entry.getValue());
+                if (entry.getValue().size() > 1) {
+                    Sequence seq = new Sequence("##");
+                    for (String value: entry.getValue()) {
+                        put.setHeader(PREFIX+"meta"+seq.next()+"-"+entry.getKey(), value);
+                    }
+                } else {
+                    put.setHeader(PREFIX+"meta-"+entry.getKey(), entry.getValue().iterator().next());
+                }
             }
         }
         put.setHeader(getAuthHeader(put));
@@ -181,12 +204,18 @@ public class ArchiveTransfer {
         }
     }
 
-    public static void checkMetaData(Map<String, String> metaData) {
+    public static void checkMetaData(List<Metadata.KeyValue> metaData) {
         for(String key : requiredMetaData) {
-           String value = metaData.get(key);
-           if (value == null || value.isEmpty() ) {
+            boolean found = false;
+            for (Metadata.KeyValue entry : metaData) {
+                if (entry.getKey().equals(key) && entry.getValue()!= null && !entry.getValue().isEmpty()) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
                throw new UserException(key+" missing. It is a required metadata item");
-           }
+            }
         }
     }
 
@@ -240,7 +269,7 @@ public class ArchiveTransfer {
     }
 
     private String createIdentifier() {
-        String title = metaData.get("title");
+        String title = (String) metadata.getFirstItem("title");
         title=title.replace(" " , "");
         return title;
     }
@@ -263,15 +292,12 @@ public class ArchiveTransfer {
                 Element e = (Element) node;
                 String key = node.getNodeName();
                 String value = e.getTextContent();
-                metaData.put(key, value);
+                metadata.getOrCreate(key).add(value);
             }
         }
     }
 
     /** Other headers not currently used
-     *
-     * Don't run the derive task:
-     *   x-archive-queue-derive:0
      *
      * Delete derived files
      *   x-archive-cascade-delete:1

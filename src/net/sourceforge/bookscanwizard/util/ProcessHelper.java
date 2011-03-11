@@ -26,7 +26,6 @@ import java.net.JarURLConnection;
 import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.util.Enumeration;
-import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.jar.JarFile;
 

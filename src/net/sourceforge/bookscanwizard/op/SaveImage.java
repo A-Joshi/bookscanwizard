@@ -104,10 +104,10 @@ public class SaveImage extends Operation  {
     }
 
     private void saveJpeg(String destFile, RenderedImage img, int dpi) throws IOException {
-        ImageWriter jpegWriter = ImageIO.getImageWritersByFormatName("jpeg").next();
+        ImageWriter writer = ImageIO.getImageWritersByFormatName("jpeg").next();
         final ImageOutputStream stream = ImageIO.createImageOutputStream(new File(destFile+".jpg"));
-        jpegWriter.setOutput(stream);
-        ImageWriteParam writeParam = jpegWriter.getDefaultWriteParam();
+        writer.setOutput(stream);
+        ImageWriteParam writeParam = writer.getDefaultWriteParam();
         ImageTypeSpecifier spec = ImageTypeSpecifier.createFromRenderedImage(img);
         String args[] = getTextArgs();
         if (args.length > 1 ) {
@@ -115,10 +115,10 @@ public class SaveImage extends Operation  {
             writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
             writeParam.setCompressionQuality(quality);   // an integer between 0 and 1
         }
-        IIOMetadata metadata = jpegWriter.getDefaultImageMetadata(spec, writeParam);
+        IIOMetadata metadata = writer.getDefaultImageMetadata(spec, writeParam);
 
-        // jpeg files don't seem to want to save the dpi using the generic way,
-        // so we do this.
+        // jpeg files don't seem to want to save the dpi the generic way,
+        // so we do this instead.
         Element tree = (Element)metadata.getAsTree("javax_imageio_jpeg_image_1.0");
         Element jfif = (Element)tree.getElementsByTagName("app0JFIF").item(0);
         jfif.setAttribute("Xdensity", Integer.toString(dpi));
@@ -126,38 +126,38 @@ public class SaveImage extends Operation  {
         jfif.setAttribute("resUnits", "1"); // density is dots per inch
         metadata.setFromTree("javax_imageio_jpeg_image_1.0", tree);
         try {
-            jpegWriter.write(metadata, new IIOImage(img, null, metadata), writeParam);
+            writer.write(metadata, new IIOImage(img, null, metadata), writeParam);
         } finally {
             stream.close();
         }
     }
 
     private void saveJ2000(String destFile, RenderedImage img, int dpi) throws IOException {
-        ImageWriter jpeg2000Writer = ImageIO.getImageWritersByFormatName("jpeg2000").next();
+        ImageWriter writer = ImageIO.getImageWritersByFormatName("jpeg2000").next();
         FileOutputStream fos = new FileOutputStream(destFile+".jp2");
         try {
-            writeJpeg2000Image(jpeg2000Writer, img, fos, dpi, getCompression());
+            writeJpeg2000Image(writer, img, fos, dpi, getCompression());
         } finally {
             fos.close();
         }
     }
 
     private void savePng(String destFile, RenderedImage img, int dpi) throws IOException {
-        ImageWriter pngWriter = ImageIO.getImageWritersByFormatName("png").next();
+        ImageWriter writer = ImageIO.getImageWritersByFormatName("png").next();
         final ImageOutputStream stream = ImageIO.createImageOutputStream(new File(destFile+".png"));
-        pngWriter.setOutput(stream);
-        ImageWriteParam writeParam = pngWriter.getDefaultWriteParam();
+        writer.setOutput(stream);
+        ImageWriteParam writeParam = writer.getDefaultWriteParam();
         ImageTypeSpecifier spec = ImageTypeSpecifier.createFromRenderedImage(img);
-        IIOMetadata metadata = pngWriter.getDefaultImageMetadata(spec, writeParam);
+        IIOMetadata metadata = writer.getDefaultImageMetadata(spec, writeParam);
         setDpi(metadata, dpi);
         try {
-            pngWriter.write(metadata, new IIOImage(img, null, metadata), writeParam);
+            writer.write(metadata, new IIOImage(img, null, metadata), writeParam);
         } finally {
             stream.close();
         }
     }
 
-    public static void writeJpeg2000Image(ImageWriter jpeg2000Writer, RenderedImage img,
+    public static void writeJpeg2000Image(ImageWriter writer, RenderedImage img,
             OutputStream out, int dpi, double rate) throws IOException {
         ImageTypeSpecifier spec = ImageTypeSpecifier.createFromRenderedImage(img);
         J2KImageWriteParam paramJ2K = new J2KImageWriteParam();
@@ -168,12 +168,12 @@ public class SaveImage extends Operation  {
         } else {
             paramJ2K.setLossless(true);
         }
-        IIOMetadata metadata = jpeg2000Writer.getDefaultImageMetadata(spec, paramJ2K);
+        IIOMetadata metadata = writer.getDefaultImageMetadata(spec, paramJ2K);
         metadata = setDpi(metadata, dpi);
         IIOImage ioImage = new IIOImage(img, null, metadata);
         ImageOutputStream ios = ImageIO.createImageOutputStream(out);
-        jpeg2000Writer.setOutput(ios);
-        jpeg2000Writer.write(null, ioImage, paramJ2K);
+        writer.setOutput(ios);
+        writer.write(null, ioImage, paramJ2K);
         ios.close();
     }
 

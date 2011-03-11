@@ -19,9 +19,8 @@
 package net.sourceforge.bookscanwizard.op;
 
 import java.io.OutputStream;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -41,7 +40,8 @@ import org.w3c.dom.Element;
  * @author Steve
  */
 public class Metadata extends Operation{
-    private static HashMap<String,String> metaData = new HashMap<String,String>();
+    private static ArrayList<KeyValue> metaData = new ArrayList<KeyValue>();
+
     private static boolean init;
 
     @Override
@@ -51,11 +51,11 @@ public class Metadata extends Operation{
         if (pos < 0) {
             throw new UserException("Metadata missing : separator");
         }
-        metaData.put(arguments.substring(0, pos).trim(), arguments.substring(pos+1).trim());
+        metaData.add(new KeyValue(arguments.substring(0, pos).trim(), arguments.substring(pos+1).trim()));
         return operationList;
     }
 
-    public static Map<String,String> getMetaData() {
+    public static ArrayList<KeyValue> getMetaData() {
         return metaData;
     }
 
@@ -65,7 +65,7 @@ public class Metadata extends Operation{
         Document doc = bd.newDocument();
         Element root = (Element) doc.createElement("metadata");
         doc.appendChild(root);
-        for (Map.Entry<String,String> entry : getMetaData().entrySet()) {
+        for (KeyValue entry : getMetaData()) {
            Element e = doc.createElement(entry.getKey());
            root.appendChild(e);
            e.appendChild(doc.createTextNode(entry.getValue()));
@@ -88,6 +88,53 @@ public class Metadata extends Operation{
                     metaData.clear();
                 }
             });
+        }
+    }
+
+    public static class KeyValue implements Comparable<KeyValue> {
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final KeyValue other = (KeyValue) obj;
+            if ((this.key == null) ? (other.key != null) : !this.key.equals(other.key)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            return hash;
+        }
+        private String key;
+        private String value;
+
+        public KeyValue (String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        public KeyValue (String key) {
+            this.key = key;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public int compareTo(KeyValue that) {
+            return this.key.compareTo(that.key);
         }
     }
 }

@@ -18,6 +18,7 @@
 
 package net.sourceforge.bookscanwizard.util;
 
+import java.util.Collection;
 import java.util.HashMap;
 
 public class LazyHashMap<K,V> extends HashMap<K, V> {
@@ -38,5 +39,14 @@ public class LazyHashMap<K,V> extends HashMap<K, V> {
             put(key, value);
         }
         return value;
+    }
+
+    public Object getFirstItem(String key) {
+        Collection value = (Collection) get(key);
+        if (value != null && value.iterator().hasNext()) {
+            return value.iterator().next();
+        } else {
+            return null;
+        }
     }
 }

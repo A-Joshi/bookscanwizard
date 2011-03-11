@@ -28,14 +28,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
-import javax.imageio.spi.ImageWriterSpi;
 import net.sourceforge.bookscanwizard.BSW;
 import net.sourceforge.bookscanwizard.FileHolder;
 import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.PageSet;
 import net.sourceforge.bookscanwizard.UserException;
 import net.sourceforge.bookscanwizard.s3.ArchiveTransfer;
-import net.sourceforge.bookscanwizard.util.ImageUtilities;
 import net.sourceforge.bookscanwizard.util.Utils;
 
 /**

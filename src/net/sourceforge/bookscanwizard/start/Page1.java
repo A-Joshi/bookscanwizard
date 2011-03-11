@@ -18,7 +18,6 @@
 
 package net.sourceforge.bookscanwizard.start;
 
-import com.sun.net.ssl.internal.ssl.DefaultSSLContextImpl;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
