@@ -50,7 +50,6 @@ public class CreateArchiveZip extends Operation  {
     private static List<FileHolder> lastFiles;
 
     static {
-        ImageUtilities.allowNativeCodec("jpeg2000", ImageWriterSpi.class, false);
         Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpeg2000");
         writer = writers.next();
     }
@@ -86,7 +85,7 @@ public class CreateArchiveZip extends Operation  {
                 ZipEntry zipEntry = new ZipEntry(holder.getName()+".jp2");
                 zipOut.putNextEntry(zipEntry);
                 img = Utils.renderedToBuffered(img);
-                SaveImage.writeJpeg2000Image(img, zipOut, PageSet.getDestinationDPI(), getCompression());
+                SaveImage.writeJpeg2000Image(writer, img, zipOut, PageSet.getDestinationDPI(), getCompression());
                 zipOut.closeEntry();
             }
         }

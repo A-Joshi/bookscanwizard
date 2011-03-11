@@ -29,8 +29,11 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.imageio.spi.ImageWriterSpi;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
+import net.sourceforge.bookscanwizard.op.SaveImage;
+import net.sourceforge.bookscanwizard.util.ImageUtilities;
 
 /**
  * The master Operation type
@@ -49,11 +52,6 @@ abstract public class Operation {
     public static final Pattern ARG_PATTERN = Pattern.compile("[^\\s\",]+|\"[^\"]*\"");
 
     private static List<Operation> allOperations;
-
-    /**
-     * indicates whether a save operation as been performed.
-     */
-    protected static boolean savedImages;
 
     protected String arguments;
     private static final Properties properties = new Properties();
@@ -82,6 +80,17 @@ abstract public class Operation {
             }
         }
         reader.close();
+        boolean found = false;
+        for (Operation op : operations) {
+            if (op instanceof SaveImage) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            List<Operation> ops = Operation.getOperation("SaveImage = ", null, pageSet);
+            operations.addAll(ops);
+        }
         setAllOperations(operations);
         return operations;
     }
@@ -357,5 +366,12 @@ abstract public class Operation {
         imageLayout.setTileHeight(img.getHeight());
         hints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
         return hints;
+    }
+
+    static {
+        // the native version has problems with compression.
+        ImageUtilities.allowNativeCodec("jpeg2000", ImageWriterSpi.class, false);
+        // the native version doesn't want to return metadata.
+        ImageUtilities.allowNativeCodec("jpeg", ImageWriterSpi.class, false);
     }
 }
