@@ -41,7 +41,6 @@ import org.w3c.dom.Element;
  */
 public class Metadata extends Operation{
     private static ArrayList<KeyValue> metaData = new ArrayList<KeyValue>();
-
     private static boolean init;
 
     @Override
@@ -93,26 +92,6 @@ public class Metadata extends Operation{
 
     public static class KeyValue implements Comparable<KeyValue> {
 
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final KeyValue other = (KeyValue) obj;
-            if ((this.key == null) ? (other.key != null) : !this.key.equals(other.key)) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 5;
-            return hash;
-        }
         private String key;
         private String value;
 
@@ -135,6 +114,26 @@ public class Metadata extends Operation{
 
         public int compareTo(KeyValue that) {
             return this.key.compareTo(that.key);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final KeyValue other = (KeyValue) obj;
+            if ((this.key == null) ? (other.key != null) : !this.key.equals(other.key)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return key.hashCode();
         }
     }
 }

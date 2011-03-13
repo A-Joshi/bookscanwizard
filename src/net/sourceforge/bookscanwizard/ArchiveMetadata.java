@@ -31,6 +31,7 @@ import javax.swing.text.Document;
 import net.sourceforge.bookscanwizard.op.Metadata;
 import net.sourceforge.bookscanwizard.op.Metadata.KeyValue;
 import net.sourceforge.bookscanwizard.op.SaveToArchive;
+import net.sourceforge.bookscanwizard.s3.ArchiveTransfer;
 
 public class ArchiveMetadata extends javax.swing.JDialog {
     private static final String[] columnNames = {"Name", "Value"};
@@ -183,7 +184,11 @@ public class ArchiveMetadata extends javax.swing.JDialog {
         jLabel13.setText("Identifier");
         jLabel13.setToolTipText("This is the identifier for the book.  One will be created automatically if this isn't filled in");
 
-        jIdentifier.setBackground(new java.awt.Color(224, 224, 224));
+        jIdentifier.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                jIdentifierPropertyChange(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -258,7 +263,7 @@ public class ArchiveMetadata extends javax.swing.JDialog {
                         .addGap(18, 18, 18)
                         .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jLabel2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 15, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 13, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jIdentifier, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel13))
@@ -317,8 +322,12 @@ public class ArchiveMetadata extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        saveToConfig();
-        dispose();
+        try {
+            saveToConfig();
+            dispose();
+        } catch (Exception e) {
+            UserFeedbackHelper.displayException(this, e);
+        }
 }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jKeywordsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jKeywordsActionPerformed
@@ -337,7 +346,7 @@ public class ArchiveMetadata extends javax.swing.JDialog {
         try {
             Desktop.getDesktop().browse(new URI("http://www.archive.org"));
         } catch (Exception ex) {
-            // ignore;
+            UserFeedbackHelper.displayException(this, ex);
         }
     }//GEN-LAST:event_jLabel2MouseClicked
 
@@ -345,7 +354,7 @@ public class ArchiveMetadata extends javax.swing.JDialog {
         try {
             Desktop.getDesktop().browse(new URI("http://www.archive.org/account/s3.php"));
         } catch (Exception ex) {
-            // ignore;
+            UserFeedbackHelper.displayException(this, ex);
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 
@@ -356,6 +365,10 @@ public class ArchiveMetadata extends javax.swing.JDialog {
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         dispose();
     }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void jIdentifierPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_jIdentifierPropertyChange
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jIdentifierPropertyChange
 
     private TableModel getTableModel() {
         TableModel tableModel = new AbstractTableModel() {
@@ -452,20 +465,10 @@ public class ArchiveMetadata extends javax.swing.JDialog {
         List<Metadata.KeyValue> data = Metadata.getMetaData();
         ArrayList<Metadata.KeyValue> customData = new ArrayList<Metadata.KeyValue>(data);
         Collections.sort(customData);
-        String config = BSW.instance().getMainFrame().getConfigEntry().getText();
-        for (Operation op : Operation.getOperations(config)) {
-            if (op instanceof SaveToArchive) {
-                String[] opArgs = op.getTextArgs();
-                if (opArgs.length > 2) {
-                    jAccess.setText(opArgs[1]);
-                    jSecret.setText(opArgs[2]);
-                } else {
-                    jAccess.setText(SaveToArchive.getAccessKey());
-                    jAccess.setText(SaveToArchive.getSecretKey());
-                }
-            }
+        if (SaveToArchive.getLastSave() != null) {
+            jAccess.setText(SaveToArchive.getLastSave().getAccess());
+            jSecret.setText(SaveToArchive.getLastSave().getSecret());
         }
-
         jIdentifier.setText(getAndRemove(customData, "identifier"));
         jTitle.setText(getAndRemove(customData, "title"));
         jAuthor.setText(getAndRemove(customData, "creator"));
@@ -494,8 +497,7 @@ public class ArchiveMetadata extends javax.swing.JDialog {
      */
     private void saveToConfig() {
         try {
-            SaveToArchive.setDefaultKeys(jAccess.getText(), jSecret.getText());
-
+            ArchiveTransfer.validateId(jIdentifier.getText());
             ArrayList<String[]> data = new ArrayList<String[]>();
             data.add(new String[]{"identifier", jIdentifier.getText()});
             data.add(new String[]{"title", jTitle.getText()});

@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.crypto.Mac;
@@ -69,7 +70,8 @@ public class ArchiveTransfer {
     private static final SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
     private static final boolean LOW_SECURITY = false;
     private static final String HEADER_CHARSET = "UTF-8";
-    private static final boolean SKIP_DERIVE = false;
+    private static final boolean SKIP_DERIVE = true;
+    private static final Pattern idPattern = Pattern.compile("[A-Za-z0-9\\-\\.\\_]+");
 
     private LazyHashMap<String,List<String>> metadata = new LazyHashMap<String,List<String>>(ArrayList.class);
     private String awsAccessKey;
@@ -84,25 +86,15 @@ public class ArchiveTransfer {
     private static final String[] requiredMetaData = new String[] {
         "title",
         "description",
-        "keywords"
+        "keywords",
+        "identifier"
     };
+
 
     public static void main(String[] args) throws Exception {
         ArchiveTransfer test = new ArchiveTransfer("", "");
-/*        HashMap<String,String> p = new HashMap<String,String>();
-        p.put("title", "Big Book of Fairy Tales");
-        p.put("creator", "Gustave Doré");
-        p.put("noindex", "true");
-        p.put("date", "1892");
-        p.put("identifier", "BigBookOfFairyTales14");
-        p.put("subject", "Fairy Tales");
-        p.put("description", "Children's book of fairy tales");
-        p.put("keywords", "Fairy Tales");
-        test.setMetaData(p);*/
-
-//        System.out.println("is: "+test.isItem());
-
-        test.saveToArchive(new File("c:/books/done/fairy/bswArchive.zip"));
+        File zipFile = new File("c:/books/done/fairy/archive.zip");
+        test.saveToArchive(zipFile);
     }
 
     private void addDefaults() {
@@ -123,6 +115,7 @@ public class ArchiveTransfer {
             id = createIdentifier();
             metadata.getOrCreate("identifier").add(id);
         }
+        validateId(id);
         return id;
     }
 
@@ -130,6 +123,7 @@ public class ArchiveTransfer {
         DefaultHttpClient httpclient = new DefaultHttpClient();
         String bucketName = getArchiveId();
         HttpGet head = new HttpGet("http://s3.us.archive.org/"+bucketName);
+        getAuthHeader(head);
         HttpResponse response = httpclient.execute(head);
         StatusLine status = response.getStatusLine();
         return (status.getStatusCode() == 200);
@@ -143,9 +137,17 @@ public class ArchiveTransfer {
         readMetadataFromZip(zipFile);
         addDefaults();
         // save just the metadat first, to verify that a connection can be made
+        System.out.println("before: "+new Date());
         saveToArchiveInt(null);
+        System.out.println("after: "+new Date());
         // then upload the file
         saveToArchiveInt(zipFile);
+    }
+
+    public static void validateId(String text) {
+        if (!idPattern.matcher(text).matches()) {
+            throw new UserException("The id field can only contain letters A-Z, a-Z, 0-9, hyphens and underscores.");
+        }
     }
 
     private void saveToArchiveInt(File zipFile) throws Exception {
@@ -262,6 +264,7 @@ public class ArchiveTransfer {
             String base64 = Base64.encodeBase64String(digest);
             base64 = base64.substring(0, base64.length()-2);
             Header h = new BasicHeader("Authorization", "AWS "+awsAccessKey+":"+base64);
+//            System.out.println(toSign);
             return h;
         } catch (Exception e) {
             throw new RuntimeException(e);

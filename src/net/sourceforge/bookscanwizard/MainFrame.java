@@ -311,13 +311,13 @@ public class MainFrame extends JFrame {
 
         menuItem  = new JMenuItem("Prepare for uploading...");
         menuItem.setToolTipText("Prepares the book for uploading to the Internet Archive");
-        menuItem.setActionCommand("upload");
+        menuItem.setActionCommand("prepare_upload");
         menuItem.addActionListener(menuHandler);
         toolsMenu.add(menuItem);
 
-        menuItem  = new JMenuItem("Upload to the Archive");
+        menuItem  = new JMenuItem("Upload to the Archive...");
         menuItem.setToolTipText("Uploads this book to the Internet Archive");
-        menuItem.setActionCommand("upload_to_archive");
+        menuItem.setActionCommand("upload");
         menuItem.addActionListener(menuHandler);
         toolsMenu.add(menuItem);
 

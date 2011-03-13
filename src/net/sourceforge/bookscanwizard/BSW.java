@@ -60,6 +60,7 @@ import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.LogManager;
 import javax.imageio.ImageIO;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -94,6 +95,7 @@ public class BSW {
 
     private MainFrame mainFrame;
     private PreviewedImage previewedImage = new PreviewedImage();
+    private boolean override = false;
 
     private static double previewScale = 1;
     private float postScale = 1F;
@@ -176,7 +178,7 @@ public class BSW {
                 if (batchMode) {
                     String config = wizard.loadConfig(file);
                     long time = System.currentTimeMillis();
-                    wizard.runBatch(config);
+                    wizard.runBatch(config, wizard.getNewProcessImages());
                     logger.log(Level.INFO, "Total elapsed time: {0} seconds.", ((System.currentTimeMillis() - time) / 1000));
                     System.exit(0);
                 }
@@ -351,7 +353,7 @@ public class BSW {
             } else if ("preview".equals(cmd)) {
                 preview();
             } else if ("run".equals(cmd)) {
-                runBatch(mainFrame.getConfigEntry().getText());
+                runBatch(mainFrame.getConfigEntry().getText(), getNewProcessImages());
             } else if ("previousPage".equals(cmd)) {
                 int inc = ((e.getModifiers() & Event.SHIFT_MASK) != 0) ? 2 : 1;
                 if (mainFrame.getPageListBox().getSelectedIndex() - inc < 0) {
@@ -413,8 +415,13 @@ public class BSW {
             } else if ("print_qr_codes".equals(cmd)) {
                 JDialog dialog = new PrintCodesDialog(getMainFrame(), false);
                 dialog.setVisible(true);
+            } else if ("prepare_upload".equals(cmd)) {
+                prepareUpload();
             } else if ("upload".equals(cmd)) {
-                upload();
+                UploadFile.upload(menuHandler);
+            } else if ("do_upload".equals(cmd)) {
+                UploadFile uploadFile = ((UploadFile)((JComponent) e.getSource()).getTopLevelAncestor());
+                runBatch(mainFrame.getConfigEntry().getText(), new UploadImages(uploadFile));
             } else if ("expand_barcode_operations".equals(cmd)) {
                 preview();
                 insertConfigNoPreview(Barcodes.getConfiguration(), true, false);
@@ -487,11 +494,76 @@ public class BSW {
             out.close();
             scriptFile.setExecutable(true);
         }
-
     }
 
-    public synchronized void runBatch(String configText) throws Exception {
-        boolean override = false;
+    private class UploadImages implements Batch {
+        private UploadFile uploadFile;
+
+        public UploadImages (UploadFile uploadFile) {
+            this.uploadFile = uploadFile;
+        }
+
+        public List<Future<Void>> getFutures(List<Operation> operations) {
+            return new ArrayList<Future<Void>>();
+        }
+
+        public void postOperation() throws Exception {
+            uploadFile.performUpload();
+        }
+    }
+
+    private class ProcessImages implements Batch {
+        private List<Operation> operations;
+
+        public void postOperation() throws Exception {
+            for (Operation op : operations) {
+                op.postOperation();
+            }
+        }
+
+        public List<Future<Void>> getFutures(final List<Operation> operations) {
+            this.operations = operations;
+            override = false;
+            final ArrayList<Future<Void>> futures = new ArrayList<Future<Void>>();
+            PageSet ps = operations.get(operations.size() -1).getPageSet();
+            File destinationDir = ps.getDestinationDir();
+            if (destinationDir == null) {
+                throw new UserException("The destination is not defined.\nPlease define it with the SetDestination operation.");
+            }
+            destinationDir.mkdirs();
+            List<FileHolder> files = PageSet.getSourceFiles();
+            for (final FileHolder holder : files) {
+                String page = holder.getName();
+                final File destFile = new File(destinationDir, page + ".tif");
+                if (destFile.exists()) {
+                    if (!override) {
+                        if (!isBatchMode()) {
+                            int confirm = JOptionPane.showConfirmDialog(mainFrame.getFocusOwner(), "Some output files aleady exist.  Do you want to overwrite them?", "Files exist", JOptionPane.YES_NO_OPTION);
+                            if (confirm != JOptionPane.YES_OPTION) {
+                                throw new UserException("Submit aborted");
+                            }
+                            override = true;
+                        } else {
+                            throw new UserException("File already exists: "+destFile);
+                        }
+                    } else {
+                        destFile.delete();
+                    }
+                }
+                Callable<Void> task = new Callable<Void>() {
+                    @Override
+                    public Void call() throws Exception {
+                        processFile(operations, holder, destFile);
+                        return null;
+                    }
+                };
+                futures.add(threadPool.submit(task));
+            }
+            return futures;
+        }
+    }
+
+    private synchronized void runBatch(String configText, final Batch batch) throws Exception {
         abort = false;
         logger.fine("running....");
         setPreviewScale(1);
@@ -502,50 +574,19 @@ public class BSW {
             throw new UserException("Add the source directory of the book with the LoadImages operation");
         }
 
-        PageSet ps = operations.get(operations.size() -1).getPageSet();
-        File destinationDir = ps.getDestinationDir();
-        if (destinationDir == null) {
-            throw new UserException("The destination is not defined.\nPlease define it with the SetDestination operation.");
-        }
-        destinationDir.mkdirs();
-        List<FileHolder> files = PageSet.getSourceFiles();
         tileCache.flush();
+        final List<Future<Void>> futures = batch.getFutures(operations);
+
         if (!isBatchMode()) {
             JProgressBar bar = getMainFrame().getProgressBar();
             getMainFrame().setStatusLabel("Running...");
             bar.setVisible(true);
             bar.setMinimum(0);
-            bar.setMaximum(files.size());
+            bar.setMaximum(futures.size());
             completedCount.set(0);
         }
-        final ArrayList<Future<Void>> futures = new ArrayList<Future<Void>>();
-        for (final FileHolder holder : files) {
-            String page = holder.getName();
-            final File destFile = new File(destinationDir, page + ".tif");
-            if (destFile.exists()) {
-                if (!override) {
-                    if (!isBatchMode()) {
-                        int confirm = JOptionPane.showConfirmDialog(mainFrame.getFocusOwner(), "Some output files aleady exist.  Do you want to overwrite them?", "Files exist", JOptionPane.YES_NO_OPTION);
-                        if (confirm != JOptionPane.YES_OPTION) {
-                            throw new UserException("Submit aborted");
-                        }
-                        override = true;
-                    } else {
-                        throw new UserException("File already exists: "+destFile);
-                    }
-                } else {
-                    destFile.delete();
-                }
-            }
-            Callable<Void> task = new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
-                    processFile(operations, holder, destFile);
-                    return null;
-                }
-            };
-            futures.add(threadPool.submit(task));
-        }
+
+        // futures.
         running = true;
         if (!isBatchMode()) {
             mainFrame.setStatus("Abort");
@@ -563,9 +604,7 @@ public class BSW {
                     // attempt to encourage the releasing of file handles
                     System.gc();
                     if (!abort) {
-                        for (Operation op : operations) {
-                            op.postOperation();
-                        }
+                        batch.postOperation();
                     }
                 } catch (Exception e) {
                     threadPool.shutdownNow();
@@ -930,10 +969,20 @@ public class BSW {
         }
     }
 
-    private void upload() throws Exception {
+    private void prepareUpload() throws Exception {
         getConfig(getConfigEntry().getText());
         JDialog dialog = new ArchiveMetadata(mainFrame, true);
         dialog.setVisible(true);
+    }
+
+    private ProcessImages getNewProcessImages() {
+        return new ProcessImages();
+    }
+
+    private static interface Batch {
+        List<Future<Void>> getFutures(final List<Operation> operations);
+
+        void postOperation() throws Exception;
     }
 
     private static void usage() {

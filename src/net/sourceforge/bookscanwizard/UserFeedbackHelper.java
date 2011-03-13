@@ -60,7 +60,6 @@ abstract public class UserFeedbackHelper implements ActionListener {
     }
 
     public static synchronized void displayException(final Component c, final Throwable ex) {
-                    System.out.println("err: "+ex.getClass());
         ex.printStackTrace();
         if (BSW.isBatchMode()) {
             System.exit(2);

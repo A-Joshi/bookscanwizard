@@ -34,59 +34,61 @@ import net.sourceforge.bookscanwizard.s3.ProgressListener;
  *
  * @author Steve
  */
-public class SaveToArchive extends Operation implements ProgressListener {
+public class SaveToArchive extends Operation {
     private static ZipOutputStream zipOut;
     private static boolean abortRequested;
-    private static String defaultAccess;
-    private static String defaultSecret;
+    private static SaveToArchive lastSave;
+    private static JProgressBar progressBar;
 
-    private JProgressBar progressBar;
+    private String access;
+    private String secret;
+    private String fileName;
 
     @Override
     protected List<Operation> setup(List<Operation> operationList) throws Exception {
+        String[] args = getTextArgs();
         abortRequested = false;
         if (zipOut != null) {
             zipOut.close();
             zipOut = null;
         }
         ArchiveTransfer.checkMetaData(Metadata.getMetaData());
+        lastSave = this;
+        fileName = args[0];
+        access = args[1];
+        secret = args[2];
         return operationList;
     }
 
     @Override
     public void postOperation() throws Exception {
-        String[] args = getTextArgs();
-        saveToArchive(args);
+        saveToArchive(fileName, access, secret);
     }
 
     public void saveToArchive(String[] args) throws Exception {
-        String access = null;
-        String secret = null;
-        String fileName = args[0];
+        saveToArchive(fileName, access, secret);
+    }
 
-        if (args.length > 1) {
-            access = args[1];
-        }
-        if (args.length > 2) {
-            secret = args[2];
-        }
-        if (access == null) {
-            access = defaultAccess;
-        }
-        if (secret == null) {
-            secret = defaultSecret;
-        }
+    public static void saveToArchive(String fileName, String access, String secret) throws Exception {
         if (access == null || secret == null || access.isEmpty() || secret.isEmpty()) {
             throw new UserException("The archive access and secret keys must not be null");
         }
         final ArchiveTransfer transfer = new ArchiveTransfer(access, secret);
+        final ProgressListener progressListener = new ProgressListener() {
+            public void updateProgress(double pctComplete) {
+                if (abortRequested) {
+                    throw new UserException("Aborted");
+                }
+                progressBar.setValue((int) (pctComplete * 100));
+            }
+        };
         if (!BSW.isBatchMode()) {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     progressBar = BSW.instance().getMainFrame().getProgressBar();
                     progressBar.setMaximum(100);
                     BSW.instance().getMainFrame().setStatusLabel("Uploading..");
-                    transfer.setProgressListener(SaveToArchive.this);
+                    transfer.setProgressListener(progressListener);
                 }
             });
         }
@@ -95,27 +97,23 @@ public class SaveToArchive extends Operation implements ProgressListener {
         Logger.getLogger(SaveToArchive.class.getName()).log(Level.INFO, "Finished saving to archive");
     }
 
-    public void updateProgress(double pctComplete) {
-        if (abortRequested) {
-            throw new UserException("Aborted");
-        }
-        progressBar.setValue((int) (pctComplete * 100));
-    }
-
     public static void abortRequested() {
         abortRequested = true;
     }
 
-    public static void setDefaultKeys(String access, String secret) {
-        SaveToArchive.defaultAccess = access;
-        SaveToArchive.defaultSecret = secret;
+    public static SaveToArchive getLastSave() {
+        return lastSave;
     }
 
-    public static String getAccessKey() {
-        return defaultAccess;
+    public String getAccess() {
+        return access;
     }
 
-    public static String getSecretKey() {
-        return defaultSecret;
+    public String getFileName() {
+        return fileName;
+    }
+
+    public String getSecret() {
+        return secret;
     }
 }
