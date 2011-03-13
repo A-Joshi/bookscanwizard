@@ -70,7 +70,7 @@ public class ArchiveTransfer {
     private static final SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
     private static final boolean LOW_SECURITY = false;
     private static final String HEADER_CHARSET = "UTF-8";
-    private static final boolean SKIP_DERIVE = true;
+    private static final boolean SKIP_DERIVE = false;
     private static final Pattern idPattern = Pattern.compile("[A-Za-z0-9\\-\\.\\_]+");
 
     private LazyHashMap<String,List<String>> metadata = new LazyHashMap<String,List<String>>(ArrayList.class);
@@ -89,7 +89,6 @@ public class ArchiveTransfer {
         "keywords",
         "identifier"
     };
-
 
     public static void main(String[] args) throws Exception {
         ArchiveTransfer test = new ArchiveTransfer("", "");
@@ -136,10 +135,10 @@ public class ArchiveTransfer {
     public void saveToArchive(File zipFile) throws Exception {
         readMetadataFromZip(zipFile);
         addDefaults();
-        // save just the metadat first, to verify that a connection can be made
-        System.out.println("before: "+new Date());
+        // save just the metadata first, to verify that a connection can be made
+        System.out.println("adding metadata: "+new Date());
         saveToArchiveInt(null);
-        System.out.println("after: "+new Date());
+        System.out.println("uploading...: "+new Date());
         // then upload the file
         saveToArchiveInt(zipFile);
     }
@@ -264,7 +263,6 @@ public class ArchiveTransfer {
             String base64 = Base64.encodeBase64String(digest);
             base64 = base64.substring(0, base64.length()-2);
             Header h = new BasicHeader("Authorization", "AWS "+awsAccessKey+":"+base64);
-//            System.out.println(toSign);
             return h;
         } catch (Exception e) {
             throw new RuntimeException(e);

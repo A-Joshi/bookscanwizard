@@ -66,7 +66,7 @@ public class SaveToArchive extends Operation {
     }
 
     public void saveToArchive(String[] args) throws Exception {
-        saveToArchive(fileName, access, secret);
+        saveToArchive(args[0], args[1], args[2]);
     }
 
     public static void saveToArchive(String fileName, String access, String secret) throws Exception {

@@ -88,16 +88,18 @@ public class PrintCodes implements Printable, Pageable {
         pc.print();
     }
 
-    public void print() {
+    public boolean print() {
         PrinterJob pj = PrinterJob.getPrinterJob();
         pj.setPageable(this);
         if (pj.printDialog()) {
             try {
                 pj.print();
+                return true;
             } catch (PrinterException e) {
                 e.printStackTrace();
             }
         }
+        return false;
     }
 
     @Override

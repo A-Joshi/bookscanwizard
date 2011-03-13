@@ -271,6 +271,8 @@ abstract public class Operation {
             cls = Class.forName(className);
         } catch (ClassNotFoundException ex) {
             throw new UserException("Could not find operation "+name);
+        } catch (NoClassDefFoundError ex) {
+            throw new UserException("Could not find operation "+name);
         }
         Operation operation = null;
         List<Operation> retVal = null;

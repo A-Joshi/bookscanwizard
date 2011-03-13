@@ -40,23 +40,26 @@ import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import net.sourceforge.bookscanwizard.op.*;
+import net.sourceforge.bookscanwizard.util.SelectableLabel;
 
 public class OperationList extends JFrame {
-    private JLabel argNotes;
+    private SelectableLabel argNotes;
     private JTable table;
     private ArrayList<OpDefinition> defs;
     private final BoundsHelper boundsListener;
 
     private static Class[] operations = {
         AutoLevels.class,
-        BarrelCorrection.class,
-        Barcodes.class,
         BarcodePerspective.class,
+        Barcodes.class,
+        BarrelCorrection.class,
         Brightness.class,
-        CreateArchiveZip.class,
         Color.class,
+        CreateArchiveZip.class,
         Crop.class,
         CropAndScale.class,
+//      Deprecated
+//        DeselectPages.class,
         EstimateDPI.class,
         Gamma.class,
         ImageStatistics.class,
@@ -67,7 +70,6 @@ public class OperationList extends JFrame {
         Metadata.class,
 //        NormalizeLighting.class,
         Pages.class,
-        PipePNG.class,
         Perspective.class,
         PerspectiveAndCrop.class,
         PipePNG.class,
@@ -85,7 +87,9 @@ public class OperationList extends JFrame {
         SetPreviewScale.class,
         SetSourceDPI.class,
         SetTiffOptions.class,
-        Sharpen.class
+        Sharpen.class,
+//      Not ready for prime time
+//        WhiteBalance.class
     };
 
     public OperationList(JFrame mainFrame) {
@@ -170,9 +174,13 @@ public class OperationList extends JFrame {
         table.setColumnModel(columnModel);
         JScrollPane scrollpane = new JScrollPane(table);
         scrollpane.setPreferredSize(new Dimension(750, 200));
-        argNotes = new JLabel();
-        argNotes.setBorder(new EmptyBorder(5, 5, 5, 5));
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, scrollpane, argNotes);
+
+        argNotes = new SelectableLabel();
+        argNotes.setBorder(new EmptyBorder(10,10,10,10));
+        JScrollPane scroll2 = new JScrollPane(argNotes);
+
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, scrollpane, scroll2);
+        splitPane.setDividerLocation(.3);
         splitPane.setPreferredSize(new Dimension(800, 500));
 
         getContentPane().add(splitPane);
@@ -182,6 +190,26 @@ public class OperationList extends JFrame {
         int scrPos = (int) Math.min(850, (scrSize.getWidth() - getWidth()));
         setLocation(scrPos, getLocation().x);
         boundsListener = new BoundsHelper(this);
+        table.getSelectionModel().setSelectionInterval(0, 0);
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        String line = BSW.instance().getConfigEntry().getCurrentLineOrSelection();
+        int pos = line.indexOf("=");
+        if (pos > 0) {
+            String op = line.substring(0, pos).trim();
+
+            for (int y=0; y < table.getModel().getRowCount(); y++) {
+                String name = (String) table.getModel().getValueAt(y, 0);
+                if (op.equals(name)) {
+                    table.getSelectionModel().setSelectionInterval(y, y);
+                    table.scrollRectToVisible(table.getCellRect(y, 0, true));
+                    break;
+                }
+            }
+        }
+        super.setVisible(visible);
     }
 
     private void updateArgs() {

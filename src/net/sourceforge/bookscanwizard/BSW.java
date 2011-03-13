@@ -133,6 +133,7 @@ public class BSW {
     public static void main(String[] args) throws Exception {
         if (args.length > 0) {
             String arg = args[0];
+            batchMode = true;
             if (arg.equals("-mergelr") && args.length == 3) {
                 MatchPages.main(new String[] {"-move", args[1], args[2]});
                 return;
@@ -145,10 +146,12 @@ public class BSW {
             } else if (arg.equals("-upload")) {
                 SaveToArchive saveToArchive = new SaveToArchive();
                 saveToArchive.saveToArchive(Arrays.copyOfRange(args, 1, args.length));
+                return;
             } else if (arg.equals("-version")) {
                 System.out.println("BookScanWizard, by Steve Devore, version "+AboutDialog.VERSION+".");
                 return;
             }
+            batchMode = false;
         }
 
         String configLocation = "book.bsw";
@@ -979,12 +982,6 @@ public class BSW {
         return new ProcessImages();
     }
 
-    private static interface Batch {
-        List<Future<Void>> getFutures(final List<Operation> operations);
-
-        void postOperation() throws Exception;
-    }
-
     private static void usage() {
         System.out.println(
             "Usage:\n"+
@@ -1013,8 +1010,10 @@ public class BSW {
             "         black and white image.  Defualt is 35.\n"+
             "      -scale: If this is defined, the images will be scaled down before\n"+
             "         scanning, which will make it faster.  Default is 1 (no scaling).\n"+
-            "   -upload filename.zip accessKey secretKey:  Uploads this zip file to archive.org\n"+
-            "       filename.zip:  The zip file that contains the images and the meta.xml file\n"+
+            "   -upload filename.zip accessKey secretKey:  Uploads this zip file to\n"+
+            "         archive.org\n"+
+            "      filename.zip:  The zip file that contains the images and the meta.xml\n"+
+            "         file\n"+
             "      accessKey :  The user access key of the account to upload under\n"+
             "      secretKey : The secret key of the account\n"+
             "\n"+

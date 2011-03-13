@@ -36,23 +36,14 @@ import net.sourceforge.bookscanwizard.util.FixedIHSColorSpace;
 import net.sourceforge.bookscanwizard.util.Utils;
 
 /**
- * Increate or decrease the Brightness of the images.  If one number is given,
- * it will increase all channels by that amount.  If three numbers are given,
- * then it will do the change by channel.
+ * Increase or decrease the saturation of the images.
  */
 public class Saturation extends Operation implements ColorOp {
 
     @Override
     public RenderedImage performOperation(FileHolder holder, RenderedImage img) {
         double[] values =getArgs();
-        return changeSaturation(img, values[0]);
-    }
-
-
-    public static void main(String[] args) throws IOException {
-        RenderedImage img = ImageIO.read(new File("c:/books/done/fairy/l/IMG_0001.JPG"));
-        img = changeSaturation(img, 1);
-        ImageIO.write(img, "jpg", new File("c:/test013/t.jpg"));
+        return changeSaturation(img, values[0]/100);
     }
 
     public static RenderedImage changeSaturation(RenderedImage img, double saturation) {

@@ -56,19 +56,21 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import net.sourceforge.bookscanwizard.op.CreateArchiveZip;
 
-public class ConfigEntry extends JTextArea {
+public final class ConfigEntry extends JTextArea {
 
     public static final String LINE_BREAK_ATTRIBUTE_NAME = "line_break_attribute";
     private ActionListener menuHandler;
     private JMenuItem popupItemBarcode;
     private JMenuItem popupItemPoints;
+    private JMenuItem helpItem;
+    private JSeparator helpItemSeparator;
     private int lastLine = -1;
     private static final Color GRAYED_OUT = new Color(235,235,235);
 
     private static final String[][] ops = new String[][] {
         new String[] {"Cropping, Perspective", "Crop", "Perspective", "PerspectiveAndCrop", "Rotate", "BarrelCorrection"},
         new String[] {"Scaling", "Scale", "ScaleToDPI", "ScaleToFirst"},
-        new String[] {"Filters", "Autolevels", "Brightness", "Color", "Sharpen", "Levels", "Gamma"},
+        new String[] {"Filters", "Autolevels", "Brightness", "Color", "Sharpen", "Levels", "Gamma", "Saturation"},
         new String[] {"Other Operatons", "LoadImages", "LoadLRImages", "Rename", "Barcodes", "Pages", "RemovePages", "SetSourceDPI", "SetTiffOptions", "EstimateDPI"}
     };
 
@@ -105,7 +107,21 @@ public class ConfigEntry extends JTextArea {
                 }
                 estimateZipSize.setVisible(found);
                 popupItemPoints.setVisible(!found);
-
+                Operation op = null;
+                try {
+                    op = Operation.getStandaloneOp(getCurrentLineOrSelection());
+                    if (op != null) {
+                        helpItem.setVisible(true);
+                        helpItemSeparator.setVisible(true);
+                        helpItem.setText("Help for "+op.getName());
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                if (op == null) {
+                    helpItem.setVisible(false);
+                    helpItemSeparator.setVisible(false);
+                }
                 super.show(invoker, x, y);
             }
         };
@@ -134,6 +150,12 @@ public class ConfigEntry extends JTextArea {
                 item.addActionListener(menuHandler);
             }
         }
+        helpItemSeparator = new JSeparator();
+        popup.add(helpItemSeparator);
+        helpItem = new JMenuItem();
+        helpItem.setActionCommand("command_helper");
+        helpItem.addActionListener(menuHandler);
+        popup.add(helpItem);
 
         MouseListener popupListener = new PopupListener(popup);
         addMouseListener(popupListener);

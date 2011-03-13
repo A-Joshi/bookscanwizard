@@ -344,6 +344,8 @@ public class MainFrame extends JFrame {
         helpMenu.add(menuItem);
         menuItem = new JMenuItem("Show Command Helper");
         menuItem.setMnemonic(KeyEvent.VK_S);
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0));
+
         menuItem.setActionCommand("command_helper");
         menuItem.addActionListener(menuHandler);
         helpMenu.add(menuItem);
