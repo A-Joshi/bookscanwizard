@@ -32,7 +32,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import javax.imageio.ImageIO;
+import javax.media.jai.Histogram;
 import javax.media.jai.InterpolationBilinear;
 import javax.media.jai.JAI;
 import javax.media.jai.Warp;
@@ -41,12 +43,13 @@ import javax.media.jai.operator.TransposeDescriptor;
 import net.sourceforge.bookscanwizard.WarpHeight;
 import net.sourceforge.bookscanwizard.op.GaussianBlur;
 import net.sourceforge.bookscanwizard.util.Interpolate;
+import net.sourceforge.bookscanwizard.util.Utils;
 
 /**
  * This is a proof of concept for unwarping based on a green laser line.
  */
 public class LaserUnwarp {
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     private static String base;
     /**
@@ -57,26 +60,21 @@ public class LaserUnwarp {
     /**
      * The minimum width of a green line to be considered a valid point
      */
-    private static int MIN_WIDTH = 10;
+    private static int MIN_WIDTH = 5;
 
-    /**
-     * The color of the line.  The green laser seems to be exactly green in
-     * the RGB spectrum.
-     */
-//    private static float MATCH_HUE = getHue(Color.green);
-    // red laser
-    private static float MATCH_HUE = getHue(new Color(244,133,205));
+
+    private static double brightnessThreshold;
 
     /**
      *  The distance in inches from the camera to the base.
      */
-    private float cameraDistance = 26;
+    private float cameraDistance = 35;
 
     /**
      * The DPI measure calculated from the base.  It is currently hardcoded,
      * but could be calculated from a QR-code in the future.
      */
-    private float dpi = 193;
+    private float dpi = 185.9f;
 
     /**
      *  An interpolation for mapping a height to a 0-255 brightness value.
@@ -95,9 +93,105 @@ public class LaserUnwarp {
 
     private Warp angleWarp;
 
+    private static Interpolate leftHeight;
+    private static Interpolate rightHeight;
+
+    private static float hue = .94f;
+    private static float threshold = .11f;   //.13f;
+    private static float saturation =.45f;
+    private static float brightness =.69f;
+    private int[][] blips;
+
+    /**
+     * This calculates the left & right height functions based on on a scanned
+     * zero height image, and one or two images that have a block on them.
+     */
+    private static void calibrateHeights(List<File> calibrationFiles) throws IOException {
+        double minLeftPos = Double.MAX_VALUE;
+        double maxRightPos = Double.MIN_VALUE;
+        double[] avg;
+        if (false) {
+            RenderedImage img = ImageIO.read(calibrationFiles.get(0));
+            LaserUnwarp laserUnwarp = new LaserUnwarp(img);
+            int[][] blips = laserUnwarp.blips;
+            avg = getAverage(blips);
+
+            // use the average position as the threshold.
+            for (int filePos=1; filePos < calibrationFiles.size(); filePos++) {
+                img = ImageIO.read(calibrationFiles.get(filePos));
+                laserUnwarp = new LaserUnwarp(img);
+                blips = laserUnwarp.blips;
+
+                double[] avg2 = getAverage(blips);
+                double leftPos = 0;
+                double rightPos = 0;
+                int leftCt = 0;
+                int rightCt = 0;
+                for (int i=0; i < blips.length; i++) {
+                    if (blips[i][0] < avg2[0]) {
+                        leftPos += blips[i][0];
+                        leftCt++;
+                    }
+                    if (blips[i][1] > avg2[1]) {
+                        rightPos += blips[i][1];
+                        rightCt++;
+                    }
+                }
+                leftPos /= leftCt;
+                rightPos /= rightCt;
+                minLeftPos = Math.min(leftPos, minLeftPos);
+                maxRightPos = Math.max(rightPos, maxRightPos);
+            }
+        } else {
+            avg = new double[] {681.2186963979417, 1422.3010291595197};
+            minLeftPos = 410.2128764278297;
+            maxRightPos = 1646.258358662614;
+        }
+
+        leftHeight = new Interpolate(avg[0], 0, minLeftPos, 1.5);
+        rightHeight = new Interpolate(avg[1], 0, maxRightPos, 1.5);
+        
+        System.out.println(avg[0]+","+avg[1]+"  "+minLeftPos+" "+maxRightPos);
+    }
+
+    /**
+     * This passes a laser image and a regular image.  This calibrates the threshold
+     * to use to determine if it is a laser or non-laser image
+     */
+    private static void calibrateBrightness(List<File> files) throws IOException {
+        double max = Double.MIN_VALUE;
+        double min = Double.MAX_VALUE;
+        for (File f : files) {
+            RenderedImage img = ImageIO.read(f);
+            double value = getBrightness(img);
+            max = Math.max(max, value);
+            min = Math.min(min, value);
+        }
+        brightnessThreshold = (min + max) /2;
+    }
+
+    private static double getBrightness(RenderedImage img) {
+        Histogram hist = (Histogram)JAI.create("histogram", img).getProperty("histogram");
+        return hist.getMean()[2];
+    }
+
+    private static double[] getAverage(int[][] blips) {
+        double leftPos = 0;
+        double rightPos = 0;
+        for (int i=0; i < blips.length; i++) {
+            if (blips[i].length > 0) {
+                leftPos += blips[i][0];
+                rightPos += blips[i][1];
+            }
+        }
+        leftPos /= blips.length;
+        rightPos /= blips.length;
+        return new double[] {leftPos, rightPos};
+    }
 
     public LaserUnwarp(RenderedImage img) throws IOException {
         // get the black & white image of the detected lines.
+        img = JAI.create("transpose", img, TransposeDescriptor.ROTATE_90);
         img = scan(img);
 
         // rotate the image, because its a lot faster to scan through rows
@@ -106,14 +200,16 @@ public class LaserUnwarp {
         debugImage("height", img);
 
         // Finds the matching line positions for the image
-        int[][] blips = getBlips(img);
+        blips = getBlips(img);
         verifyBlips(blips);
-        debugImage("centerline", debugCenterLineImage(img, blips));
+        writeImage("centerline", debugCenterLineImage(img, blips, true));
 
         // Replace missing data with interpolated values.
         interpolateMissingLines(blips);
-        debugImage("centerline2", debugCenterLineImage(img, blips));
+        debugImage("centerline2", debugCenterLineImage(img, blips, false));
+    }
 
+    public void calcHeightMap(RenderedImage img) throws IOException {
         // Render a height map based on the height information.
         RenderedImage heightMap = calculateAllHeights(blips, img);
         debugImage("heightMap", heightMap);
@@ -132,7 +228,6 @@ public class LaserUnwarp {
     }
 
     public RenderedImage unwarp(RenderedImage img) {
-        img = JAI.create("transpose", img, TransposeDescriptor.ROTATE_270);
         ParameterBlock pb2 = new ParameterBlock();
         pb2.addSource(img);
         pb2.add(heightWarp);
@@ -144,38 +239,59 @@ public class LaserUnwarp {
         pb2.add(angleWarp);
         pb2.add(new InterpolationBilinear());
         img = JAI.create("warp", pb2);
-        img = JAI.create("transpose", img, TransposeDescriptor.ROTATE_90);
+ //       img = JAI.create("transpose", img, TransposeDescriptor.ROTATE_90);
         return img;
     }
 
 
     public static void main(String[] args) throws Exception {
-        File input = new File("C:\\test\\blender");
-        File output = new File("C:\\test\\blender\\processed");
+        File input = new File("C:\\test\\new\\r\\tiff\\");
+        File output = new File("C:\\test\\new\\r\\processed");
         output.mkdirs();
-        for (File f : input.listFiles()) {
-            if (f.getName().toLowerCase().endsWith(".jpg") && f.getName().contains("laser")) { //
-                System.out.println(f.getName());
-                processFile(f, output);
-            }
-        }
+        File file1 = new File(input, "IMG_0411.tif");
+        File file2 = new File(input, "IMG_0413.tif");
+        File file3 = new File(input, "IMG_0415.tif");
+        File[] files = new File[] {file1, file2, file3};
+        calibrateHeights(Arrays.asList(files));
+        File[] brightnessFiles = {
+          new File(input, "IMG_0417.tif"),
+          new File(input, "IMG_0418.tif")
+        };
+        calibrateBrightness(Arrays.asList(brightnessFiles));
+        File[] imageFiles = input.listFiles(Utils.imageFilter());
+        processFiles(Arrays.asList(imageFiles), output);
     }
 
     /**
      * Finds warping lines and saves the found lines and a height map image.
      */
-    private static void processFile(File input, File destination) throws IOException {
-        String baseName = new File(destination, input.getName()).getPath();
-        baseName = baseName.substring(0, baseName.lastIndexOf("."));
-        base = baseName;
+    private static void processFiles(List<File> files, File destination) throws IOException {
+        LaserUnwarp laserUnwarp = null;
 
-        RenderedImage img = ImageIO.read(input);
-        LaserUnwarp laserUnwarp = new LaserUnwarp(img);
-        img = laserUnwarp.unwarp(img);
-
-        File destFile = new File(baseName+".tif");
-        System.out.println("dest: "+destFile);
-        ImageIO.write(img, "tiff", destFile);
+        for (File f : files ) {
+            if (f.getName().compareTo("IMG_0417") < 0) {
+                continue;
+            }
+            String baseName = new File(destination, f.getName()).getPath();
+            baseName = baseName.substring(0, baseName.lastIndexOf("."));
+            System.out.println(f);
+            RenderedImage img = ImageIO.read(f);
+            if (getBrightness(img) < brightnessThreshold) {
+                try {
+                    LaserUnwarp newWarp = new LaserUnwarp(img);
+                    newWarp.calcHeightMap(img);
+                    laserUnwarp = newWarp;
+                } catch (Exception e) {
+                    System.err.println(e);
+                }
+            } else {
+                if (laserUnwarp != null) {
+                    img = laserUnwarp.unwarp(img);
+                }
+                File destFile = new File(baseName+".tif");
+                ImageIO.write(img, "tiff", destFile);
+            }
+        }
     }
 
     /**
@@ -197,7 +313,7 @@ public class LaserUnwarp {
         for (int y = startY; y < endY; y++) {
             for (int x = startX; x < endX; x++) {
                 data.getPixel(x, y, pixel);
-                if (isColorGreen(pixel)) {
+                if (isColorMatch(pixel)) {
                     detectedRaster.setPixel(x, y, bitPixel);
                 }
             }
@@ -248,8 +364,8 @@ public class LaserUnwarp {
     /**
      * Renders the blips as a thin line image.
      */
-    private RenderedImage debugCenterLineImage(RenderedImage img, int[][] blips) {
-        if (!DEBUG) {
+    private RenderedImage debugCenterLineImage(RenderedImage img, int[][] blips, boolean debug) {
+        if (!debug) {
             return null;
         } else {
             WritableRaster raster = img.getColorModel().createCompatibleWritableRaster(img.getWidth(), img.getHeight());
@@ -325,8 +441,9 @@ public class LaserUnwarp {
         float max = Float.MIN_VALUE;
         for (int y = 0; y < blips.length; y++) {
             int[] row = blips[y];
+            Interpolate interpolate = new Interpolate(row[0], leftHeight.interpolate(row[0]), row[1], rightHeight.interpolate(row[1]));
             for (int x=0; x < imageWidth; x += imageWidth-1) {
-                float z = ((imageWidth - x) * (centerColumn - row[0]) + x * (row[1] - centerColumn)) / imageWidth / dpi;
+                float z = (float) interpolate.interpolate(x);
                 min = Math.min(min, z);
                 max = Math.max(max, z);
             }
@@ -336,8 +453,9 @@ public class LaserUnwarp {
 
         for (int y = 0; y < blips.length; y++) {
             int[] row = blips[y];
+            Interpolate interpolate = new Interpolate(row[0], leftHeight.interpolate(row[0]), row[1], rightHeight.interpolate(row[1]));
             for (int x=0; x < imageWidth; x++) {
-                float z = ((imageWidth - x) * (centerColumn - row[0]) + x * (row[1] - centerColumn)) / imageWidth / dpi;
+                float z = (float) interpolate.interpolate(x);
                 if (z < 0) z = 0;
                 int p = (int) heightToBrightness.interpolate(z);
                 pixel[0] = p;
@@ -386,22 +504,18 @@ public class LaserUnwarp {
     /**
      * Returns true if the pixel seems to match the laser line.
      */
-    private static boolean isColorGreen(int[] pixel) {
+    private static boolean isColorMatch(int[] pixel) {
         float[] hsb = new float[3];
         Color.RGBtoHSB(pixel[0], pixel[1], pixel[2], hsb);
-        return hueMatches(hsb[0], MATCH_HUE) && hsb[1] > .2;
-    }
-
-    private static float getHue(Color color) {
-        return Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), null)[0];
+        return hueMatches(hsb[0]) && hsb[1] > saturation && hsb[2] > brightness;
     }
 
     /**
      * Returns true if the hue is the color is an approximate match.
      */
-    private static boolean hueMatches(float color1, float color2) {
-        float x = color1 - color2;
-        return (x - Math.floor(x)) < .10F;
+    private static boolean hueMatches(float color1) {
+        float x = color1 - hue;
+        return (x - Math.floor(x)) < threshold;
     }
 
     /**
@@ -426,8 +540,12 @@ public class LaserUnwarp {
 
     private void debugImage(String type, RenderedImage img) throws IOException {
         if (DEBUG) {
-            ImageIO.write(img, "jpg", new File(base+"_"+type+".jpg"));
+            writeImage(type, img);
         }
+    }
+
+    private void writeImage(String type, RenderedImage img) throws IOException {
+        ImageIO.write(img, "jpg", new File(base+"_"+type+".jpg"));
     }
 
     /**

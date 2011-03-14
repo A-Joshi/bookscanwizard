@@ -39,16 +39,16 @@ import net.sourceforge.bookscanwizard.op.Scale;
  */
 public class FilterWizard extends javax.swing.JFrame {
     private RenderedImage img;
-    private static float hue = .85f;
-    private static float threshold = .14f;
-    private static float saturation =.22f;
-    private static float brightness =.50f;
+    private static float hue = .94f;
+    private static float threshold = .11f;   //.13f;
+    private static float saturation =.45f;
+    private static float brightness =.69f;
 
     /** Creates new form FilterWizard */
     public FilterWizard() {
         try {
             initComponents();
-            img = ImageIO.read(new File("c:/test/blender/lasers.jpg"));
+            img = ImageIO.read(new File("c:/test/new/r/tiff/img_0411.tif"));
             img = GaussianBlur.blur(img, 3, 2f);
             setFilterImage(img);
             jSliderHue.setValue((int) (hue * 100));
