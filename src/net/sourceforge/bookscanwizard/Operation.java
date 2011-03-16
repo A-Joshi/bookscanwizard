@@ -334,7 +334,7 @@ abstract public class Operation {
                     .getResourceAsStream("net/sourceforge/bookscanwizard/bookscanwizard.properties");
             properties.load(is);
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
 

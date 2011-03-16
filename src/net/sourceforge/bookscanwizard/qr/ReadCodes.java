@@ -150,9 +150,12 @@ public class ReadCodes {
 
     public static List<QRData> findCodes(RenderedImage img, String fileName) {
         ArrayList<QRData> list = new ArrayList<QRData>();
-        img = preprocessImage(img);
-        BufferedImageLuminanceSource luminanceSource =
-                new BufferedImageLuminanceSource(Utils.renderedToBuffered(img));
+        BufferedImageLuminanceSource luminanceSource;
+        synchronized(ReadCodes.class) {
+            img = preprocessImage(img);
+            luminanceSource =
+                    new BufferedImageLuminanceSource(Utils.renderedToBuffered(img));
+        }
         Binarizer binarizer = new GlobalHistogramBinarizer(luminanceSource);
 
         try {

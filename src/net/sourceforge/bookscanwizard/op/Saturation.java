@@ -22,12 +22,9 @@ import java.awt.Transparency;
 import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
-import java.io.IOException;
 import net.sourceforge.bookscanwizard.Operation;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
-import java.io.File;
-import javax.imageio.ImageIO;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
 import net.sourceforge.bookscanwizard.ColorOp;
@@ -67,7 +64,7 @@ public class Saturation extends Operation implements ColorOp {
         pb.addSource(bands[2]);
         pb.add(new double[]{saturation});
         RenderedImage newSaturation = JAI.create("multiplyconst", pb);
-        
+
         ImageLayout imageLayout = new ImageLayout();
         imageLayout.setColorModel(ihsColorModel);
         imageLayout.setSampleModel(ihsImage.getSampleModel());
@@ -77,7 +74,7 @@ public class Saturation extends Operation implements ColorOp {
         pb.addSource(bands[1]);
         pb.addSource(newSaturation);
         img = JAI.create("bandmerge", pb, rendHints);
-        
+
         pb = new ParameterBlock();
         pb.addSource(img);
         pb.add(oldModel);
