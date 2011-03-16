@@ -18,12 +18,14 @@
 
 package net.sourceforge.bookscanwizard.op;
 
+import com.sun.media.imageioimpl.plugins.jpeg2000.J2KImageWriterCodecLib;
 import java.awt.Dimension;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.imageio.ImageIO;
@@ -46,10 +48,19 @@ public class CreateArchiveZip extends Operation  {
     private static Dimension lastImageSize;
     private static int layerCount;
     private static List<FileHolder> lastFiles;
+    private static final Logger logger = Logger.getLogger(CreateArchiveZip.class.getName());
 
     static {
         Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpeg2000");
-        writer = writers.next();
+        while(writers.hasNext()) {
+            writer = writers.next();
+            if (writer instanceof J2KImageWriterCodecLib) {
+                break;
+            }
+        }
+        if (!(writer instanceof J2KImageWriterCodecLib)) {
+            logger.warning("Could not find proper writer.  Using: "+writer.getClass().getName());
+        }
     }
 
     @Override

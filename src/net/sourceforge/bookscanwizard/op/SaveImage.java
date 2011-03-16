@@ -46,6 +46,7 @@ import net.sourceforge.bookscanwizard.FileHolder;
 import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.PageSet;
 import net.sourceforge.bookscanwizard.UserException;
+import net.sourceforge.bookscanwizard.util.Utils;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -94,16 +95,18 @@ public class SaveImage extends Operation  {
 
         TIFFEncodeParam param = new TIFFEncodeParam();
         param.setCompression( pageSet.getCompressionType());
-
-        TIFFField[] extras = new TIFFField[3];
-        extras[0] = new TIFFField(TAG_X_RESOLUTION, TIFFField.TIFF_RATIONAL, 1, new long[][] {{dpi, 1},{0 ,0}});
-        extras[1] = new TIFFField(TAG_Y_RESOLUTION, TIFFField.TIFF_RATIONAL, 1, new long[][] {{dpi, 1},{0 ,0}});
-        extras[2] = new TIFFField(TAG_RESOLUTION_UNIT, TIFFField.TIFF_SHORT, 1, new char[] { RESOLUTION_UNIT_INCH});
-        param.setExtraFields(extras);
+        if (dpi > 0) {
+            TIFFField[] extras = new TIFFField[3];
+            extras[0] = new TIFFField(TAG_X_RESOLUTION, TIFFField.TIFF_RATIONAL, 1, new long[][] {{dpi, 1},{0 ,0}});
+            extras[1] = new TIFFField(TAG_Y_RESOLUTION, TIFFField.TIFF_RATIONAL, 1, new long[][] {{dpi, 1},{0 ,0}});
+            extras[2] = new TIFFField(TAG_RESOLUTION_UNIT, TIFFField.TIFF_SHORT, 1, new char[] { RESOLUTION_UNIT_INCH});
+            param.setExtraFields(extras);
+        }
         JAI.create("filestore", img, destFile+".tif", "TIFF", param);
     }
 
     private void saveJpeg(String destFile, RenderedImage img, int dpi) throws IOException {
+        img = Utils.renderedToBuffered(img);
         ImageWriter writer = ImageIO.getImageWritersByFormatName("jpeg").next();
         final ImageOutputStream stream = ImageIO.createImageOutputStream(new File(destFile+".jpg"));
         writer.setOutput(stream);
@@ -116,15 +119,16 @@ public class SaveImage extends Operation  {
             writeParam.setCompressionQuality(quality);   // an integer between 0 and 1
         }
         IIOMetadata metadata = writer.getDefaultImageMetadata(spec, writeParam);
-
-        // jpeg files don't seem to want to save the dpi the generic way,
-        // so we do this instead.
-        Element tree = (Element)metadata.getAsTree("javax_imageio_jpeg_image_1.0");
-        Element jfif = (Element)tree.getElementsByTagName("app0JFIF").item(0);
-        jfif.setAttribute("Xdensity", Integer.toString(dpi));
-        jfif.setAttribute("Ydensity", Integer.toString(dpi));
-        jfif.setAttribute("resUnits", "1"); // density is dots per inch
-        metadata.setFromTree("javax_imageio_jpeg_image_1.0", tree);
+        if (dpi > 0) {
+            // jpeg files don't seem to want to save the dpi the generic way,
+            // so we do this instead.
+            Element tree = (Element)metadata.getAsTree("javax_imageio_jpeg_image_1.0");
+            Element jfif = (Element)tree.getElementsByTagName("app0JFIF").item(0);
+            jfif.setAttribute("Xdensity", Integer.toString(dpi));
+            jfif.setAttribute("Ydensity", Integer.toString(dpi));
+            jfif.setAttribute("resUnits", "1"); // density is dots per inch
+            metadata.setFromTree("javax_imageio_jpeg_image_1.0", tree);
+        }
         try {
             writer.write(metadata, new IIOImage(img, null, metadata), writeParam);
         } finally {
@@ -179,6 +183,9 @@ public class SaveImage extends Operation  {
 
     private static IIOMetadata setDpi(IIOMetadata meta, int dpi) throws IOException {
         IIOMetadataNode nodes = (IIOMetadataNode) meta.getAsTree("javax_imageio_1.0");
+        if (dpi <= 0) {
+            return meta;
+        }
         NodeList nl;
         IIOMetadataNode dim;
 
