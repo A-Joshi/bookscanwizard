@@ -372,7 +372,7 @@ abstract public class Operation {
 
     static {
         // the native version has problems with compression.
-//        ImageUtilities.allowNativeCodec("jpeg2000", ImageWriterSpi.class, false);
+        ImageUtilities.allowNativeCodec("jpeg2000", ImageWriterSpi.class, false);
         // the native version doesn't want to return metadata.
         ImageUtilities.allowNativeCodec("jpeg", ImageWriterSpi.class, false);
     }

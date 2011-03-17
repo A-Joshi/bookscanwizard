@@ -112,6 +112,7 @@ public class BSW {
     private boolean inPreview;
 
     static {
+        ImageIO.scanForPlugins();
         LogManager.getLogManager().reset();
         Logger.getLogger("").setLevel(Level.OFF);
         parentLogger.setLevel(Level.INFO);
