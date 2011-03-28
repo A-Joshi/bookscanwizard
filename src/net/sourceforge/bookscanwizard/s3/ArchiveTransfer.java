@@ -100,7 +100,7 @@ public class ArchiveTransfer {
         KeyValue[] defaults = {
             new KeyValue("mediatype", "texts"),
             new KeyValue("collection", "opensource"),
-            new KeyValue("postprocessor", "BookScanWizard: "+AboutDialog.VERSION)};
+            new KeyValue("scanner", "BookScanWizard: "+AboutDialog.VERSION)};
         for (KeyValue entry : defaults) {
             if (metadata.getFirstItem(entry.getKey()) == null) {
                 metadata.getOrCreate(entry.getKey()).add(entry.getValue());

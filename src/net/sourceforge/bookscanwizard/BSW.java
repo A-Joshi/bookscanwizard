@@ -393,6 +393,8 @@ public class BSW {
                 insertCoordinates("Crop =");
             } else if ("crop_and_scale".equals(cmd)) {
                 cropAndScale();
+            } else if ("whiteout".equals(cmd)) {
+                insertCoordinates("Whiteout =");
             } else if ("copy_points_to_viewer".equals(cmd)) {
                 mainFrame.getViewerPanel().setPointDef(getConfigEntry().getCurrentLineOrSelection());
             } else if ("create_script".equals(cmd)) {

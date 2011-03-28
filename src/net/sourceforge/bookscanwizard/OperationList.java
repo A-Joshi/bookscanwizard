@@ -28,7 +28,6 @@ import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
@@ -90,6 +89,7 @@ public class OperationList extends JFrame {
         Sharpen.class,
 //      Not ready for prime time
 //        WhiteBalance.class
+        Whiteout.class
     };
 
     public OperationList(JFrame mainFrame) {

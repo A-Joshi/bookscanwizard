@@ -427,6 +427,12 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
         menuItem.addActionListener(menuHandler);
         popup.add(menuItem);
 
+        menuItem = new PopupItem("Whiteout", 2,999);
+        menuItem.setToolTipText("Whites out an area of the image");
+        menuItem.setActionCommand("whiteout");
+        menuItem.addActionListener(menuHandler);
+        popup.add(menuItem);
+
         /*
         menuItem = new PopupItem("White balance", 0,2);
         menuItem.setToolTipText("Adjusts white balance");
