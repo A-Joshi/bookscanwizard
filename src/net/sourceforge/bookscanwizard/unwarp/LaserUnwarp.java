@@ -58,7 +58,7 @@ public class LaserUnwarp {
     private static final int SAMPLE_SIZE = 10;
 
     /**
-     * The minimum width of a green line to be considered a valid point
+     * The minimum width of a line to be considered a valid point
      */
     private static int MIN_WIDTH = 5;
 
@@ -102,11 +102,22 @@ public class LaserUnwarp {
     private static float brightness =.69f;
     private int[][] blips;
 
+    public static void configure(float hue, float threshold, float saturation, float brightness) {
+        LaserUnwarp.hue = hue;
+        LaserUnwarp.threshold = threshold;
+        LaserUnwarp.saturation = saturation;
+        LaserUnwarp.brightness = brightness;
+    }
+
+    public void setDPI(float dpi) {
+        this.dpi = dpi;
+    }
+
     /**
      * This calculates the left & right height functions based on on a scanned
      * zero height image, and one or two images that have a block on them.
      */
-    private static void calibrateHeights(List<File> calibrationFiles) throws IOException {
+    public static void calibrateHeights(List<File> calibrationFiles) throws IOException {
         double minLeftPos = Double.MAX_VALUE;
         double maxRightPos = Double.MIN_VALUE;
         double[] avg;
@@ -245,7 +256,7 @@ public class LaserUnwarp {
 
 
     public static void main(String[] args) throws Exception {
-        File input = new File("C:\\test\\new\\r\\tiff\\");
+        File input = new File("C:\\test\\warp\\");
         File output = new File("C:\\test\\new\\r\\processed");
         output.mkdirs();
         File file1 = new File(input, "IMG_0411.tif");
@@ -267,7 +278,8 @@ public class LaserUnwarp {
      */
     private static void processFiles(List<File> files, File destination) throws IOException {
         LaserUnwarp laserUnwarp = null;
-
+        RenderedImage prevImage = null;
+        String prevName = null;
         for (File f : files ) {
             if (f.getName().compareTo("IMG_0417") < 0) {
                 continue;
@@ -276,21 +288,33 @@ public class LaserUnwarp {
             baseName = baseName.substring(0, baseName.lastIndexOf("."));
             System.out.println(f);
             RenderedImage img = ImageIO.read(f);
+            boolean isNewWarp = false;
             if (getBrightness(img) < brightnessThreshold) {
                 try {
                     LaserUnwarp newWarp = new LaserUnwarp(img);
                     newWarp.calcHeightMap(img);
                     laserUnwarp = newWarp;
+                    isNewWarp = true;
                 } catch (Exception e) {
                     System.err.println(e);
                 }
-            } else {
-                if (laserUnwarp != null) {
-                    img = laserUnwarp.unwarp(img);
-                }
-                File destFile = new File(baseName+".tif");
-                ImageIO.write(img, "tiff", destFile);
             }
+            if (prevImage != null) {
+                if (laserUnwarp != null) {
+                    prevImage = laserUnwarp.unwarp(prevImage);
+                }
+                File destFile = new File(prevName+".tif");
+                ImageIO.write(prevImage, "tiff", destFile);
+            }
+            prevImage = isNewWarp ? null : img;
+            prevName = baseName;
+        }
+        if (prevImage != null) {
+            if (laserUnwarp != null) {
+                prevImage = laserUnwarp.unwarp(prevImage);
+            }
+            File destFile = new File(prevName+".tif");
+            ImageIO.write(prevImage, "tiff", destFile);
         }
     }
 

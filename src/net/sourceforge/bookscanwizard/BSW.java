@@ -18,6 +18,7 @@
 
 package net.sourceforge.bookscanwizard;
 
+import java.awt.Cursor;
 import net.sourceforge.bookscanwizard.op.SaveToArchive;
 import javax.media.jai.TileCache;
 import net.sourceforge.bookscanwizard.op.Pages;
@@ -78,6 +79,7 @@ import net.sourceforge.bookscanwizard.qr.PrintCodesDialog;
 import net.sourceforge.bookscanwizard.qr.ReadCodes;
 import net.sourceforge.bookscanwizard.qr.SplitBooks;
 import net.sourceforge.bookscanwizard.start.NewBook;
+import net.sourceforge.bookscanwizard.unwarp.FilterWizard;
 
 /**
  * The main program
@@ -416,6 +418,12 @@ public class BSW {
                 insertConfig(config, false, true);
             } else if ("normalize_lighting".equals(cmd)) {
                 normalizeLighting();
+            } else if ("laser_filter".equals(cmd)) {
+                FilterWizard filterWizard = new FilterWizard();
+                filterWizard.setImage(getPreviewedImage().getPreviewImage());
+                filterWizard.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                filterWizard.setVisible(true);
+
             } else if ("keystone_barcodes".equals(cmd)) {
                 PrintCodes.keystoneCodes();
             } else if ("print_qr_codes".equals(cmd)) {

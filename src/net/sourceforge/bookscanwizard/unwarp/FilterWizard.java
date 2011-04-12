@@ -31,8 +31,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.media.jai.JAI;
+import javax.media.jai.RenderedOp;
+import javax.rmi.CORBA.Util;
 import net.sourceforge.bookscanwizard.op.GaussianBlur;
 import net.sourceforge.bookscanwizard.op.Scale;
+import net.sourceforge.bookscanwizard.util.Utils;
 
 /**
  * Determine the hsv values to match to find a laser line.
@@ -46,21 +49,23 @@ public class FilterWizard extends javax.swing.JFrame {
 
     /** Creates new form FilterWizard */
     public FilterWizard() {
-        try {
-            initComponents();
-            img = ImageIO.read(new File("c:/test/new/r/tiff/img_0411.tif"));
-            img = GaussianBlur.blur(img, 3, 2f);
-            setFilterImage(img);
-            jSliderHue.setValue((int) (hue * 100));
-            jSliderThreshold.setValue((int) (threshold * 100));
-            jSliderSaturation.setValue((int) (saturation * 100));
-            jSliderBrightness.setValue((int) (brightness * 100));
-        } catch (IOException ex) {
-            Logger.getLogger(FilterWizard.class.getName()).log(Level.SEVERE, null, ex);
+        initComponents();
+    }
+    
+    public void setImage(RenderedImage img) {
+        this.img = GaussianBlur.blur(img, 3, 2f);
+        if (img instanceof RenderedOp) {
+            ((RenderedOp) img).copyData();
         }
+        setFilterImage(this.img);
+        jSliderHue.setValue((int) (hue * 100));
+        jSliderThreshold.setValue((int) (threshold * 100));
+        jSliderSaturation.setValue((int) (saturation * 100));
+        jSliderBrightness.setValue((int) (brightness * 100));
     }
 
     private void filter() {
+        if (img == null) throw new NullPointerException();
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         if (showFiltered.isSelected()) {
             hue = jSliderHue.getValue() / 100F;
@@ -150,7 +155,7 @@ public class FilterWizard extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         displayJAI1 = new com.sun.media.jai.widget.DisplayJAI();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jPanel1.setMaximumSize(new java.awt.Dimension(213, 2089));
         jPanel1.setRequestFocusEnabled(false);
@@ -304,7 +309,15 @@ public class FilterWizard extends javax.swing.JFrame {
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new FilterWizard().setVisible(true);
+                FilterWizard filterWizard = new FilterWizard();
+                RenderedImage img;
+                try {
+                    img = ImageIO.read(new File("c:/test/new/r/tiff/img_0411.tif"));
+                    filterWizard.setImage(img);
+                } catch (IOException ex) {
+                    Logger.getLogger(FilterWizard.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                filterWizard.setVisible(true);
             }
         });
     }
