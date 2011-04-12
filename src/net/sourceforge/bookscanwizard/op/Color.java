@@ -18,16 +18,25 @@
 
 package net.sourceforge.bookscanwizard.op;
 
+import java.awt.RenderingHints;
+import java.awt.Transparency;
+import java.awt.color.ColorSpace;
+import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
+import java.awt.image.DataBuffer;
 import java.util.logging.Level;
 import net.sourceforge.bookscanwizard.Operation;
 import java.awt.image.RenderedImage;
+import java.awt.image.SampleModel;
 import java.awt.image.renderable.ParameterBlock;
 import java.util.logging.Logger;
 import javax.media.jai.Histogram;
+import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
 import net.sourceforge.bookscanwizard.ColorOp;
 import net.sourceforge.bookscanwizard.FileHolder;
 import net.sourceforge.bookscanwizard.UserException;
+import net.sourceforge.bookscanwizard.util.Utils;
 
 /**
  * Converts an image to either binary (black & white), or gray scale.
@@ -80,6 +89,18 @@ public class Color extends Operation implements ColorOp {
             pb.addSource(img);
             pb.add(matrix);
             img = JAI.create("bandcombine", pb, null);
+        } else if (img.getSampleModel().getSampleSize(0) == 1) {
+            ParameterBlock pb = new ParameterBlock();
+            pb.addSource(img);
+            ColorModel cm =
+                    new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_GRAY),
+                                                                  new int[] {8},
+                                                                  false,
+                                                                  false,
+                                                                  Transparency.OPAQUE,
+                                                                  DataBuffer.TYPE_BYTE);
+            pb.add(cm);
+            img = JAI.create("ColorConvert", pb);
         }
         return img;
     }
