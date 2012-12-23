@@ -22,6 +22,7 @@ import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
+import java.awt.image.DirectColorModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
@@ -52,7 +53,7 @@ public class Utils {
         img.copyData(raster);
         return bufferedImage;
     }
-
+    
     /**
      * Method that returns a scaled instance of the provided
      * {@code BufferedImage}. Unlike simple scaling, this will
@@ -119,7 +120,8 @@ public class Utils {
                        check.endsWith(".tif") ||
                        check.endsWith(".tiff") ||
                        check.endsWith(".png") ||
-                       check.endsWith(".gif");
+                       check.endsWith(".gif") ||
+                       check.endsWith(".pdf");
             }
         };
     }

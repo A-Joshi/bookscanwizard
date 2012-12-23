@@ -27,9 +27,9 @@ import java.util.List;
 import java.util.TreeMap;
 import net.sourceforge.bookscanwizard.DpiSetter;
 import net.sourceforge.bookscanwizard.FileHolder;
-import net.sourceforge.bookscanwizard.util.JpegMetaData;
 import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.UserException;
+import net.sourceforge.bookscanwizard.util.JpegMetaData;
 
 /**
  * This examines the focal from the jpeg exif metadata, and uses that

@@ -19,7 +19,7 @@
 package net.sourceforge.bookscanwizard.util;
 
 /**
- * Code to convert to and from roman numerals.
+ * Code to convert to and from Roman numerals.
  */
 public class Roman {
     public enum RomanDigit {

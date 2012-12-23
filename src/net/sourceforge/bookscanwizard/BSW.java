@@ -19,36 +19,27 @@
 package net.sourceforge.bookscanwizard;
 
 import java.awt.Cursor;
-import net.sourceforge.bookscanwizard.op.SaveToArchive;
-import javax.media.jai.TileCache;
-import net.sourceforge.bookscanwizard.op.Pages;
-import java.util.regex.Matcher;
-import net.sourceforge.bookscanwizard.config.ConfigBalancedAutoLevels;
-import java.util.logging.LogRecord;
-import net.sourceforge.bookscanwizard.util.ProcessHelper;
 import java.awt.Event;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.awt.event.ActionEvent;
-import java.awt.image.RenderedImage;
-import java.io.IOException;
-
-import javax.media.jai.JAI;
-
+import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.Raster;
+import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -59,8 +50,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
 import javax.imageio.ImageIO;
+import javax.media.jai.JAI;
+import javax.media.jai.TileCache;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -69,10 +66,13 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import net.sourceforge.bookscanwizard.config.ConfigAutoLevels;
+import net.sourceforge.bookscanwizard.config.ConfigBalancedAutoLevels;
 import net.sourceforge.bookscanwizard.config.ConfigGrayCard;
 import net.sourceforge.bookscanwizard.op.Barcodes;
 import net.sourceforge.bookscanwizard.op.EstimateDPI;
 import net.sourceforge.bookscanwizard.op.NormalizeLighting;
+import net.sourceforge.bookscanwizard.op.Pages;
+import net.sourceforge.bookscanwizard.op.SaveToArchive;
 import net.sourceforge.bookscanwizard.op.WhiteBalance;
 import net.sourceforge.bookscanwizard.qr.PrintCodes;
 import net.sourceforge.bookscanwizard.qr.PrintCodesDialog;
@@ -80,6 +80,7 @@ import net.sourceforge.bookscanwizard.qr.ReadCodes;
 import net.sourceforge.bookscanwizard.qr.SplitBooks;
 import net.sourceforge.bookscanwizard.start.NewBook;
 import net.sourceforge.bookscanwizard.unwarp.FilterWizard;
+import net.sourceforge.bookscanwizard.util.ProcessHelper;
 
 /**
  * The main program
@@ -91,7 +92,7 @@ public class BSW {
     public static final RenderingHints SPEED_HINTS = new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
     private static BSW instance;
     private static File currentDirectory = new File(".").getAbsoluteFile();
-    private static TileCache tileCache = JAI.getDefaultInstance().getTileCache();
+    private static TileCache tileCache;
 
     private AtomicInteger completedCount = new AtomicInteger();
 
@@ -567,7 +568,7 @@ public class BSW {
                 Callable<Void> task = new Callable<Void>() {
                     @Override
                     public Void call() throws Exception {
-                        processFile(operations, holder, destFile);
+                        processFile(operations, holder);
                         return null;
                     }
                 };
@@ -596,7 +597,7 @@ public class BSW {
             getMainFrame().setStatusLabel("Running...");
             bar.setVisible(true);
             bar.setMinimum(0);
-            bar.setMaximum(futures.size());
+            bar.setMaximum(futures.size()* (Operation.getMaxPass() - Operation.getMinPass() + 1));
             completedCount.set(0);
         }
 
@@ -609,12 +610,15 @@ public class BSW {
             @Override
             public void run() {
                try {
-                    for (Future f : futures) {
-                        f.get();
-                        if (abort) {
-                            throw new UserException("Aborted");
+                   for (int i=Operation.getMinPass(); i <= Operation.getMaxPass(); i++) {
+                       Operation.setCurrentPass(i);
+                       for (Future f : futures) {
+                            f.get();
+                            if (abort) {
+                                throw new UserException("Aborted");
+                            }
                         }
-                    }
+                   }
                     // attempt to encourage the releasing of file handles
                     System.gc();
                     if (!abort) {
@@ -724,17 +728,13 @@ public class BSW {
         }
     }
 
-    private void processFile(List<Operation> operations, FileHolder holder, File destFile) throws Exception {
-        RenderedImage image = null;
-        for (Operation op : operations) {
-            if (!holder.isDeleted() && op.getPageSet().getFileHolders().contains(holder)) {
-                if (image == null) {
-                    image = ImageIO.read(holder.getFile());
-                }
-                image = op.performOperation(holder, image);
-            }
+    private void processFile(List<Operation> operations, FileHolder holder) throws Exception {
+        RenderedImage image = Operation.performOperations(holder, operations);
+        if (image == null) {
+            System.out.println("skip: "+holder.getName());
+        } else {
+            tileCache.removeTiles(image);
         }
-        tileCache.removeTiles(image);
         if (!isBatchMode()) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
@@ -931,7 +931,7 @@ public class BSW {
             checkConfig();
             try {
                 if (previewImage == null && previewHolder != null) {
-                    previewImage = ImageIO.read(previewHolder.getFile());
+                    previewImage = previewHolder.getImage();
                     if (getPreviewScale() != 1F) {
                         previewImage = JAI.create("SubsampleAverage",
                             previewImage, getPreviewScale(), getPreviewScale(), BSW.SPEED_HINTS);

@@ -24,9 +24,9 @@ import java.util.List;
 import net.sourceforge.bookscanwizard.FileHolder;
 import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.PageSet;
+import net.sourceforge.bookscanwizard.UserException;
 import net.sourceforge.bookscanwizard.util.Roman;
 import net.sourceforge.bookscanwizard.util.Sequence;
-import net.sourceforge.bookscanwizard.UserException;
 
 /**
  * Renames the pages according to a pattern.

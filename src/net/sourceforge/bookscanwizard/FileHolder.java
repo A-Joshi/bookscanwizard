@@ -18,9 +18,16 @@
 
 package net.sourceforge.bookscanwizard;
 
+import java.awt.RenderingHints;
+import java.awt.image.DirectColorModel;
+import java.awt.image.RenderedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
+import javax.imageio.ImageIO;
+import javax.media.jai.JAI;
 import net.sourceforge.bookscanwizard.qr.QRData;
+import net.sourceforge.bookscanwizard.util.Utils;
 
 /**
  * A holder used to contain a source file and a page name.
@@ -28,6 +35,9 @@ import net.sourceforge.bookscanwizard.qr.QRData;
  */
 public class FileHolder implements Comparable<FileHolder> {
    private File file;
+   /* the page number of a multi-page source */
+   private int page;
+
    private String name;
    private String oldName;
    private int position;
@@ -39,10 +49,12 @@ public class FileHolder implements Comparable<FileHolder> {
    public static int ALL = 0;
    public static int LEFT = 1;
    public static int RIGHT = 2;
+   private PDFReference source;
 
-   public FileHolder(File file, List<QRData> qrData) {
+   public FileHolder(File file, List<QRData> qrData, int page) {
        this.file = file;
-       this.name = getNameNoExt(file);
+       this.page = page;
+       this.name = getNameNoExt();
        this.oldName = name;
        this.qrData = qrData;
    }
@@ -50,7 +62,7 @@ public class FileHolder implements Comparable<FileHolder> {
    public FileHolder(File file, String name, List<QRData> qrData) {
        this.file = file;
        this.name = name;
-       this.oldName = getNameNoExt(file);
+       this.oldName = getNameNoExt();
        this.qrData = qrData;
    }
 
@@ -134,7 +146,7 @@ public class FileHolder implements Comparable<FileHolder> {
         this.qrData = qrData;
     }
 
-    private static String getNameNoExt(File file) {
+    private String getNameNoExt() {
        String temp = file.getName();
        int pos = temp.lastIndexOf(".");
        if (pos >=0) {
@@ -145,5 +157,39 @@ public class FileHolder implements Comparable<FileHolder> {
 
     public boolean isProblemFile() {
         return name.startsWith("z_");
+    }
+
+    public int getPage() {
+        return page;
+    }
+
+    public void setPage(int page) {
+        this.page = page;
+    }
+
+    public void setSource(PDFReference ref) {
+        this.source = ref;
+    }
+    
+    public PDFReference getSource() {
+        return source;
+    }
+    
+    public RenderedImage getImage() throws IOException {
+       if (source != null) {
+           return source.getImage(page);
+       } else {
+           RenderedImage img;
+           try {
+               System.out.println("this: "+file);
+               img = Utils.renderedToBuffered(JAI.create("fileload", file.getPath()));
+           } catch (Exception e) {
+               System.out.println("could not read using JAI.. tring ImageIO..");
+               img = ImageIO.read(file);
+               img = Utils.getScaledInstance(img, img.getWidth(), img.getHeight(), 
+                       RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+           }
+           return img;
+       }
     }
 }

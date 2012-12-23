@@ -28,6 +28,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
@@ -50,6 +51,9 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.DirectColorModel;
+import java.awt.image.RenderedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -63,6 +67,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 import javax.swing.TransferHandler;
+import net.sourceforge.bookscanwizard.util.Utils;
 
 /**
  * A panel to display the current image, as well as code to select the
@@ -82,6 +87,7 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
     private static int MAX_DISTANCE_TO_POINT = 12;
     private double xCropScale = 1;
     private double yCropScale = 1;
+    private RenderedImage fullSource;
 
     private boolean isInDrag;
 
@@ -580,6 +586,15 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
         return str.toString();
     }
 
+    @Override
+    public void set(RenderedImage im) {
+        fullSource = im;
+//        super.set(Utils.getDirectColorModelImage(im));
+//        im = Utils.getScaledInstance(im, im.getWidth(), im.getHeight(), RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+//        source = fullSource;
+        super.set(im);
+    }
+    
     private boolean isPointInside(Point2D scaledPoint) {
         if (scaledPoints.size() == 2) {
             Rectangle2D r = new Rectangle2D.Double(scaledPoints.get(0).getX(), scaledPoints.get(0).getY(),0,0);

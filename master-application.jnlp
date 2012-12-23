@@ -21,8 +21,8 @@
     <jar href="lib/core.jar" download="eager"/>
     <jar href="lib/javase.jar" download="eager"/>
     <jar href="lib/wizard.jar" download="eager"/>
-    <extension href="http://download.java.net/media/jai/webstart/release/jai-1.1.3-latest.jnlp" name="" version="" download="eager"/>
-    <extension href="http://download.java.net/media/jai-imageio/webstart/release/jai-imageio-1.1.jnlp" name="" version="" download="eager"/>
+    <extension href="http://bookscanwizard.sourceforge.net/webstart/release/jai-1.1.3-latest.jnlp" name="" version="" download="eager"/>
+    <extension href="http://bookscanwizard.sourceforge.net/webstart/release/jai-imageio-1.1.jnlp" name="" version="" download="eager"/>
 </resources>
     <application-desc main-class="${jnlp.main.class}">
 <!--${JNLP.APPLICATION.ARGS}-->

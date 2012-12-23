@@ -61,13 +61,20 @@ public class MatchPages {
         Sequence problemSeq = new Sequence("_###");
         File leftPath = new File(inputPath, "l");
         File rightPath = new File(inputPath, "r");
+        File[] leftFiles;
+        File[] rightFiles;
         if (!leftPath.isDirectory() || !rightPath.isDirectory()) {
             leftPath = inputPath;
             rightPath = inputPath;
             ignoreTime = true;
         }
-        File[] leftFiles = leftPath.listFiles(Utils.imageFilter());
-        File[] rightFiles = rightPath.listFiles(Utils.imageFilter());
+        if (inputPath.isFile()) {
+            leftFiles = new File[] {inputPath};
+            rightFiles = new File[] {inputPath};
+        } else {
+            leftFiles = leftPath.listFiles(Utils.imageFilter());
+            rightFiles = rightPath.listFiles(Utils.imageFilter());
+        }
         if (leftFiles == null || leftFiles.length == 0) {
             throw new UserException("Could not find folder "+leftPath);
         }

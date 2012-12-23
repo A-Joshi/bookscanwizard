@@ -25,6 +25,7 @@ import net.sourceforge.bookscanwizard.UserException;
  */
 public class Sequence {
     private static final String ZEROS = "0000000000";
+    private static final String HASH  = "##########";
 
     private int lastValue = 1;
     private int increment = 1;
@@ -35,6 +36,10 @@ public class Sequence {
 
     public Sequence(String pattern) {
         this(pattern, 1, 1);
+    }
+    
+    public Sequence(int maxValue) {
+        this(HASH.substring(0, Integer.toString(maxValue).length()));
     }
 
     public Sequence(String pattern, int startingValue, int increment) {

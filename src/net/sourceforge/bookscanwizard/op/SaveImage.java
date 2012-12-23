@@ -102,7 +102,31 @@ public class SaveImage extends Operation  {
             extras[2] = new TIFFField(TAG_RESOLUTION_UNIT, TIFFField.TIFF_SHORT, 1, new char[] { RESOLUTION_UNIT_INCH});
             param.setExtraFields(extras);
         }
-        JAI.create("filestore", img, destFile+".tif", "TIFF", param);
+        //there seems to be problems with multiple threads saving an image.
+        // it appears to be related to bug: 
+        //  http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4715154.
+        // To improve the chances of it working, realize the image first,
+        // then try up to 5 times.
+        // if that fails, do a full garbage collection and hope for the best.
+        img = Utils.renderedToBuffered(img);
+        try {
+            JAI.create("filestore", img, destFile+".tif", "TIFF", param);
+        } catch (Exception e) {
+            RuntimeException ex = null;
+            for (int i=1; i <= 5; i++) {
+                try {
+                    System.out.println("File access problem.  Retry "+i+" saving page "+destFile);
+                    Thread.sleep(100);
+                    JAI.create("filestore", img, destFile+".tif", "TIFF", param);
+                    return;
+                } catch (RuntimeException e1) {
+                    ex = e1;
+                } catch (InterruptedException e1) {
+                }
+            }
+            System.gc();
+            JAI.create("filestore", img, destFile+".tif", "TIFF", param);
+        }
     }
 
     private void saveJpeg(String destFile, RenderedImage img, int dpi) throws IOException {
@@ -114,7 +138,7 @@ public class SaveImage extends Operation  {
         ImageTypeSpecifier spec = ImageTypeSpecifier.createFromRenderedImage(img);
         String args[] = getTextArgs();
         if (args.length > 1 ) {
-            float quality = Float.parseFloat(args[0]);
+            float quality = Float.parseFloat(args[1]);
             writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
             writeParam.setCompressionQuality(quality);   // an integer between 0 and 1
         }

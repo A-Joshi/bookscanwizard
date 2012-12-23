@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.imageio.ImageIO;
 import javax.imageio.spi.ImageWriterSpi;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
@@ -52,6 +53,10 @@ abstract public class Operation {
     public static final Pattern ARG_PATTERN = Pattern.compile("[^\\s\",]+|\"[^\"]*\"");
 
     private static List<Operation> allOperations;
+
+    private static int minPass;
+    private static int maxPass;
+    private static volatile int currentPass =getMinPass();
 
     protected String arguments;
     private static final Properties properties = new Properties();
@@ -88,9 +93,19 @@ abstract public class Operation {
             }
         }
         if (!found) {
-            List<Operation> ops = Operation.getOperation("SaveImage = ", null, pageSet);
+            List<Operation> ops = Operation.getOperation("Pages = all", null, pageSet);
+            operations.addAll(ops);
+            ops = Operation.getOperation("SaveImage = ", null, pageSet);
             operations.addAll(ops);
         }
+        minPass = Integer.MAX_VALUE;
+        maxPass = Integer.MIN_VALUE;
+        for (Operation op : operations) {
+            minPass = Math.min(minPass, op.getOperationMinPass());
+            maxPass = Math.max(maxPass, op.getOperationMaxPass());
+        }
+
+
         setAllOperations(operations);
         return operations;
     }
@@ -286,13 +301,25 @@ abstract public class Operation {
         return retVal;
     }
 
-    public static RenderedImage performOperations(FileHolder holder, RenderedImage img) throws Exception {
-        for (Operation op : allOperations) {
-            if (op.getPageSet().getFileHolders().contains(holder)) {
-                img = op.performOperation(holder, img);
+    public static RenderedImage performOperations(FileHolder holder, List<Operation> ops) throws Exception {
+        RenderedImage img = null;
+        for (Operation op : ops) {
+            if (!holder.isDeleted() && op.getPageSet().getFileHolders().contains(holder)) {
+                if (op.matchesPass()) {
+                    if (img == null) {
+                        img = holder.getImage();
+                    }
+                    img = op.performOperation(holder, img);
+                } else {
+                    System.out.println("no match "+holder.getName());
+                }
             }
         }
         return img;
+    }
+
+    protected boolean matchesPass() {
+        return currentPass >= getOperationMinPass() && currentPass <= getOperationMaxPass();
     }
 
     public static List<Operation> getAllOperations() {
@@ -342,7 +369,7 @@ abstract public class Operation {
         ArrayList<String> list = new ArrayList<String>();
         while (matcher.find()) {
             String value = matcher.group();
-            if (value.startsWith("#")) {
+            if (value.startsWith("#")) {  //xyzzy
                 // This is the start of a comment
                 break;
             }
@@ -368,6 +395,29 @@ abstract public class Operation {
         imageLayout.setTileHeight(img.getHeight());
         hints.put(JAI.KEY_IMAGE_LAYOUT, imageLayout);
         return hints;
+    }
+
+    protected int getOperationMinPass() {
+        return 5;
+    }
+
+    protected int getOperationMaxPass() {
+        return 5;
+    }
+
+    public static int getCurrentPass() {
+        return currentPass;
+    }
+
+    public static void setCurrentPass(int currentPass) {
+        Operation.currentPass = currentPass;
+    }
+
+    public static int getMinPass() {
+        return minPass;
+    }
+    public static int getMaxPass() {
+        return maxPass;
     }
 
     static {

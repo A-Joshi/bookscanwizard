@@ -29,6 +29,10 @@ import net.sourceforge.bookscanwizard.unwarp.LaserUnwarp;
 public class Unwarp extends Operation {
     LaserUnwarp laserUnwarp;
 
+    protected int getOperationMinPass() {
+        return super.getMinPass() - 1;
+    }
+
     @Override
     protected RenderedImage performOperation(FileHolder holder, RenderedImage img) throws Exception {
         if (laserUnwarp == null) {

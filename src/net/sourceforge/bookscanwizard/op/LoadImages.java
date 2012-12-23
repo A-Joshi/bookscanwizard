@@ -26,9 +26,11 @@ import java.util.Map;
 import net.sourceforge.bookscanwizard.BSW;
 import net.sourceforge.bookscanwizard.FileHolder;
 import net.sourceforge.bookscanwizard.Operation;
+import net.sourceforge.bookscanwizard.PDFReference;
 import net.sourceforge.bookscanwizard.PageSet;
 import net.sourceforge.bookscanwizard.UserException;
 import net.sourceforge.bookscanwizard.qr.QRData;
+import net.sourceforge.bookscanwizard.util.Sequence;
 import net.sourceforge.bookscanwizard.util.Utils;
 
 /**
@@ -40,9 +42,13 @@ public class LoadImages extends Operation {
     public List<Operation> setup(List<Operation> operationList) throws Exception {
         File sourceDir = BSW.getFileFromCurrentDir(arguments);
         PageSet.setSourceDir(sourceDir);
-
         Map<String,List<QRData>> qrData = QRData.read(new File(sourceDir, "barcodes.csv"));
-        File[] files = BSW.getFileFromCurrentDir(arguments).listFiles(Utils.imageFilter());
+        File[] files;
+        if (sourceDir.isFile()) {
+            files = new File[] {sourceDir};
+        } else {
+            files = BSW.getFileFromCurrentDir(arguments).listFiles(Utils.imageFilter());
+        }
         if (files == null || files.length == 0) {
             throw new UserException("Could not find any files in "+sourceDir);
         }
@@ -50,10 +56,23 @@ public class LoadImages extends Operation {
         ArrayList<FileHolder> holders = new ArrayList<FileHolder>(files.length);
         boolean odd = true;
         for (File f : files) {
-            FileHolder holder = new FileHolder(f, qrData.get(f.getName()));
-            holder.setPosition(odd ? FileHolder.LEFT : FileHolder.RIGHT);
-            holders.add(holder);
-            odd = !odd;
+            if (f.getPath().toLowerCase().endsWith(".pdf")) {
+                PDFReference ref = new PDFReference(f);
+                Sequence seq = new Sequence(ref.getPageCount());
+                for (int i=1; i <= ref.getPageCount(); i++) {
+                    FileHolder holder = new FileHolder(f, qrData.get(f.getName()), i);
+                    holder.setSource(ref);
+                    holder.setPosition(odd ? FileHolder.LEFT : FileHolder.RIGHT);
+                    holder.setName(holder.getName()+"_"+seq.next());
+                    holders.add(holder);
+                    odd = !odd;
+                }
+            } else {
+                FileHolder holder = new FileHolder(f, qrData.get(f.getName()), 0);
+                holder.setPosition(odd ? FileHolder.LEFT : FileHolder.RIGHT);
+                holders.add(holder);
+                odd = !odd;
+            }
         }
         pageSet.setSourceFiles(holders);
         ArrayList<Operation> list = new ArrayList<Operation>();
