@@ -31,8 +31,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
- * @author Steve
+ * A reference to a PDF source document.
  */
 public class PDFReference {
     private int pageCount;
@@ -44,7 +43,6 @@ public class PDFReference {
     public PDFReference(File f) throws IOException {
         reader = new PdfReader(f.getPath());
         pageCount =  reader.getNumberOfPages();
-        System.out.println("count: "+pageCount);
     }
 
     public int getPageCount() {

@@ -59,7 +59,7 @@ import net.sourceforge.bookscanwizard.util.LazyHashMap;
 import net.sourceforge.bookscanwizard.util.Utils;
 
 /**
- * This contains code that scan a group of files, and save any barcodesit finds.
+ * This contains code that scan a group of files, and save any barcodes it finds.
  */
 public class ReadCodes {
     private static final Logger logger = Logger.getLogger(ReadCodes.class.getName());

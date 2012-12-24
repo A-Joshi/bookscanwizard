@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,7 @@ import javax.crypto.spec.SecretKeySpec;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import net.sourceforge.bookscanwizard.AboutDialog;
+import net.sourceforge.bookscanwizard.PageSet;
 import net.sourceforge.bookscanwizard.UserException;
 import net.sourceforge.bookscanwizard.op.Metadata;
 import net.sourceforge.bookscanwizard.op.Metadata.KeyValue;
@@ -92,15 +94,20 @@ public class ArchiveTransfer {
 
     public static void main(String[] args) throws Exception {
         ArchiveTransfer test = new ArchiveTransfer("", "");
-        File zipFile = new File("c:/books/done/fairy/archive.zip");
+        File zipFile = new File(args[0]);
         test.saveToArchive(zipFile);
     }
 
     private void addDefaults() {
-        KeyValue[] defaults = {
+        KeyValue[] defaultArray = {
             new KeyValue("mediatype", "texts"),
             new KeyValue("collection", "opensource"),
             new KeyValue("scanner", "BookScanWizard: "+AboutDialog.VERSION)};
+        List<KeyValue> defaults= Arrays.asList(defaultArray);
+        int ppi = PageSet.getDestinationDPI();
+        if (ppi > 0) {
+            defaults.add(new KeyValue("ppi", ppi+""));
+        }
         for (KeyValue entry : defaults) {
             if (metadata.getFirstItem(entry.getKey()) == null) {
                 metadata.getOrCreate(entry.getKey()).add(entry.getValue());
@@ -109,13 +116,7 @@ public class ArchiveTransfer {
     }
 
     public String getArchiveId() {
-        String id = (String) metadata.getFirstItem("identifier");
-        if (id == null || id.isEmpty()) {
-            id = createIdentifier();
-            metadata.getOrCreate("identifier").add(id);
-        }
-        validateId(id);
-        return id;
+        return  (String) metadata.getFirstItem("identifier");
     }
 
     public boolean isItem() throws IOException {
@@ -267,12 +268,6 @@ public class ArchiveTransfer {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private String createIdentifier() {
-        String title = (String) metadata.getFirstItem("title");
-        title=title.replace(" " , "");
-        return title;
     }
 
     private void readMetadataFromZip(File zipFile) throws Exception {

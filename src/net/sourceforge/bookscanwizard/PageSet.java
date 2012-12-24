@@ -35,6 +35,8 @@ public class PageSet {
     private List<FileHolder> fileHolders;
     private int compressionType;
     private PageSet parent;
+    private String minFile;
+    private String maxFile;
 
     private static File sourceDir;
 
@@ -71,15 +73,26 @@ public class PageSet {
     public static void setDestinationDPI(int destinationDPI) {
         PageSet.destinationDPI = destinationDPI;
     }
-
+    
     public List<FileHolder> getFileHolders() {
-        List<FileHolder> retVal;
+        List<FileHolder> retVal = null;
         if (fileHolders != null) {
             retVal =  fileHolders;
-        } else {
+        } else if (parent != null) {
             retVal = parent.getFileHolders();
         }
-        return retVal;
+        if (retVal == null) {
+            return null;
+        }
+        ArrayList<FileHolder> newList = new ArrayList<FileHolder>(retVal.size());
+        for (FileHolder fh : retVal) {
+            if ((getMinFile() == null || fh.getName().compareTo(getMinFile()) >= 0) &&
+                (getMaxFile() == null || fh.getName().compareTo(getMaxFile()) < 0)) 
+            {
+                newList.add(fh);
+            }
+        }
+        return newList;
     }
 
     public void setFileHolders(List<FileHolder> fileHolders) {
@@ -120,5 +133,21 @@ public class PageSet {
 
     public static void setSourceDir(File sourceDir) {
         PageSet.sourceDir = sourceDir;
+    }
+
+    public String getMinFile() {
+        return minFile;
+    }
+
+    public void setMinFile(String minFile) {
+        this.minFile = minFile;
+    }
+
+    public String getMaxFile() {
+        return maxFile;
+    }
+
+    public void setMaxFile(String maxFile) {
+        this.maxFile = maxFile;
     }
 }

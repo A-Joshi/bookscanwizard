@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.imageio.ImageIO;
 import javax.imageio.spi.ImageWriterSpi;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
@@ -294,8 +293,7 @@ abstract public class Operation {
         if (cls != null) {
             operation = (Operation) cls.newInstance();
             operation.init(args, reader);
-            PageSet newPageSet = new PageSet(pageSet);
-            operation.pageSet = newPageSet;
+            operation.pageSet = pageSet;
             retVal = operation.setup(Collections.singletonList(operation));
         }
         return retVal;
@@ -319,7 +317,9 @@ abstract public class Operation {
     }
 
     protected boolean matchesPass() {
-        return currentPass >= getOperationMinPass() && currentPass <= getOperationMaxPass();
+        return true;
+        //multipass isn't quite ready for prime time.
+//        return currentPass >= getOperationMinPass() && currentPass <= getOperationMaxPass();
     }
 
     public static List<Operation> getAllOperations() {

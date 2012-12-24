@@ -21,6 +21,7 @@ package net.sourceforge.bookscanwizard.op;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -36,12 +37,13 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- *
- * @author Steve
+ * Defines additonal metadata to save.
  */
 public class Metadata extends Operation{
     private static ArrayList<KeyValue> metaData = new ArrayList<KeyValue>();
     private static boolean init;
+    private static final Pattern idPattern = Pattern.compile("[A-Za-z0-9\\-\\.\\_]");
+
 
     @Override
     protected List<Operation> setup(List<Operation> operationList) throws Exception {
@@ -55,9 +57,37 @@ public class Metadata extends Operation{
     }
 
     public static ArrayList<KeyValue> getMetaData() {
-        return metaData;
+        ArrayList<KeyValue> newMeta = new ArrayList<KeyValue>();
+        boolean found = false;
+        String title = null;
+        for (KeyValue k : metaData) {
+            if (k.getKey().equals("title")) {
+                title = k.getValue();
+            } else if (k.getKey().equals("identifier") && !k.getValue().trim().isEmpty()) {
+                found = true;
+                break;
+            }
+            if (!k.getValue().trim().isEmpty()) {
+                newMeta.add(k);
+            }
+        }
+        if (!found && title != null) {
+            String str = calcIdFromTitle(title);
+            newMeta.add(new KeyValue("identifier", str.toString()));
+        }
+        return newMeta;
     }
 
+    public static String calcIdFromTitle(String title) {
+        StringBuilder str = new StringBuilder();
+        for (char c : title.toCharArray()) {
+            if (idPattern.matcher(new String(new char[] {c})).matches()) {
+                str.append(c);
+            }
+        }
+        return str.toString();
+    }
+    
     public static void getMetaDataAsXML(OutputStream os) throws Exception {
        DocumentBuilderFactory fact = DocumentBuilderFactory.newInstance();
         DocumentBuilder bd = fact.newDocumentBuilder();

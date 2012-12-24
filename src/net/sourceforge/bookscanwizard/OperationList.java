@@ -87,6 +87,7 @@ public class OperationList extends JFrame {
         SetSourceDPI.class,
         SetTiffOptions.class,
         Sharpen.class,
+        StartPage.class,
 //      Not ready for prime time
 //        WhiteBalance.class
         Whiteout.class

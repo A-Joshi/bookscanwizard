@@ -72,7 +72,6 @@ public class Barcodes extends Operation {
                 files.add(holder.getFile());
             }
             ReadCodes readCodes = new ReadCodes(files);
-            List<QRData> codes = readCodes.getCodes();
             LazyHashMap<String,List<QRData>> saveMap = new LazyHashMap<String,List<QRData>>(ArrayList.class);
             for (FileHolder holder : pageSet.getSourceFiles()) {
                 holder.setQrData(readCodes.getCodes(holder.getFile()));
@@ -96,7 +95,7 @@ public class Barcodes extends Operation {
         ArrayList<FileHolder>  dpiHolders = new ArrayList<FileHolder>();
         holders = pageSet.getSourceFiles();
         for (int i = 0; i < holders.size(); i++) {
-            FileHolder holder = holder = holders.get(i);
+            FileHolder holder =  holders.get(i);
             if (holder.getQRData() != null && holder.getQRData().size() > 0) {
                 deleted.add(holder);
 

@@ -20,12 +20,10 @@ package net.sourceforge.bookscanwizard;
 
 import java.awt.Cursor;
 import java.awt.Event;
-import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.BufferedReader;
@@ -39,7 +37,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -115,6 +112,7 @@ public class BSW {
     private boolean inPreview;
 
     static {
+        tileCache = JAI.getDefaultInstance().getTileCache();
         ImageIO.scanForPlugins();
         LogManager.getLogManager().reset();
         Logger.getLogger("").setLevel(Level.OFF);
@@ -472,7 +470,7 @@ public class BSW {
         private void insertCoordinates(String prefix) throws Exception {
             String text = mainFrame.getViewerPanel().getPointDef();
             if (text.length() > 0) {
-                text = prefix+" "+ text+" # "+previewedImage.getPreviewHolder().toString();
+                text = "StartPage = "+previewedImage.getPreviewHolder().getName()+"\n"+ prefix+" "+ text;
                 insertConfig(text, false, true);
              }
         }
