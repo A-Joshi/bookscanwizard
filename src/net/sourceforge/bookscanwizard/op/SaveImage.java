@@ -73,6 +73,10 @@ public class SaveImage extends Operation  {
             if (format.startsWith("tif")) {
                 saveTiff(destFile, img, dpi);
             } else if (format.equals("jpeg") || format.equals("jpg")) {
+                float quality = -1;
+                if (args.length > 1 ) {
+                    quality = Float.parseFloat(args[1]);
+                }
                 saveJpeg(destFile, img, dpi);
             } else if (format.equals("jp2") || format.equals("jpeg2000")) {
                 saveJ2000(destFile, img, dpi);
@@ -102,8 +106,8 @@ public class SaveImage extends Operation  {
             extras[2] = new TIFFField(TAG_RESOLUTION_UNIT, TIFFField.TIFF_SHORT, 1, new char[] { RESOLUTION_UNIT_INCH});
             param.setExtraFields(extras);
         }
-        //there seems to be problems with multiple threads saving an image.
-        // it appears to be related to bug: 
+        //there seems to be problems with multiple threads saving an image with 
+        // compression.  It appears to be related to bug: 
         //  http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4715154.
         // To improve the chances of it working, realize the image first,
         // then try up to 5 times.
@@ -161,10 +165,9 @@ public class SaveImage extends Operation  {
     }
 
     private void saveJ2000(String destFile, RenderedImage img, int dpi) throws IOException {
-        ImageWriter writer = ImageIO.getImageWritersByFormatName("jpeg2000").next();
         FileOutputStream fos = new FileOutputStream(destFile+".jp2");
         try {
-            writeJpeg2000Image(writer, img, fos, dpi, getCompression());
+            writeJpeg2000Image(img, fos, dpi, getCompression());
         } finally {
             fos.close();
         }
@@ -185,7 +188,7 @@ public class SaveImage extends Operation  {
         }
     }
 
-    public static void writeJpeg2000Image(ImageWriter writer, RenderedImage img,
+    public static void writeJpeg2000Image(RenderedImage img,
             OutputStream out, int dpi, double rate) throws IOException {
         ImageTypeSpecifier spec = ImageTypeSpecifier.createFromRenderedImage(img);
         J2KImageWriteParam paramJ2K = new J2KImageWriteParam();
@@ -196,6 +199,7 @@ public class SaveImage extends Operation  {
         } else {
             paramJ2K.setLossless(true);
         }
+        ImageWriter writer = ImageIO.getImageWritersByFormatName("jpeg2000").next();
         IIOMetadata metadata = writer.getDefaultImageMetadata(spec, paramJ2K);
         metadata = setDpi(metadata, dpi);
         IIOImage ioImage = new IIOImage(img, null, metadata);
@@ -205,7 +209,7 @@ public class SaveImage extends Operation  {
         ios.close();
     }
 
-    private static IIOMetadata setDpi(IIOMetadata meta, int dpi) throws IOException {
+    public static IIOMetadata setDpi(IIOMetadata meta, int dpi) throws IOException {
         IIOMetadataNode nodes = (IIOMetadataNode) meta.getAsTree("javax_imageio_1.0");
         if (dpi <= 0) {
             return meta;

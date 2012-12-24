@@ -42,15 +42,9 @@ import net.sourceforge.bookscanwizard.util.Utils;
  */
 public class CreateArchiveZip extends Operation  {
     private static ZipOutputStream zipOut;
-    private static ImageWriter writer;
     private static Dimension lastImageSize;
     private static int layerCount;
     private static List<FileHolder> lastFiles;
-
-    static {
-        Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("jpeg2000");
-        writer = writers.next();
-    }
 
     @Override
     protected List<Operation> setup(List<Operation> operationList) throws Exception {
@@ -83,7 +77,7 @@ public class CreateArchiveZip extends Operation  {
                 ZipEntry zipEntry = new ZipEntry(holder.getName()+".jp2");
                 zipOut.putNextEntry(zipEntry);
                 img = Utils.renderedToBuffered(img);
-                SaveImage.writeJpeg2000Image(writer, img, zipOut, PageSet.getDestinationDPI(), getCompression());
+                SaveImage.writeJpeg2000Image(img, zipOut, PageSet.getDestinationDPI(), getCompression());
                 zipOut.closeEntry();
             }
         }

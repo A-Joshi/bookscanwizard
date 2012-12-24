@@ -39,6 +39,7 @@ import net.sourceforge.bookscanwizard.qr.QRCodeControls;
 import net.sourceforge.bookscanwizard.qr.QRData;
 import net.sourceforge.bookscanwizard.qr.ReadCodes;
 import net.sourceforge.bookscanwizard.util.LazyHashMap;
+// TODO: Instead of using Page to go between sections, use StartPage
 
 public class Barcodes extends Operation {
     private static final Logger logger = Logger.getLogger(Barcodes.class.getName());
@@ -306,7 +307,7 @@ public class Barcodes extends Operation {
             double dy2 = pts.get(3).distance(pts.get(2));
             double avg = (dx1 + dx2 + dy1 + dy2) / 4;
             double inchesBetweenCodes = Double.parseDouble(dpiCode.substring(5));
-            double dpi = avg /inchesBetweenCodes;
+            double dpi = avg / inchesBetweenCodes;
             
             str.append("SetSourceDPI = "+((int) dpi)+"\n");
         }
