@@ -73,7 +73,7 @@ public class ArchiveTransfer {
     private static final boolean LOW_SECURITY = false;
     private static final String HEADER_CHARSET = "UTF-8";
     private static final boolean SKIP_DERIVE = false;
-    private static final Pattern idPattern = Pattern.compile("[A-Za-z0-9\\-\\.\\_]+");
+    private static final Pattern idPattern = Pattern.compile("[A-Za-z0-9\\-\\.\\_]*");
 
     private LazyHashMap<String,List<String>> metadata = new LazyHashMap<String,List<String>>(ArrayList.class);
     private String awsAccessKey;

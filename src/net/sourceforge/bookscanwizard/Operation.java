@@ -84,19 +84,6 @@ abstract public class Operation {
             }
         }
         reader.close();
-        boolean found = false;
-        for (Operation op : operations) {
-            if (op instanceof SaveImage) {
-                found = true;
-                break;
-            }
-        }
-        if (!found) {
-            List<Operation> ops = Operation.getOperation("Pages = all", null, pageSet);
-            operations.addAll(ops);
-            ops = Operation.getOperation("SaveImage = ", null, pageSet);
-            operations.addAll(ops);
-        }
         minPass = Integer.MAX_VALUE;
         maxPass = Integer.MIN_VALUE;
         for (Operation op : operations) {
@@ -128,6 +115,23 @@ abstract public class Operation {
      */
     protected RenderedImage performOperation(FileHolder holder, RenderedImage img) throws Exception {
         return img;
+    }
+    
+    private static void verifySaveOperationExists(List<Operation> ops) throws Exception {
+        boolean found = false;
+        for (Operation op : ops) {
+            if (op instanceof SaveImage) {
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            Operation lastOp = ops.get(ops.size()-1);
+            List<Operation> op = Operation.getOperation("Pages = all", null, lastOp.getPageSet());
+            ops.addAll(op);
+            ops = Operation.getOperation("SaveImage = ", null, lastOp.getPageSet());
+            ops.addAll(op);
+        }
     }
 
     /**
@@ -300,6 +304,7 @@ abstract public class Operation {
     }
 
     public static RenderedImage performOperations(FileHolder holder, List<Operation> ops) throws Exception {
+        verifySaveOperationExists(ops);
         RenderedImage img = null;
         for (Operation op : ops) {
             if (!holder.isDeleted() && op.getPageSet().getFileHolders().contains(holder)) {
@@ -326,24 +331,29 @@ abstract public class Operation {
         return allOperations;
     }
 
-    public static RenderedImage previewOperations(FileHolder holder, RenderedImage img) throws Exception {
+    public static RenderedImage previewOperations(List<Operation> ops, FileHolder holder, RenderedImage img, boolean cursorAfterConfig) throws Exception {
+        System.out.println("preview");
         if (holder == null) {
             return null;
         }
         MainFrame main = BSW.instance().getMainFrame();
         main.getViewerPanel().setPreviewCrop(null);
-        if (allOperations == null) {
+        if (ops.isEmpty()) {
             throw new UserException("There are no operations defined. Check to make sure the text cursor appears after the configuration to test.");
         }
-        for (Operation op : allOperations) {
+        Operation lastOperation = null;
+        if (!ops.isEmpty() && !cursorAfterConfig) {
+            lastOperation = ops.get(ops.size()-1);
+        }
+        for (Operation op : ops) {
             boolean preview = false;
             if (op.getPageSet().getFileHolders().contains(holder)) {
                 if (op instanceof ColorOp) {
                     preview = !main.isShowColors();
                 } else if (op instanceof CropOp) {
-                    preview = !main.isShowCrops();
+                    preview = op == lastOperation || !main.isShowCrops();
                 } else if (op instanceof PerspectiveOp) {
-                    preview = !main.isShowPerspective();
+                    preview = op == lastOperation || !main.isShowPerspective();
                 }
                 if (preview) {
                     img = op.previewOperation(holder, img);

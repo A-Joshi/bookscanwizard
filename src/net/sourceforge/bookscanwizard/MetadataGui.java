@@ -30,16 +30,16 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import net.sourceforge.bookscanwizard.op.Metadata;
 import net.sourceforge.bookscanwizard.op.Metadata.KeyValue;
-import net.sourceforge.bookscanwizard.op.SaveToArchive;
 import net.sourceforge.bookscanwizard.s3.ArchiveTransfer;
 import net.sourceforge.bookscanwizard.util.DropDowns;
 
-public class ArchiveMetadata extends javax.swing.JDialog {
+public class MetadataGui extends javax.swing.JDialog {
     private static final String[] columnNames = {"Name", "Value"};
     private ArrayList<String[]> rows = new ArrayList<String[]>();
 
-    public ArchiveMetadata(java.awt.Frame parent, boolean modal) throws Exception {
+    public MetadataGui(java.awt.Frame parent, boolean modal) throws Exception {
         super(parent, modal);
+        setTitle("Save Metadata for this book");
         initComponents();
         updateGui();
         jDescription.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);
@@ -56,8 +56,6 @@ public class ArchiveMetadata extends javax.swing.JDialog {
     private void initComponents() {
         bindingGroup = new org.jdesktop.beansbinding.BindingGroup();
 
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jTitle = new javax.swing.JTextField();
@@ -70,39 +68,32 @@ public class ArchiveMetadata extends javax.swing.JDialog {
         jAuthor = new javax.swing.JTextField();
         jLabel8 = new javax.swing.JLabel();
         jDate = new javax.swing.JTextField();
-        jTestItem = new javax.swing.JCheckBox();
         jSubject = new javax.swing.JTextField();
         jLabel9 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
-        jLabel10 = new javax.swing.JLabel();
-        jAccess = new javax.swing.JTextField();
-        jLabel11 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         jLabel12 = new javax.swing.JLabel();
-        jButton3 = new javax.swing.JButton();
-        jSecret = new javax.swing.JTextField();
-        jButton2 = new javax.swing.JButton();
-        jLabel13 = new javax.swing.JLabel();
-        jIdentifier = new javax.swing.JTextField();
         jLabel14 = new javax.swing.JLabel();
         languageCB = new javax.swing.JComboBox();
         jCheckBox1 = new javax.swing.JCheckBox();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel13 = new javax.swing.JLabel();
+        jIdentifier = new javax.swing.JTextField();
+        jButton2 = new javax.swing.JButton();
+        jLabel10 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        jSecret = new javax.swing.JTextField();
+        jAccess = new javax.swing.JTextField();
+        jsaveToArchive = new javax.swing.JCheckBox();
+        jLabel15 = new javax.swing.JLabel();
+        jTestItem1 = new javax.swing.JCheckBox();
+        jButton1 = new javax.swing.JButton();
+        jButton3 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setBackground(java.awt.Color.white);
 
-        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
-        jLabel1.setText("Upload this book to the Internet Archive");
-
-        jLabel2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/archive_logo.jpg"))); // NOI18N
-        jLabel2.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jLabel2MouseClicked(evt);
-            }
-        });
-
-        jLabel3.setText("<html><body>Use this to upload books to the Internet Archive that you have the right to share</body</html>");
+        jLabel3.setText("<html><body>Use this form for saving metadata to PDF's,<br>or to upload books to the Internet Archive</body</html>");
 
         jLabel4.setText("Title");
 
@@ -133,29 +124,7 @@ public class ArchiveMetadata extends javax.swing.JDialog {
         jLabel8.setText("Date or Year");
         jLabel8.setToolTipText("The date or year this was published");
 
-        jTestItem.setText("Test Item (Remove after 30 days)");
-        jTestItem.setToolTipText("If checked, this item will not be indexed and will be deleted after 30 days.");
-        jTestItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTestItemActionPerformed(evt);
-            }
-        });
-
         jLabel9.setText("Subject");
-
-        jButton1.setText("Ok");
-        jButton1.setToolTipText("Saves this information and returns");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-
-        jLabel10.setText("Access Key");
-        jLabel10.setToolTipText("This is the access key that is used to save to the Internet Archive");
-
-        jLabel11.setText("Secret Key");
-        jLabel11.setToolTipText("This is the secret key to save to the internet archive");
 
         jTable1.setModel(getTableModel());
         jTable1.setRowSelectionAllowed(false);
@@ -163,38 +132,6 @@ public class ArchiveMetadata extends javax.swing.JDialog {
 
         jLabel12.setText("Other Metadata to save with the book:");
         jLabel12.setToolTipText("Any sort of metadata can be saved with this book.");
-
-        jButton3.setText("Cancel");
-        jButton3.setToolTipText("Exits this dialog without saving");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
-            }
-        });
-
-        jSecret.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jSecretActionPerformed(evt);
-            }
-        });
-
-        jButton2.setText("Lookup Keys");
-        jButton2.setToolTipText("This will launch a browser to the page where the two keys are listed");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
-            }
-        });
-
-        jLabel13.setText("Identifier");
-        jLabel13.setToolTipText("");
-
-        jIdentifier.setToolTipText("This is the identifier for the book.  If not filled in a modified title is used.");
-        jIdentifier.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
-            public void propertyChange(java.beans.PropertyChangeEvent evt) {
-                jIdentifierPropertyChange(evt);
-            }
-        });
 
         jLabel14.setText("Language");
         jLabel14.setToolTipText("The author or creator of this work");
@@ -209,6 +146,132 @@ public class ArchiveMetadata extends javax.swing.JDialog {
         org.jdesktop.beansbinding.Binding binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, languageCB, org.jdesktop.beansbinding.ELProperty.create("${editable}"), jCheckBox1, org.jdesktop.beansbinding.BeanProperty.create("selected"));
         bindingGroup.addBinding(binding);
 
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Internet Archive Options"));
+
+        jLabel13.setText("Identifier");
+        jLabel13.setToolTipText("");
+
+        jIdentifier.setToolTipText("This is the identifier for the book.  If not filled in a modified title is used.");
+        jIdentifier.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                jIdentifierPropertyChange(evt);
+            }
+        });
+
+        jButton2.setText("Lookup Keys");
+        jButton2.setToolTipText("This will launch a browser to the page where the two keys are listed");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
+        jLabel10.setText("Default Access Key");
+        jLabel10.setToolTipText("This is the access key that is used to save to the Internet Archive");
+
+        jLabel11.setText("Defaul tSecret Key");
+        jLabel11.setToolTipText("This is the secret key to save to the internet archive");
+
+        jSecret.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jSecretActionPerformed(evt);
+            }
+        });
+
+        jsaveToArchive.setText("Save this item to the Internet Archive");
+        jsaveToArchive.setToolTipText("This will create an archive.zip file when this book is processed that can be uploaded to archive.org.");
+        jsaveToArchive.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jsaveToArchiveActionPerformed(evt);
+            }
+        });
+
+        jLabel15.setIcon(new javax.swing.ImageIcon(getClass().getResource("/archive_logo.jpg"))); // NOI18N
+        jLabel15.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel15MouseClicked(evt);
+            }
+        });
+
+        jTestItem1.setText("Test Item (Remove after 30 days)");
+        jTestItem1.setToolTipText("If checked, this item will not be indexed and will be deleted after 30 days.");
+        jTestItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jTestItem1ActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel11)
+                            .addComponent(jLabel13)
+                            .addComponent(jLabel10))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jSecret)
+                            .addComponent(jAccess, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jIdentifier, javax.swing.GroupLayout.PREFERRED_SIZE, 161, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel15))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                        .addComponent(jButton2)
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jTestItem1)
+                            .addComponent(jsaveToArchive))))
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel15)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jIdentifier, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel13))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jAccess, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel10))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jSecret, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel11))))
+                .addGap(18, 18, 18)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jsaveToArchive))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jTestItem1)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        jButton1.setText("Ok");
+        jButton1.setToolTipText("Saves this information and returns");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        jButton3.setText("Cancel");
+        jButton3.setToolTipText("Exits this dialog without saving");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -217,51 +280,19 @@ public class ArchiveMetadata extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(99, 99, 99)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 383, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel1))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jLabel2))
+                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 375, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 18, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel7)
-                            .addComponent(jLabel13)
                             .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(0, 0, 0)
-                                .addComponent(jIdentifier, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addComponent(jTitle))))
+                        .addComponent(jTitle)))
                 .addGap(26, 26, 26))
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel11)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(jSecret))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(jLabel10)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(jAccess, javax.swing.GroupLayout.PREFERRED_SIZE, 155, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 122, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jButton2)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jTestItem)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jButton1)
-                                .addGap(18, 18, 18)
-                                .addComponent(jButton3)))
-                        .addGap(16, 16, 16))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                             .addComponent(jLabel12, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -290,22 +321,20 @@ public class ArchiveMetadata extends javax.swing.JDialog {
                                         .addComponent(jCheckBox1)))
                                 .addGap(0, 0, Short.MAX_VALUE)))))
                 .addContainerGap())
+            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jButton1)
+                .addGap(28, 28, 28)
+                .addComponent(jButton3)
+                .addGap(31, 31, 31))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(29, 29, 29)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jLabel2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jIdentifier, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel13))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addContainerGap()
+                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jTitle, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel4))
@@ -340,25 +369,13 @@ public class ArchiveMetadata extends javax.swing.JDialog {
                 .addComponent(jLabel12)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 94, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(17, 17, 17)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jButton2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel10)
-                            .addComponent(jAccess, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jLabel11)
-                            .addComponent(jSecret, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jTestItem)
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jButton3)
-                            .addComponent(jButton1))))
-                .addGap(23, 23, 23))
+                .addGap(18, 18, 18)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton3)
+                    .addComponent(jButton1))
+                .addContainerGap(20, Short.MAX_VALUE))
         );
 
         bindingGroup.bind();
@@ -379,21 +396,29 @@ public class ArchiveMetadata extends javax.swing.JDialog {
         // TODO add your handling code here:
 }//GEN-LAST:event_jKeywordsActionPerformed
 
-    private void jTestItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTestItemActionPerformed
+    private void jAuthorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jAuthorActionPerformed
         // TODO add your handling code here:
-}//GEN-LAST:event_jTestItemActionPerformed
+    }//GEN-LAST:event_jAuthorActionPerformed
 
-    private void jSecretActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jSecretActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jSecretActionPerformed
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        dispose();
+    }//GEN-LAST:event_jButton3ActionPerformed
 
-    private void jLabel2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MouseClicked
+    private void jLabel15MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel15MouseClicked
         try {
             Desktop.getDesktop().browse(new URI("http://www.archive.org"));
         } catch (Exception ex) {
             UserFeedbackHelper.displayException(this, ex);
         }
-    }//GEN-LAST:event_jLabel2MouseClicked
+    }//GEN-LAST:event_jLabel15MouseClicked
+
+    private void jsaveToArchiveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jsaveToArchiveActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jsaveToArchiveActionPerformed
+
+    private void jSecretActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jSecretActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jSecretActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         try {
@@ -403,17 +428,13 @@ public class ArchiveMetadata extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_jButton2ActionPerformed
 
-    private void jAuthorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jAuthorActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jAuthorActionPerformed
-
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        dispose();
-    }//GEN-LAST:event_jButton3ActionPerformed
-
     private void jIdentifierPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_jIdentifierPropertyChange
         // TODO add your handling code here:
     }//GEN-LAST:event_jIdentifierPropertyChange
+
+    private void jTestItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTestItem1ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jTestItem1ActionPerformed
 
     private TableModel getTableModel() {
         TableModel tableModel = new AbstractTableModel() {
@@ -454,9 +475,9 @@ public class ArchiveMetadata extends javax.swing.JDialog {
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                ArchiveMetadata dialog;
+                MetadataGui dialog;
                 try {
-                    dialog = new ArchiveMetadata(new javax.swing.JFrame(), true);
+                    dialog = new MetadataGui(new javax.swing.JFrame(), true);
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
                 }
@@ -482,13 +503,12 @@ public class ArchiveMetadata extends javax.swing.JDialog {
     private javax.swing.JTextArea jDescription;
     private javax.swing.JTextField jIdentifier;
     private javax.swing.JTextField jKeywords;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -496,13 +516,15 @@ public class ArchiveMetadata extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextField jSecret;
     private javax.swing.JTextField jSubject;
     private javax.swing.JTable jTable1;
-    private javax.swing.JCheckBox jTestItem;
+    private javax.swing.JCheckBox jTestItem1;
     private javax.swing.JTextField jTitle;
+    private javax.swing.JCheckBox jsaveToArchive;
     private javax.swing.JComboBox languageCB;
     private org.jdesktop.beansbinding.BindingGroup bindingGroup;
     // End of variables declaration//GEN-END:variables
@@ -514,9 +536,10 @@ public class ArchiveMetadata extends javax.swing.JDialog {
         List<Metadata.KeyValue> data = Metadata.getMetaData();
         ArrayList<Metadata.KeyValue> customData = new ArrayList<Metadata.KeyValue>(data);
         Collections.sort(customData);
-        if (SaveToArchive.getLastSave() != null) {
-            jAccess.setText(SaveToArchive.getLastSave().getAccess());
-            jSecret.setText(SaveToArchive.getLastSave().getSecret());
+        String user = (String) PrefsHelper.getPref("archive_user");
+        if (user != null) {
+            jAccess.setText(user);
+            jSecret.setText((String) PrefsHelper.getPref("archive_pass"));
         }
         jIdentifier.setText(getAndRemove(customData, "identifier"));
         jTitle.setText(getAndRemove(customData, "title"));
@@ -530,7 +553,7 @@ public class ArchiveMetadata extends javax.swing.JDialog {
         languageCB.setSelectedItem(language);
         jDescription.setText(getAndRemove(customData, "description"));
         jKeywords.setText(getAndRemove(customData, "keywords"));
-        jTestItem.setSelected("true".equalsIgnoreCase(getAndRemove(customData, "noindex")));
+        jsaveToArchive.setSelected("true".equalsIgnoreCase(getAndRemove(customData, "noindex")));
         rows.clear();
         for (KeyValue entry : customData) {
             rows.add(new String[] {entry.getKey(), entry.getValue()});
@@ -549,7 +572,7 @@ public class ArchiveMetadata extends javax.swing.JDialog {
     /**
      * Saves this configuration
      */
-    private void saveToConfig() {
+    private void saveToConfig() throws Exception {
         try {
             ArchiveTransfer.validateId(jIdentifier.getText());
             ArrayList<String[]> data = new ArrayList<String[]>();
@@ -561,7 +584,7 @@ public class ArchiveMetadata extends javax.swing.JDialog {
             data.add(new String[]{"subject", jSubject.getText()});
             data.add(new String[]{"description", jDescription.getText()});
             data.add(new String[]{"keywords", jKeywords.getText()});
-            if (jTestItem.isSelected()) {
+            if (jsaveToArchive.isSelected()) {
                 data.add(new String[]{"noindex", "true"});
             }
             for (String[] row : rows) {
@@ -575,6 +598,8 @@ public class ArchiveMetadata extends javax.swing.JDialog {
             }
             ConfigEntry entry = BSW.instance().getMainFrame().getConfigEntry();
             Document doc = entry.getDocument();
+            int start = entry.getSelectionStart();
+
             int oldPos = -1;
             while (true) {
                 String text = entry.getText();
@@ -591,19 +616,13 @@ public class ArchiveMetadata extends javax.swing.JDialog {
                 }
                 doc.remove(pos, endLine-pos);
             }
+            BSW.instance().insertConfigNoPreview(str.toString(), false, false);
             if (oldPos < 0) {
                 oldPos = entry.getText().length();
             }
             str.append("\n");
-            if (entry.getText().indexOf("CreateArchiveZip") < 0) {
-                str.append(
-                        "CreateArchiveZip = archive.zip 10:1\n"
-                );
-            }
-            if (entry.getText().indexOf("SaveToArchive") < 0) {
-                str.append("# Uncomment the following line to send to the archive as part of this job.\n"+
-                           "#SaveToArchive = archive.zip "+jAccess.getText()+" "+jSecret.getText()+"\n");
-            }
+            PrefsHelper.setPref("archive_user", jAccess.getText());
+            PrefsHelper.setPref("archive_pass", jSecret.getText());
             doc.insertString(oldPos, str.toString(), null);
         } catch (BadLocationException e) {
             throw new RuntimeException(e);

@@ -428,8 +428,8 @@ public class BSW {
             } else if ("print_qr_codes".equals(cmd)) {
                 JDialog dialog = new PrintCodesDialog(getMainFrame(), false);
                 dialog.setVisible(true);
-            } else if ("prepare_upload".equals(cmd)) {
-                prepareUpload();
+            } else if ("metadata".equals(cmd)) {
+                prepareMetadata();
             } else if ("upload".equals(cmd)) {
                 UploadFile.upload(menuHandler);
             } else if ("do_upload".equals(cmd)) {
@@ -660,8 +660,18 @@ public class BSW {
         }
     }
 
-    private void insertConfigNoPreview(String origText, boolean replace, boolean ensurePosition) throws Exception {
-        String text = origText;
+    /**
+     * Inserts text into the script.
+     * 
+     * @param newText The text insert
+     * @param replace If the selected text should be replaced.  Otherwise it
+     *        will do an insert.
+     * @param ensurePosition If the insert should insert a Pages setting if needed
+     *        to match the selected page.
+     * @throws Exception 
+     */
+    void insertConfigNoPreview(String newText, boolean replace, boolean ensurePosition) throws Exception {
+        String text = newText;
         ConfigEntry config = mainFrame.getConfigEntry();
         Document document = config.getDocument();
         int start = config.getSelectionStart();
@@ -891,20 +901,17 @@ public class BSW {
                 mainFrame.setImage(null, null);
             }
         }
+        
+        private List<Operation> previewOperations;
 
         private void checkConfig() throws Exception {
             String newConfig = getConfigEntry().getConfigToPreview();
-            if (!newConfig.equals(configEntry) 
-                    || showCrops != mainFrame.isShowCrops() 
-                    || showPerspective != mainFrame.isShowPerspective() 
-                    || showColors != mainFrame.isShowColors() ) {
-                showCrops = mainFrame.isShowCrops();
-                showPerspective = mainFrame.isShowPerspective();
-                showColors = mainFrame.isShowColors();
-                configEntry = newConfig;
-                BSW.this.getConfig(configEntry);
-                previewProcessedImage = null;
-            }
+            showCrops = mainFrame.isShowCrops();
+            showPerspective = mainFrame.isShowPerspective();
+            showColors = mainFrame.isShowColors();
+            configEntry = newConfig;
+            previewOperations = BSW.this.getConfig(configEntry);
+            previewProcessedImage = null;
         }
 
         public RenderedImage getPreviewProcessedImage() throws Exception {
@@ -913,7 +920,18 @@ public class BSW {
                 checkConfig();
                 if (previewProcessedImage == null) {
                     RenderedImage img = getPreviewImage();
-                    img = Operation.previewOperations(previewHolder, img);
+                    getMainFrame().getViewerPanel().clearPoints();
+                    boolean isCursorAfterConfig = getConfigEntry().isCursorAfterConfig();
+                    int pos = configEntry.lastIndexOf("\n");
+                    if (pos > 0) {
+                        String lastLine = configEntry.substring(pos+1);
+                        pos = lastLine.indexOf("#");
+                        if (pos > 0) {
+                            lastLine = configEntry.substring(0, pos);
+                            isCursorAfterConfig = lastLine.contains("=");
+                        }
+                    }
+                    img = Operation.previewOperations(previewOperations, previewHolder, img, isCursorAfterConfig);
                     if (PageSet.getSourceFiles() != null) {
                         previewProcessedImage = img;
                         mainFrame.setPageList(PageSet.getSourceFiles());
@@ -981,9 +999,9 @@ public class BSW {
         }
     }
 
-    private void prepareUpload() throws Exception {
+    private void prepareMetadata() throws Exception {
         getConfig(getConfigEntry().getText());
-        JDialog dialog = new ArchiveMetadata(mainFrame, true);
+        JDialog dialog = new MetadataGui(mainFrame, true);
         dialog.setVisible(true);
     }
 

@@ -24,15 +24,12 @@ import net.sourceforge.bookscanwizard.PageSet;
 
 /**
  * Defines a new start page.  This modifies an existing Pages command to end it
- * and start a new section, with the same left, right or all modifier.
+ * and start a new section, within the same page range.
  */
 public class StartPage extends Operation {
 
     @Override
     protected List<Operation> setup(List<Operation> operationList) throws Exception {
-        for (Operation op : operationList) {
-            System.out.println(op.getClass().getName());
-        }
         PageSet newPageSet = new PageSet(pageSet);
         newPageSet.setFileHolders(pageSet.getFileHolders());
         newPageSet.setMinFile(getTextArgs()[0]);

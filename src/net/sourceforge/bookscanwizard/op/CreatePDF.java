@@ -42,6 +42,7 @@ import net.sourceforge.bookscanwizard.FileHolder;
 import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.PageSet;
 import net.sourceforge.bookscanwizard.UserException;
+import net.sourceforge.bookscanwizard.op.Metadata.KeyValue;
 import net.sourceforge.bookscanwizard.util.Utils;
 import org.w3c.dom.Element;
 
@@ -97,6 +98,7 @@ public class CreatePDF extends Operation {
                 File f = BSW.getFileFromCurrentDir(getTextArgs()[0]);
                 PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(f));
                 pdfWriter.setFullCompression();
+                addMetaData(document);
             }
             document.setPageSize(new Rectangle(
                     72 * bi.getWidth()/holder.getDPI(),
@@ -189,6 +191,31 @@ public class CreatePDF extends Operation {
             imageWriter.write(metadata, new IIOImage(img, null, metadata), writeParam);
         } finally {
             stream.close();
+        }
+    }
+
+    private void addMetaData(Document document) {
+        for (KeyValue meta : Metadata.getMetaData()) {
+            System.out.println("ccc: "+meta.getKey()+" "+meta.getValue());
+                    
+            if (meta.getValue().isEmpty()) {
+                continue;
+            }
+            // convert from the archive.org standard to the pdf standard.
+            String key = meta.getKey();
+            if (key.equals("subject")) {
+                document.addSubject(meta.getValue());
+            } else if (key.equals("title")) {
+                document.addTitle(meta.getValue());
+            } else if (key.equals("creator")) {
+                document.addAuthor(meta.getValue());
+            } else if (key.equals("keywords")){
+                document.addKeywords(meta.getValue());
+            } else if (key.equals("identifier")) {
+                // ignore
+            } else {
+                document.addHeader(key, meta.getValue());
+            }
         }
     }
 }

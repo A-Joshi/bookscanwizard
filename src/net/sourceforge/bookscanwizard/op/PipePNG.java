@@ -28,8 +28,8 @@ import net.sourceforge.bookscanwizard.BSW;
 import net.sourceforge.bookscanwizard.ColorOp;
 import net.sourceforge.bookscanwizard.FileHolder;
 import net.sourceforge.bookscanwizard.Operation;
-import net.sourceforge.bookscanwizard.util.ProcessHelper;
 import net.sourceforge.bookscanwizard.UserException;
+import net.sourceforge.bookscanwizard.util.ProcessHelper;
 
 /**
  * This will write the image out to stdout as a png, and read in a replacement

@@ -66,6 +66,7 @@ public final class ConfigEntry extends JTextArea {
     private JSeparator helpItemSeparator;
     private int lastLine = -1;
     private static final Color GRAYED_OUT = new Color(235,235,235);
+    private boolean cursorAfterConfig;
 
     private static final String[][] ops = new String[][] {
         new String[] {"Cropping, Perspective", "Crop", "Perspective", "PerspectiveAndCrop", "Rotate", "BarrelCorrection"},
@@ -214,8 +215,14 @@ public final class ConfigEntry extends JTextArea {
         int endLine = getText().indexOf("\n", pos);
         if (endLine > 0) {
             txt = txt + getText().substring(pos, endLine);
+        } else {
+            cursorAfterConfig = true;
         }
         return txt;
+    }
+    
+    public boolean isCursorAfterConfig() {
+        return cursorAfterConfig;
     }
 
     public String getCurrentLineOrSelection() {

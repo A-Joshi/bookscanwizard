@@ -26,6 +26,7 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 import net.sourceforge.bookscanwizard.BSW;
 import net.sourceforge.bookscanwizard.Operation;
+import net.sourceforge.bookscanwizard.PrefsHelper;
 import net.sourceforge.bookscanwizard.UserException;
 import net.sourceforge.bookscanwizard.s3.ArchiveTransfer;
 import net.sourceforge.bookscanwizard.s3.ProgressListener;
@@ -55,7 +56,16 @@ public class SaveToArchive extends Operation {
         ArchiveTransfer.checkMetaData(Metadata.getMetaData());
         lastSave = this;
         fileName = args[0];
-        access = args[1];
+        if (args.length > 1) {
+            access = args[1];
+        } else {
+            access = (String) PrefsHelper.getPref("access_user");
+        }
+        if (args.length > 2) {
+            access = args[2];
+        } else {
+            secret = (String) PrefsHelper.getPref("access_pass");
+        }
         secret = args[2];
         return operationList;
     }
@@ -71,7 +81,7 @@ public class SaveToArchive extends Operation {
 
     public static void saveToArchive(String fileName, String access, String secret) throws Exception {
         if (access == null || secret == null || access.isEmpty() || secret.isEmpty()) {
-            throw new UserException("The archive access and secret keys must not be null");
+            throw new UserException("The archive access and secret keys must be filled in");
         }
         final ArchiveTransfer transfer = new ArchiveTransfer(access, secret);
         final ProgressListener progressListener = new ProgressListener() {
@@ -105,15 +115,7 @@ public class SaveToArchive extends Operation {
         return lastSave;
     }
 
-    public String getAccess() {
-        return access;
-    }
-
     public String getFileName() {
         return fileName;
-    }
-
-    public String getSecret() {
-        return secret;
     }
 }

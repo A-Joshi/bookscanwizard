@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -41,6 +42,7 @@ public class PrefsHelper {
     private static final Logger logger = Logger.getLogger(PrefsHelper.class.getName());
     private static final Preferences prefs =
             Preferences.userRoot().node(PrefsHelper.class.getPackage().getName());
+    private static HashMap<String,Object> miscPrefs = new HashMap<String,Object>();
 
     public static void loadPreferences() {
         Thread savePrefs = new Thread(new Runnable() {
@@ -85,6 +87,10 @@ public class PrefsHelper {
             Map<String,Serializable> wizardPrefs = (Map<String, Serializable>) getObject("wizard");
             AbstractPage.putDefaults(wizardPrefs);
             EstimateDPI.setInfo((float[]) getObject("dpiInfo"));
+            Object tmp = getObject("miscPrefs");
+            if (tmp != null) {
+                miscPrefs = (HashMap<String, Object>) getObject("miscPrefs");
+            }
         } catch (Exception ex) {
             logger.log(Level.WARNING, null, ex);
         }
@@ -104,7 +110,23 @@ public class PrefsHelper {
         prefs.putInt("orientation", mainFrame.getSplitPane().getOrientation());
         putObject("dpiInfo", EstimateDPI.getInfo());
         putObject("wizard", (Serializable) AbstractPage.getDefaults());
+        putObject("miscPrefs", miscPrefs);
     }
+    
+    synchronized public static Object getPref(String key) {
+        return miscPrefs.get(key);
+    }
+    
+    synchronized public static void setPref(String key, Object value) {
+        miscPrefs.put(key, value);
+    }
+
+    synchronized public static String getPrefString(String key) {
+        String value = (String) miscPrefs.get(key);
+        if (value == null) value = "";
+        return value;
+    }
+    
 
     /*            Logger parentLogger = Logger.getLogger(BSW.class.getPackage().getName());
     if (System.)
