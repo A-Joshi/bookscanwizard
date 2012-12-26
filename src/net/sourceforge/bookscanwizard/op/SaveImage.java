@@ -116,7 +116,6 @@ public class SaveImage extends Operation  {
         try {
             JAI.create("filestore", img, destFile+".tif", "TIFF", param);
         } catch (Exception e) {
-            RuntimeException ex = null;
             for (int i=1; i <= 5; i++) {
                 try {
                     System.out.println("File access problem.  Retry "+i+" saving page "+destFile);
@@ -124,7 +123,6 @@ public class SaveImage extends Operation  {
                     JAI.create("filestore", img, destFile+".tif", "TIFF", param);
                     return;
                 } catch (RuntimeException e1) {
-                    ex = e1;
                 } catch (InterruptedException e1) {
                 }
             }

@@ -181,7 +181,6 @@ public class FileHolder implements Comparable<FileHolder> {
        } else {
            RenderedImage img;
            try {
-               System.out.println("this: "+file);
                img = Utils.renderedToBuffered(JAI.create("fileload", file.getPath()));
            } catch (Exception e) {
                System.out.println("could not read using JAI.. tring ImageIO..");

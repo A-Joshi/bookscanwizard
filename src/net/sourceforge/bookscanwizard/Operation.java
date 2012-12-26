@@ -24,6 +24,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -332,7 +333,6 @@ abstract public class Operation {
     }
 
     public static RenderedImage previewOperations(List<Operation> ops, FileHolder holder, RenderedImage img, boolean cursorAfterConfig) throws Exception {
-        System.out.println("preview");
         if (holder == null) {
             return null;
         }

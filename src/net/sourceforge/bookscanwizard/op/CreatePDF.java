@@ -67,26 +67,33 @@ public class CreatePDF extends Operation {
         }
         return operationList;
     }
+    
+    @Override
+    protected RenderedImage previewOperation(FileHolder holder, RenderedImage img) throws Exception {
+        return img;
+    }
 
     @Override
     protected RenderedImage performOperation(FileHolder holder, RenderedImage img) throws Exception {
         if (!holder.isDeleted() && !BSW.instance().isInPreview()) {
             // do this here instead of the setup because StartPage can redefine
             // the pages after running setup.
-            synchronized(CreatePDF.class) {
-                if (semaphores == null) {
-                    semaphores = new Semaphore[getPageSet().getFileHolders().size()];
-                    for (int i=0; i < semaphores.length; i++) {
-                        semaphores[i]=new Semaphore(0);
+            if (semaphores == null) {
+                List<FileHolder> holders = getPageSet().getFileHolders();
+                semaphores = new Semaphore[holders.size()+1];
+                Semaphore s = new Semaphore(1);
+                for (int i=0; i < holders.size(); i++) {
+                    semaphores[i]=s;
+                    if (!holders.get(i).isDeleted()) {
+                        s = new Semaphore(0);
                     }
                 }
+                semaphores[semaphores.length-1] = s;
             }
             BufferedImage bi = Utils.renderedToBuffered(img);
             int pos = getPageSet().getFileHolders().indexOf(holder);
-            if (pos > 0) {
-                // check to make sure the previous page has been released before continuing.
-                semaphores[pos-1].acquire();
-            }
+            // check to make sure the previous page has been released before continuing.
+            semaphores[pos].acquire();
             byte[] imageBytes = getImageAsBytes(bi, format, PageSet.getDestinationDPI(), getCompression());
             String[] args = getTextArgs();
             if (document == null) {
@@ -98,6 +105,7 @@ public class CreatePDF extends Operation {
                 File f = BSW.getFileFromCurrentDir(getTextArgs()[0]);
                 PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(f));
                 pdfWriter.setFullCompression();
+                pdfWriter.setViewerPreferences(PdfWriter.PageLayoutTwoPageRight);
                 addMetaData(document);
             }
             document.setPageSize(new Rectangle(
@@ -115,7 +123,9 @@ public class CreatePDF extends Operation {
             itextImage.setBorder(0);
             document.add(itextImage);
             // release the page so the next page can continue.
-            semaphores[pos].release();
+            if (pos+1 < semaphores.length) {
+                semaphores[pos+1].release();
+            }
         }
         return img;
     }

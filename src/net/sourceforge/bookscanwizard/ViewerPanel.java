@@ -302,6 +302,10 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
         previewCrop = corners;
     }
 
+    public Point2D[] getPreviewCrop() {
+        return previewCrop;
+    }
+
     private Cursor oldCursor;
     void setBusy(boolean busy) {
         if (busy) {

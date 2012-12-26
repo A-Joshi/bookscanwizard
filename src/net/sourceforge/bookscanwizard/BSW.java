@@ -110,6 +110,7 @@ public class BSW {
     private volatile boolean abort;
     private static final List<NewConfigListener> newConfigListeners = new ArrayList<NewConfigListener>();
     private boolean inPreview;
+    private List<Operation> previewOperations;
 
     static {
         tileCache = JAI.getDefaultInstance().getTileCache();
@@ -470,7 +471,16 @@ public class BSW {
         private void insertCoordinates(String prefix) throws Exception {
             String text = mainFrame.getViewerPanel().getPointDef();
             if (text.length() > 0) {
-                text = "StartPage = "+previewedImage.getPreviewHolder().getName()+"\n"+ prefix+" "+ text;
+                String currentName = getPreviewedImage().getPreviewHolder().getName();
+                Operation op = previewOperations.get(previewOperations.size()-1);
+                text = prefix+" "+ text;
+                // if the page displayed isn't the first page, of the set, 
+                // add a StartPage operation.
+                if (!currentName.equals(op.getPageSet().getFileHolders().iterator().next().getName()) &&
+                    !currentName.equals(op.getPageSet().getMinFile()))
+                {
+                    text = "StartPage = "+currentName+"\n"+text;
+                }
                 insertConfig(text, false, true);
              }
         }
@@ -715,6 +725,7 @@ public class BSW {
 
     private void insertConfig(String origText, boolean replace, boolean ensurePosition) throws Exception {
         insertConfigNoPreview(origText+"\n", replace, ensurePosition);
+         mainFrame.getConfigEntry().setSelectionEnd(mainFrame.getConfigEntry().getSelectionEnd()-1);
 
         Operation op = Operation.getStandaloneOp(origText);
         if (op instanceof PerspectiveOp) {
@@ -738,9 +749,7 @@ public class BSW {
 
     private void processFile(List<Operation> operations, FileHolder holder) throws Exception {
         RenderedImage image = Operation.performOperations(holder, operations);
-        if (image == null) {
-            System.out.println("skip: "+holder.getName());
-        } else {
+        if (image != null) {
             tileCache.removeTiles(image);
         }
         if (!isBatchMode()) {
@@ -863,13 +872,10 @@ public class BSW {
 
     private RenderedImage getConfigImage() throws Exception {
         RenderedImage img = previewedImage.getPreviewProcessedImage();
-        List<Point2D> pts = mainFrame.getViewerPanel().getPoints();
-        if (pts.size() > 2) {
-            throw new IllegalArgumentException("There should be 0 or 2 points selected");
-        }
-        if (pts.size() == 2) {
+        Point2D[] pts = mainFrame.getViewerPanel().getPreviewCrop();
+        if (pts!= null) {
             Rectangle2D bounds = new Rectangle2D.Double();
-            bounds.setFrameFromDiagonal(pts.get(0), pts.get(1));
+            bounds.setFrameFromDiagonal(pts[0], pts[1]);
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(img);
             pb.add((float) bounds.getMinX());
@@ -886,9 +892,6 @@ public class BSW {
         private RenderedImage previewImage;
         private RenderedImage previewProcessedImage;
         private String configEntry;
-        private boolean showCrops = true;
-        private boolean showPerspective =true;
-        private boolean showColors = true;
 
         public void setFileHolder(FileHolder fileHolder) {
             if (previewHolder == null ? fileHolder != null : !previewHolder.equals(fileHolder)) {
@@ -902,13 +905,9 @@ public class BSW {
             }
         }
         
-        private List<Operation> previewOperations;
 
         private void checkConfig() throws Exception {
             String newConfig = getConfigEntry().getConfigToPreview();
-            showCrops = mainFrame.isShowCrops();
-            showPerspective = mainFrame.isShowPerspective();
-            showColors = mainFrame.isShowColors();
             configEntry = newConfig;
             previewOperations = BSW.this.getConfig(configEntry);
             previewProcessedImage = null;
@@ -921,16 +920,8 @@ public class BSW {
                 if (previewProcessedImage == null) {
                     RenderedImage img = getPreviewImage();
                     getMainFrame().getViewerPanel().clearPoints();
+                    
                     boolean isCursorAfterConfig = getConfigEntry().isCursorAfterConfig();
-                    int pos = configEntry.lastIndexOf("\n");
-                    if (pos > 0) {
-                        String lastLine = configEntry.substring(pos+1);
-                        pos = lastLine.indexOf("#");
-                        if (pos > 0) {
-                            lastLine = configEntry.substring(0, pos);
-                            isCursorAfterConfig = lastLine.contains("=");
-                        }
-                    }
                     img = Operation.previewOperations(previewOperations, previewHolder, img, isCursorAfterConfig);
                     if (PageSet.getSourceFiles() != null) {
                         previewProcessedImage = img;

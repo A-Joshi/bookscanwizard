@@ -211,14 +211,20 @@ public final class ConfigEntry extends JTextArea {
 
     public String getConfigToPreview() {
         int pos = Math.max(0, getCaret().getDot());
-        String txt = getText().substring(0, pos);
-        int endLine = getText().indexOf("\n", pos);
-        if (endLine > 0) {
-            txt = txt + getText().substring(pos, endLine);
-        } else {
-            cursorAfterConfig = true;
+        String txt = getText();
+        int endLine = txt.indexOf("\n", pos);
+        if (endLine < 0) {
+            endLine = txt.length();
         }
-        return txt;
+        int startLastLine = txt.lastIndexOf("\n", pos-1)+1;
+        txt = txt.substring(0, endLine);
+        String currentLine = txt.substring(startLastLine, endLine);
+        int commentPos = currentLine.indexOf("#");
+        if (commentPos >=0) {
+            currentLine = currentLine.substring(0, commentPos);
+        }
+        cursorAfterConfig = !currentLine.contains("=");
+        return txt.substring(0, endLine);
     }
     
     public boolean isCursorAfterConfig() {

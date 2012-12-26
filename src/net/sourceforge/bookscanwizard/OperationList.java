@@ -181,12 +181,12 @@ public class OperationList extends JFrame {
         JScrollPane scroll2 = new JScrollPane(argNotes);
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, scrollpane, scroll2);
-        splitPane.setDividerLocation(.3);
         splitPane.setPreferredSize(new Dimension(800, 500));
 
         getContentPane().add(splitPane);
 
         pack();
+        splitPane.setDividerLocation(.3);
         Dimension scrSize = Toolkit.getDefaultToolkit().getScreenSize();
         int scrPos = (int) Math.min(850, (scrSize.getWidth() - getWidth()));
         setLocation(scrPos, getLocation().x);
