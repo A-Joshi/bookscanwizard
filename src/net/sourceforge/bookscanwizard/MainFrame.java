@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2011 by Steve Devore
+ * Copyright (c) 2013 by Steve Devore
  *                       http://bookscanwizard.sourceforge.net
  *
  * This file is part of the Book Scan Wizard.
@@ -306,12 +306,20 @@ public class MainFrame extends JFrame {
             }
         });
         toolsMenu.add(horizontalLayout);
-
+/*
+        menuItem = new JMenuItem("Laser Filter...");
+        menuItem.setMnemonic(KeyEvent.VK_L);
+        menuItem.setToolTipText("A tool that can help define a filter to recognize laser lines");
+        menuItem.setActionCommand("laser_filter");
+        menuItem.addActionListener(menuHandler);
+        toolsMenu.add(menuItem);
+*/
         toolsMenu.add(new JSeparator());
 
-        menuItem  = new JMenuItem("Prepare for uploading...");
-        menuItem.setToolTipText("Prepares the book for uploading to the Internet Archive");
-        menuItem.setActionCommand("prepare_upload");
+        menuItem  = new JMenuItem("Add Metadata for the book...");
+        menuItem.setMnemonic(KeyEvent.VK_M);
+        menuItem.setToolTipText("Adds metadata for inclusion in a PDF or for uploading to the Internet Archive");
+        menuItem.setActionCommand("metadata");
         menuItem.addActionListener(menuHandler);
         toolsMenu.add(menuItem);
 
@@ -429,6 +437,9 @@ public class MainFrame extends JFrame {
                 if (!showPerspective.isSelected() && showCrops.isSelected()) {
                     showCrops.setSelected(false);
                 }
+                if (showPerspective.isSelected()) {
+                    getViewerPanel().clearPoints();
+                }
             }
         });
 
@@ -444,6 +455,9 @@ public class MainFrame extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 if (!showPerspective.isSelected() && showCrops.isSelected()) {
                     showPerspective.setSelected(true);
+                }
+                if (showCrops.isSelected()) {
+                    getViewerPanel().clearPoints();
                 }
             }
         });
@@ -576,14 +590,17 @@ public class MainFrame extends JFrame {
     }
 
     public void setPageList(List<FileHolder> fileHolders) {
-        Object selected = pageListBox.getSelectedItem();
+        FileHolder selected = (FileHolder) pageListBox.getSelectedItem();
 
         Vector<FileHolder> files = new Vector<FileHolder>();
         files.addAll(fileHolders);
         Collections.sort(files);
         pageListBox.setModel(new DefaultComboBoxModel(files));
         if (selected != null) {
-            pageListBox.setSelectedItem(selected);
+            FileHolder currentSelected = (FileHolder)pageListBox.getSelectedItem();
+            if (!selected.getName().equals(currentSelected.getName())) {
+                pageListBox.setSelectedItem(selected);
+            }
         } else if (!files.isEmpty()) {
             pageListBox.setSelectedIndex(0);
         }

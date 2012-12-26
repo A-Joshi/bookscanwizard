@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2011 by Steve Devore
+ * Copyright (c) 2013 by Steve Devore
  *                       http://bookscanwizard.sourceforge.net
  *
  * This file is part of the Book Scan Wizard.
