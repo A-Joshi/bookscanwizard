@@ -67,11 +67,11 @@ abstract public class UserFeedbackHelper implements ActionListener {
             Runnable r = new Runnable() {
                 @Override
                 public void run() {
-                    Toolkit.getDefaultToolkit().beep();
                     JOptionPane.showMessageDialog(c, ex.toString(), "", JOptionPane.INFORMATION_MESSAGE);
                 }
             };
             SwingUtilities.invokeLater(r);
+            Toolkit.getDefaultToolkit().beep();
         }
     }
 
