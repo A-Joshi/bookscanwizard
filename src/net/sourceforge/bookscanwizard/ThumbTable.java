@@ -129,7 +129,7 @@ class ThumbTable extends JTable {
         StringBuilder str = new StringBuilder();
         MainFrame fr = BSW.instance().getMainFrame();
         boolean left = fr.getLeftThumb().isSelected();
-        boolean right = fr.getLeftThumb().isSelected();
+        boolean right = fr.getRightThumb().isSelected();
         str.append("Pages = ");
         if (left && right) {
             str.append("all ");

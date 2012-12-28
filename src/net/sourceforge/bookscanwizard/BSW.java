@@ -726,8 +726,8 @@ public class BSW {
         }
         if (lastPageLine != null) {
             Pages pages = (Pages) Operation.getStandaloneOp(lastPageLine);
-            if ((ensurePosition && pages.getPosition() != previewedImage.getPreviewHolder().getPosition()) ||
-                !pages.getPageSet().getFileHolders().contains(previewedImage.getPreviewHolder()))
+            if (ensurePosition && ((pages.getPosition() != previewedImage.getPreviewHolder().getPosition()) ||
+                !pages.getPageSet().getFileHolders().contains(previewedImage.getPreviewHolder())))
             {
                 String pos;
                 if (ensurePosition) {
