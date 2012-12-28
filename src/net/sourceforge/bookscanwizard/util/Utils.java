@@ -22,13 +22,11 @@ import java.awt.RenderingHints;
 import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
-import java.awt.image.DirectColorModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Hashtable;
-
 import javax.media.jai.RenderedOp;
 
 public class Utils {

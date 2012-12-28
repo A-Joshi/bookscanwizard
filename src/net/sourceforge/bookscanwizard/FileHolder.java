@@ -18,8 +18,8 @@
 
 package net.sourceforge.bookscanwizard;
 
+import com.bric.image.jpeg.JPEGMetaData;
 import java.awt.RenderingHints;
-import java.awt.image.DirectColorModel;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
@@ -173,6 +173,20 @@ public class FileHolder implements Comparable<FileHolder> {
     
     public PDFReference getSource() {
         return source;
+    }
+    
+    public RenderedImage getThumbnail() throws IOException {
+        if (source != null) {
+            return source.getImage(page);
+        } else {
+            JPEGMetaData metadata = new JPEGMetaData(getFile(), true);
+            RenderedImage img = metadata.getThumbnail();
+            if (img == null) {
+                System.out.println("thumbnail failed");
+                img = getImage();
+            }
+            return img;
+        }
     }
     
     public RenderedImage getImage() throws IOException {

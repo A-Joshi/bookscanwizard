@@ -27,18 +27,9 @@ import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.image.RenderedImage;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.media.jai.JAI;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.Panel;
+import java.awt.FlowLayout;
 import java.awt.Toolkit;
 import java.awt.dnd.DragSource;
 import java.awt.event.ActionListener;
@@ -51,6 +42,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
+import javax.media.jai.JAI;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.operator.SubsampleBinaryToGrayDescriptor;
 import javax.swing.Action;
@@ -73,6 +65,14 @@ import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 
 /**
  * The GUI front end to the BSW
@@ -81,6 +81,7 @@ public class MainFrame extends JFrame {
     private final ViewerPanel viewerPanel;
     private final ConfigEntry configEntry;
     private final JLabel status;
+    private int busyLevel = 0;
 
     private JComboBox pageListBox = new JComboBox() {
         @Override
@@ -105,10 +106,13 @@ public class MainFrame extends JFrame {
     private final JCheckBoxMenuItem showDebuggingInfo;
     private JSplitPane splitPane;
     private final JCheckBoxMenuItem horizontalLayout;
-    private final Panel leftPanel;
-    private final Panel rightPanel;
+    private final JPanel leftPanel;
+    private final JPanel rightPanel;
     private final JProgressBar progressBar;
     private final BoundsHelper boundsListener;
+    private final JCheckBox leftThumb;
+    private final JCheckBox rightThumb;
+    private final ThumbTable thumbTable;
 
     public MainFrame(final ActionListener menuHandler) {
         super("Book Scan Wizard");
@@ -357,8 +361,34 @@ public class MainFrame extends JFrame {
         menuItem.setActionCommand("command_helper");
         menuItem.addActionListener(menuHandler);
         helpMenu.add(menuItem);
-
-        Container cp = getContentPane();
+        Container cp1 = getContentPane();
+        cp1.setLayout(new BoxLayout(cp1, BoxLayout.X_AXIS));
+        JPanel cp = new JPanel();
+        cp1.add(cp);
+        
+        JPanel thumbPanel = new JPanel();
+        thumbPanel.setLayout(new BorderLayout());
+        thumbTable = new ThumbTable(menuHandler);
+        JScrollPane thumbScroll = new JScrollPane(thumbTable);
+        thumbScroll.setPreferredSize(new Dimension(ThumbTable.IMAGE_WIDTH+80, 1));
+        thumbPanel.add(thumbScroll, BorderLayout.CENTER);
+        JPanel northPanel = new JPanel();
+        northPanel.setLayout(new FlowLayout());
+        leftThumb = new JCheckBox("L");
+        leftThumb.setToolTipText("Displays the left page thumbnails");
+        leftThumb.setSelected(true);
+        leftThumb.setActionCommand("thumb_checkbox");
+        leftThumb.addActionListener(menuHandler);
+        rightThumb = new JCheckBox("R");
+        leftThumb.setToolTipText("Displays the right page thumbnails");
+        rightThumb.setSelected(true);
+        rightThumb.setActionCommand("thumb_checkbox");
+        rightThumb.addActionListener(menuHandler);
+        northPanel.add(leftThumb);
+        northPanel.add(rightThumb);
+        thumbPanel.add(northPanel, BorderLayout.NORTH);
+        cp1.add(thumbPanel);
+        
         cp.setLayout(new BoxLayout(cp, BoxLayout.Y_AXIS));
         viewerPanel = new ViewerPanel(menuHandler);
         JScrollPane imageScroll = new JScrollPane(viewerPanel);
@@ -511,10 +541,10 @@ public class MainFrame extends JFrame {
 
         JPanel viewerPane = new JPanel(new BorderLayout());
         viewerPane.add(imageScroll, BorderLayout.CENTER);
-        leftPanel = new Panel();
+        leftPanel = new JPanel();
         leftPanel.setPreferredSize(new Dimension(5,1));
         viewerPane.add(leftPanel, BorderLayout.WEST);
-        rightPanel = new Panel();
+        rightPanel = new JPanel();
         rightPanel.setPreferredSize(new Dimension(5,1));
         viewerPane.add(rightPanel, BorderLayout.EAST);
         splitPane.setRightComponent(viewerPane);
@@ -589,16 +619,21 @@ public class MainFrame extends JFrame {
         }
     }
 
+    private Vector<FileHolder> currentFiles = new Vector<FileHolder>();
+    
     public void setPageList(List<FileHolder> fileHolders) {
-        FileHolder selected = (FileHolder) pageListBox.getSelectedItem();
-
         Vector<FileHolder> files = new Vector<FileHolder>();
         files.addAll(fileHolders);
         Collections.sort(files);
+        if (currentFiles.equals(files)) {
+            return;
+        }
+        FileHolder selected = (FileHolder) pageListBox.getSelectedItem();
         pageListBox.setModel(new DefaultComboBoxModel(files));
         if (selected != null) {
             FileHolder currentSelected = (FileHolder)pageListBox.getSelectedItem();
-            if (!selected.getName().equals(currentSelected.getName())) {
+            System.out.println("--- "+currentSelected+" "+selected);
+            if (!selected.equals(currentSelected) ) {
                 pageListBox.setSelectedItem(selected);
             }
         } else if (!files.isEmpty()) {
@@ -608,18 +643,22 @@ public class MainFrame extends JFrame {
             pageListBox.setSelectedIndex(0);
         }
         pageListBox.setMaximumRowCount(25);
-        pageListBox.setMaximumSize(pageListBox.getPreferredSize());
-        pageListBox.setSize(pageListBox.getPreferredSize());
+        thumbTable.update();
     }
-
     public void setBusy(boolean busy) {
+        busyLevel += (busy ? 1 : -1);
+        busy = busyLevel >0;
+        Cursor c;
         if (busy) {
-            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            c = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
         } else {
-            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            c = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
         }
+        setCursor(c);
         viewerPanel.setBusy(busy);
         configEntry.setBusy(busy);
+        getGlassPane().setVisible(busy);
+        getGlassPane().setCursor(c);
     }
 
     public ConfigEntry getConfigEntry() {
@@ -687,5 +726,17 @@ public class MainFrame extends JFrame {
                                EventQueue.getMostRecentEventTime(),
                                e.getModifiers()));
         }
+    }
+
+    public JCheckBox getLeftThumb() {
+        return leftThumb;
+    }
+
+    public JCheckBox getRightThumb() {
+        return rightThumb;
+    }
+    
+    public ThumbTable getThumbTable() {
+        return thumbTable;
     }
 }

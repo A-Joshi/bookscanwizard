@@ -23,7 +23,7 @@ import java.awt.Cursor;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.JFrame;
+import java.util.EventObject;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
@@ -39,22 +39,30 @@ abstract public class UserFeedbackHelper implements ActionListener {
 
     @Override
     public final void actionPerformed(ActionEvent e) {
-        JFrame fr = BSW.instance().getMainFrame();
+        MainFrame fr = BSW.instance().getMainFrame();
         try {
-            fr.getGlassPane().setVisible(true);
-            fr.setCursor(busyCursor);
-            fr.getGlassPane().setCursor(busyCursor);
+            fr.setBusy(true);
             cursorActionPerformed(e);
         } catch (Throwable ex) {
             displayException((Component) e.getSource(), ex);
         } finally {
-            BSW.instance().getMainFrame().setCursor(defaultCursor);
-            fr.getGlassPane().setCursor(defaultCursor);
-            fr.getGlassPane().setVisible(false);
+            fr.setBusy(false);
         }
     }
 
-    public void run() {
+    public static void doAction(EventObject e, Runnable runnable) {
+        MainFrame fr = BSW.instance().getMainFrame();
+        try {
+            fr.setBusy(true);
+            runnable.run();
+        } catch (Throwable ex) {
+            displayException((Component) e.getSource(), ex);
+        } finally {
+            fr.setBusy(false);
+        }
+    }
+
+public void run() {
         ActionEvent evt = new ActionEvent(BSW.instance().getMainFrame(), 0, null);
         actionPerformed(evt);
     }

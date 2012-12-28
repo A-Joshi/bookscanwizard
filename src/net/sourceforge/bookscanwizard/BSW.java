@@ -21,7 +21,12 @@ package net.sourceforge.bookscanwizard;
 import java.awt.Cursor;
 import java.awt.Event;
 import java.awt.RenderingHints;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.RenderedImage;
@@ -102,6 +107,7 @@ public class BSW {
     private File configFile;
 
     private MenuActionListener menuHandler = new MenuActionListener();
+
     private static boolean batchMode;
     private static boolean running;
 
@@ -111,6 +117,10 @@ public class BSW {
     private static final List<NewConfigListener> newConfigListeners = new ArrayList<NewConfigListener>();
     private boolean inPreview;
     private List<Operation> previewOperations;
+    
+    public static ExecutorService getThreadPool() {
+        return threadPool;
+    }
 
     static {
         tileCache = JAI.getDefaultInstance().getTileCache();
@@ -227,8 +237,8 @@ public class BSW {
             mainFrame.getPageListBox().addActionListener(new UserFeedbackHelper() {
                 @Override
                 public void cursorActionPerformed(ActionEvent e) throws Exception {
-                    previewedImage.setFileHolder((FileHolder) mainFrame.getPageListBox().getSelectedItem());
-                    preview();
+                    FileHolder current = (FileHolder) mainFrame.getPageListBox().getSelectedItem();
+                    previewedImage.setFileHolder((FileHolder) current);
                 }
             });
         }
@@ -452,6 +462,18 @@ public class BSW {
                 insertConfigNoPreview(dpiInfo, false, false);
             } else if (cmd.startsWith("op ")) {
                 insertConfigNoPreview(cmd.substring(3)+" = ", false, false);
+            } else if (cmd.equals("thumb_checkbox")) {
+                getMainFrame().getThumbTable().update();
+            } else if (cmd.equals("thumb_select")) {
+                FileHolder h = getMainFrame().getThumbTable().getSelectedHolder();
+                getPreviewedImage().setFileHolder(h);
+            } else if (cmd.equals("thumb_insert")) {
+               insertConfigNoPreview(getMainFrame().getThumbTable().calcPageConfig(), false, false);
+            } else if (cmd.equals("thumb_copy")) {
+                String page =getMainFrame().getThumbTable().calcPageConfig(); 
+                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                StringSelection data = new StringSelection(page);
+                clipboard.setContents(data, data);
             } else {
                 throw new UserException("Unknown action type: " + cmd);
             }
@@ -894,10 +916,17 @@ public class BSW {
         private String configEntry;
 
         public void setFileHolder(FileHolder fileHolder) {
-            if (previewHolder == null ? fileHolder != null : !previewHolder.equals(fileHolder)) {
+            if (previewHolder != fileHolder && (previewHolder == null || !previewHolder.equals(fileHolder))) {
                 previewHolder = fileHolder;
                 previewImage = null;
                 previewProcessedImage = null;
+                getMainFrame().getPageListBox().setSelectedItem(fileHolder);
+                getMainFrame().getThumbTable().updateSelection();
+                try {
+                    preview();
+                } catch (Exception ex) {
+                    Logger.getLogger(BSW.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
             if (fileHolder == null) {
                 configEntry = "";
@@ -905,7 +934,6 @@ public class BSW {
             }
         }
         
-
         private void checkConfig() throws Exception {
             String newConfig = getConfigEntry().getConfigToPreview();
             configEntry = newConfig;
@@ -998,6 +1026,10 @@ public class BSW {
 
     private ProcessImages getNewProcessImages() {
         return new ProcessImages();
+    }
+
+    public MenuActionListener getMenuHandler() {
+        return menuHandler;
     }
 
     private static void usage() {
