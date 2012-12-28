@@ -105,12 +105,18 @@ public class EstimateDPI extends Operation {
         if (dpiInfo != null) {
             if (dpiInfo.length == 4) {
                 str.append("Pages = all\n");
-                str.append("EstimateDPI = "+dpiInfo[0]+","+dpiInfo[1]+", "+dpiInfo[2]+","+dpiInfo[3]+"\n");
+                str.append("EstimateDPI = ").append(dpiInfo[0]).append(",")
+                   .append(dpiInfo[1]).append(", ").append(dpiInfo[2])
+                   .append(",").append(dpiInfo[3]).append("\n");
             } if (dpiInfo.length == 8) {
                 str.append("Pages = left\n");
-                str.append("EstimateDPI = "+dpiInfo[0]+","+dpiInfo[1]+", "+dpiInfo[2]+","+dpiInfo[3]+"\n");
+                str.append("EstimateDPI = ").append(dpiInfo[0]).append(",")
+                   .append(dpiInfo[1]).append(", ").append(dpiInfo[2]).append(",")
+                   .append(dpiInfo[3]).append("\n");
                 str.append("Pages = right\n");
-                str.append("EstimateDPI = "+dpiInfo[4]+","+dpiInfo[5]+", "+dpiInfo[6]+","+dpiInfo[7]+"\n");
+                str.append("EstimateDPI = ").append(dpiInfo[4]).append(",")
+                   .append(dpiInfo[5]).append(", ").append(dpiInfo[6]).append(",")
+                   .append(dpiInfo[7]).append("\n");
             }
         }
         return str.toString();

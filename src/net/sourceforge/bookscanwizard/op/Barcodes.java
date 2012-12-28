@@ -161,10 +161,14 @@ public class Barcodes extends Operation {
             boolean multiple = false;
             for (FileHolder h : dpiHolders) {
                 if (h.getPosition() == FileHolder.LEFT) {
-                    if (left) multiple = true;
+                    if (left) {
+                        multiple = true;
+                    }
                     left = true;
                 } else if (h.getPosition() == FileHolder.RIGHT) {
-                    if (right) multiple = true;
+                    if (right) {
+                        multiple = true;
+                    }
                     right = true;
                 }
             }
@@ -176,9 +180,9 @@ public class Barcodes extends Operation {
             for (int i=0; i < dpiHolders.size(); i++) {
                 FileHolder h = dpiHolders.get(i);
                 if (!all) {
-                    config.append("Pages = "+(h.getPosition() == FileHolder.LEFT ? "left" : "right"));
+                    config.append("Pages = ").append(h.getPosition() == FileHolder.LEFT ? "left" : "right");
                     if (multiple) {
-                        config.append(" "+h.getName()+"-");
+                        config.append(" ").append(h.getName()).append("-");
                         String next ="";
                         for (int j=i+1; j < dpiHolders.size(); j++) {
                             if (h.getPosition() == dpiHolders.get(j).getPosition()) {
@@ -190,7 +194,9 @@ public class Barcodes extends Operation {
                     }
                     config.append("\n");
                 }
-                config.append("SetSourceDPI = "+whole.format(h.getQRData().get(0).getDPIEstimate())+" # "+h+"\n");
+                config.append("SetSourceDPI = ")
+                      .append(whole.format(h.getQRData().get(0).getDPIEstimate()))
+                      .append(" # ").append(h).append("\n");
             }
             config.append("\n");
         }
@@ -198,7 +204,7 @@ public class Barcodes extends Operation {
         if (!deleted.isEmpty()) {
             config.append("RemovePages = ");
             for (FileHolder h : deleted) {
-                config.append(h.getName()+", ");
+                config.append(h.getName()).append(", ");
             }
             config.setLength(config.length()-2);
             config.append("\n");
@@ -206,7 +212,7 @@ public class Barcodes extends Operation {
         if (!flag.isEmpty()) {
             config.append("\n# The following pages were flagged:\n");
             for (FileHolder h : flag) {
-                config.append("# "+h.getName()+"\n");
+                config.append("# ").append(h.getName()).append("\n");
             }
             config.append("\n");
         }
@@ -220,18 +226,21 @@ public class Barcodes extends Operation {
                 if (oldPage != null) {
                     FileHolder previousHolder = holders.get(holders.indexOf(h) -1);
                     if (oldBounds != null) {
-                        config.append("Pages = "+(h.getPosition() == FileHolder.LEFT ? "left" : "right")+" "+oldPage+"-"+previousHolder.getName()+"\n");
-                        config.append(getPerspective(h));
+                        config.append("Pages = ")
+                              .append(h.getPosition() == FileHolder.LEFT ? "left" : "right")
+                              .append(" ").append(oldPage).append("-")
+                              .append(previousHolder.getName()).append("\n")
+                              .append(getPerspective(h));
                     }
                 }
                 oldAllBounds.put(h.getPosition(), bounds);
                 oldPages.put(h.getPosition(), h.getName());
             }
             if (oldAllBounds != null) {
-                config.append("Pages = left "+oldPages.get(FileHolder.LEFT)+"-\n");
-                config.append(oldAllBounds.get(FileHolder.LEFT)+"\n");
-                config.append("Pages = right "+oldPages.get(FileHolder.RIGHT)+"-\n");
-                config.append(oldAllBounds.get(FileHolder.RIGHT)+"\n\n");
+                config.append("Pages = left ").append(oldPages.get(FileHolder.LEFT)).append("-\n");
+                config.append(oldAllBounds.get(FileHolder.LEFT)).append("\n");
+                config.append("Pages = right ").append(oldPages.get(FileHolder.RIGHT)).append("-\n");
+                config.append(oldAllBounds.get(FileHolder.RIGHT)).append("\n\n");
             }
         }
         if (!colors.isEmpty()) {
@@ -243,16 +252,16 @@ public class Barcodes extends Operation {
                 if (!oldPage.isEmpty()) {
                     FileHolder previousHolder = holders.get(holders.indexOf(h) -1);
                     if (oldColor != null) {
-                        config.append("Pages = "+oldPage+"-"+previousHolder.getName()+"\n");
-                        config.append("Color = "+oldColor+"\n");
+                        config.append("Pages = ").append(oldPage).append("-").append(previousHolder.getName()).append("\n");
+                        config.append("Color = ").append(oldColor).append("\n");
                     }
                 }
                 oldColor = color;
                 oldPage = h.getName();
             }
             if (oldColor != null) {
-                config.append("Pages = "+oldPage+"-\n");
-                config.append("Color = "+oldColor+"\n");
+                config.append("Pages = ").append(oldPage).append("-\n");
+                config.append("Color = ").append(oldColor).append("\n");
             }
         }
         config.append("# End barcode configured operations\n");
@@ -289,7 +298,7 @@ public class Barcodes extends Operation {
                 if (data.getCode().startsWith(code)) {
                     dpiCode = data.getCode();
                     found.add(code.substring(2,4));
-                    str.append(data.getX()+","+data.getY()+", ");
+                    str.append(data.getX()).append(",").append(data.getY()).append(", ");
                     pts.add(new Point2D.Double(data.getX(), data.getY()));
                     break;
                  }
@@ -300,7 +309,7 @@ public class Barcodes extends Operation {
                    "# Found these corners: "+found+"\n";
         } else {
             str.setLength(str.length()-2);
-            str.append(" # "+h.toString()+"\n");
+            str.append(" # ").append(h.toString()).append("\n");
             double dx1 = pts.get(1).distance(pts.get(0));
             double dx2 = pts.get(2).distance(pts.get(3));
             double dy1 = pts.get(3).distance(pts.get(0));
@@ -309,7 +318,7 @@ public class Barcodes extends Operation {
             double inchesBetweenCodes = Double.parseDouble(dpiCode.substring(5));
             double dpi = avg / inchesBetweenCodes;
             
-            str.append("SetSourceDPI = "+((int) dpi)+"\n");
+            str.append("SetSourceDPI = ").append((int) dpi).append("\n");
         }
         return str.toString();
     }

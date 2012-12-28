@@ -25,8 +25,6 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.RenderedImage;
@@ -257,7 +255,7 @@ public class BSW {
         clearViewer();
         String result="";
         this.configFile = configFile;
-        FileReader fr = null;
+        FileReader fr;
         try {
             setCurrentDirectory(configFile.getAbsoluteFile().getParentFile());
 
@@ -1026,10 +1024,6 @@ public class BSW {
 
     private ProcessImages getNewProcessImages() {
         return new ProcessImages();
-    }
-
-    public MenuActionListener getMenuHandler() {
-        return menuHandler;
     }
 
     private static void usage() {

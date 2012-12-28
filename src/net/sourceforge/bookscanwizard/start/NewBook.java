@@ -69,10 +69,9 @@ public class NewBook {
         AbstractPage.putMatchingSettings(settings);
 
         StringBuilder str = new StringBuilder();
-        str.append("# Book Scan Wizard Script \n"+
-                   "# http://bookscanwizard.sourceforge.net\n"+
-                   "#   "+BSW.getCurrentDirectory() +
-                   "\n\n\n");
+        str.append("# Book Scan Wizard Script \n" + 
+                   "# http://bookscanwizard.sourceforge.net\n" + 
+                   "#   ").append(BSW.getCurrentDirectory()).append("\n\n\n");
                    
         File sourceDir = new File((String) settings.get(SOURCE_DIRECTORY));
         File leftDir = BSW.getFileFromCurrentDir(new File(sourceDir, "l").getPath()).getAbsoluteFile();
@@ -89,8 +88,8 @@ public class NewBook {
         str.append(sourceDir);
         str.append("\n\n");
         if (!((String)settings.get(SOURCE_DPI)).isEmpty()) {
-            str.append("# Override source DPI\n"+
-                       "SetSourceDPI = "+settings.get(SOURCE_DPI)+"\n\n");
+            str.append("# Override source DPI\n" + 
+                       "SetSourceDPI = ").append(settings.get(SOURCE_DPI)).append("\n\n");
         }
         str.append(
                    "# The Destination directory\n" +
@@ -107,20 +106,20 @@ public class NewBook {
         str.append("\n\n");
         if (((Boolean) settings.get(USE_FOCAL_LENGTH))) {
             str.append("# Estimate the source DPI from the focal length setting\n");
-            str.append(EstimateDPI.getConfig()+"\n\n");
+            str.append(EstimateDPI.getConfig()).append("\n\n");
         }
         String rotate;
         str.append("# Configure the left pages\n"+
                    "Pages = left\n");
         rotate = (String) settings.get(LEFT_ORIENT);
         if (!rotate.equals("0")) {
-            str.append("Rotate = "+rotate+"\n");
+            str.append("Rotate = ").append(rotate).append("\n");
         }
         str.append("\n# Configure the right pages\n"+
                    "Pages = right\n");
         rotate = (String) settings.get(RIGHT_ORIENT);
         if (!rotate.equals("0")) {
-            str.append("Rotate = "+rotate+"\n");
+            str.append("Rotate = ").append(rotate).append("\n");
         }
         str.append("\n");
         boolean useBarcodes = (Boolean) settings.get(USE_BARCODES);

@@ -17,18 +17,19 @@ package net.sourceforge.bookscanwizard.util;
  *    Lesser General Public License for more details.
  */
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.lang.reflect.WildcardType;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.lang.reflect.Type;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.WildcardType;
-import java.lang.reflect.ParameterizedType;
 
+// Based on code from:
 /**
  * A set of miscellaneous methods working on {@link Class} objects.
  *
@@ -37,16 +38,18 @@ import java.lang.reflect.ParameterizedType;
  * @version $Id$
  * @author Martin Desruisseaux (IRD)
  */
+@SuppressWarnings("ResultOfObjectAllocationIgnored")
 public final class Classes {
     /**
      * Constants to be used in {@code switch} statements.
      */
-    public static final byte DOUBLE=8, FLOAT=7, LONG=6, INTEGER=5, SHORT=4, BYTE=3,
+    private static final byte DOUBLE=8, FLOAT=7, LONG=6, INTEGER=5, SHORT=4, BYTE=3,
                             CHARACTER=2, BOOLEAN=1, OTHER=0;
 
     /**
      * Mapping between a primitive type and its wrapper, if any.
      */
+    
     private static final Map<Class<?>,Classes> MAPPING = new HashMap<Class<?>,Classes>(16);
     static {
         new Classes(Double   .TYPE, Double   .class, true,  false, (byte) Double   .SIZE, DOUBLE   );
@@ -419,51 +422,6 @@ compare:for (int i=0; i<c1.length; i++) {
         return (mapping != null) ? mapping.ordinal : OTHER;
     }
 
-    /**
-     * Converts the specified string into a value object. The value object can be an instance of
-     * {@link Double}, {@link Float}, {@link Long}, {@link Integer}, {@link Short}, {@link Byte},
-     * {@link Boolean}, {@link Character} or {@link String} according the specified type. This
-     * method is intentionnaly restricted to primitive types, with the addition of {@code String}
-     * which can be though as an identity operation. Other types like {@link java.io.File} are
-     * not the purpose of this method.
-     *
-     * @param  <T> The requested type.
-     * @param  type The requested type.
-     * @param  value the value to parse.
-     * @return The value object, or {@code null} if {@code value} was null.
-     * @throws IllegalArgumentException if {@code type} is not a recognized type.
-     * @throws NumberFormatException if {@code type} is a subclass of {@link Number} and the
-     *         string value is not parseable as a number of the specified type.
-     */
-    @SuppressWarnings("unchecked")
-    public static <T> T valueOf(final Class<T> type, final String value)
-            throws IllegalArgumentException, NumberFormatException
-    {
-        if (value == null) {
-            return null;
-        }
-        if (Double .class.equals(type)) return (T) Double .valueOf(value);
-        if (Float  .class.equals(type)) return (T) Float  .valueOf(value);
-        if (Long   .class.equals(type)) return (T) Long   .valueOf(value);
-        if (Integer.class.equals(type)) return (T) Integer.valueOf(value);
-        if (Short  .class.equals(type)) return (T) Short  .valueOf(value);
-        if (Byte   .class.equals(type)) return (T) Byte   .valueOf(value);
-        if (Boolean.class.equals(type)) return (T) Boolean.valueOf(value);
-        if (Character.class.equals(type)) {
-            /*
-             * If the string is empty, returns 0 which means "end of string" in C/C++
-             * and NULL in Unicode standard. If non-empty, take only the first char.
-             * This is somewhat consistent with Boolean.valueOf(...) which is quite
-             * lenient about the parsing as well, and throwing a NumberFormatException
-             * for those would not be appropriate.
-             */
-            return (T) Character.valueOf(value.length() != 0 ? value.charAt(0) : 0);
-        }
-        if (String.class.equals(type)) {
-            return (T) value;
-        }
-        throw new IllegalArgumentException("UNKNOW_TYPE: "+type);
-    }
 
     /**
      * Returns a short class name for the specified class. This method will

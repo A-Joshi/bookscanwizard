@@ -236,8 +236,8 @@ public class OperationList extends JFrame {
                 .append("</b><br><p>").append(def.getHelper())
                 .append("</p>\n");
         if (def.getExample() != null) {
-            str.append("<br><p><b>Example:</b></p>\n"+
-                       def.getExample()+"<br><br>");
+            str.append("<br><p><b>Example:</b></p>\n").append(def.getExample())
+               .append("<br><br>");
         }
         if (def.getArguments().isEmpty()) {
             str.append("<p>No parameters</p>");

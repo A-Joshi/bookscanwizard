@@ -45,11 +45,12 @@ public class BSWThreadFactory implements ThreadFactory {
         Thread t = new Thread(group, r,
                               namePrefix + threadNumber.getAndIncrement(),
                               0);
-        if (!t.isDaemon())
+        if (!t.isDaemon()) {
             t.setDaemon(true);
-        if (t.getPriority() != PRIORITY)
+        }
+        if (t.getPriority() != PRIORITY) {
             t.setPriority(PRIORITY);
+        }
         return t;
     }
 }
-

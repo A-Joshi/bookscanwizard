@@ -32,10 +32,8 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.media.jai.JAI;
 import javax.media.jai.RenderedOp;
-import javax.rmi.CORBA.Util;
 import net.sourceforge.bookscanwizard.op.GaussianBlur;
 import net.sourceforge.bookscanwizard.op.Scale;
-import net.sourceforge.bookscanwizard.util.Utils;
 
 /**
  * Determine the hsv values to match to find a laser line.
@@ -65,7 +63,9 @@ public class FilterWizard extends javax.swing.JFrame {
     }
 
     private void filter() {
-        if (img == null) throw new NullPointerException();
+        if (img == null) {
+            throw new NullPointerException();
+        }
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         if (showFiltered.isSelected()) {
             hue = jSliderHue.getValue() / 100F;

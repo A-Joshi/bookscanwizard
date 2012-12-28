@@ -19,7 +19,6 @@
 package net.sourceforge.bookscanwizard.op;
 
 import java.awt.geom.Rectangle2D;
-import net.sourceforge.bookscanwizard.Operation;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.util.Arrays;
@@ -27,6 +26,7 @@ import java.util.List;
 import javax.media.jai.JAI;
 import net.sourceforge.bookscanwizard.BSW;
 import net.sourceforge.bookscanwizard.FileHolder;
+import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.PageSet;
 import net.sourceforge.bookscanwizard.PerspectiveOp;
 import net.sourceforge.bookscanwizard.UserException;

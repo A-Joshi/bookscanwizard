@@ -123,7 +123,9 @@ public class PrefsHelper {
 
     synchronized public static String getPrefString(String key) {
         String value = (String) miscPrefs.get(key);
-        if (value == null) value = "";
+        if (value == null) {
+            value = "";
+        }
         return value;
     }
     

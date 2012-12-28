@@ -54,10 +54,9 @@ import net.sourceforge.bookscanwizard.util.BlockingLifoQueue;
 import net.sourceforge.bookscanwizard.util.Utils;
 
 /**
- *
- * @author Steve
+ * A Table that contains the source image thumbnails.
  */
-class ThumbTable extends JTable {
+public class ThumbTable extends JTable {
 
     public static final int IMAGE_WIDTH = 100;
     private static List<FileHolder> holders = new ArrayList<FileHolder>();
@@ -68,7 +67,7 @@ class ThumbTable extends JTable {
     private static final Executor executor = 
         new ThreadPoolExecutor(threadCt, threadCt, 0L, TimeUnit.MILLISECONDS, lifoQueue,
                                new BSWThreadFactory());            
-    private static int rowHeight = 0;
+    private int customRowHeight = 0;
     private JPopupMenu popup;
     private ActionListener menuHandler;
     
@@ -96,26 +95,33 @@ class ThumbTable extends JTable {
             }
         });
         addMouseListener( new MouseAdapter() {
+            @Override
             public void mouseReleased(MouseEvent e) {
-                if (e.isPopupTrigger())
-                {
+                if (e.isPopupTrigger()) {
+                    JTable source = (JTable)e.getSource();
+                    int row = source.rowAtPoint( e.getPoint() );
+                    int column = source.columnAtPoint( e.getPoint() );
+                    if (! source.isRowSelected(row)) {
+                        source.changeSelection(row, column, false, false);                
+                    }
                     popup.show(e.getComponent(), e.getX(), e.getY());
-                    System.out.println(calcPageConfig());
-//                    System.out.println("cell: "+row+" "+column);
                 }
             }
-       });
+        });
         popup = new JPopupMenu();
         JMenuItem menuItem;
         menuItem = new JMenuItem("Select Page");
         menuItem.setActionCommand("thumb_select");
+        menuItem.setToolTipText("Displays current selection in the viewer");
         menuItem.addActionListener(menuHandler);
         popup.add(menuItem);
         menuItem = new JMenuItem("Insert Page config");
         menuItem.setActionCommand("thumb_insert");
+        menuItem.setToolTipText("Copies the selected pages to the configuration");
         menuItem.addActionListener(menuHandler);
         popup.add(menuItem);
         menuItem = new JMenuItem("Copy Page config");
+        menuItem.setToolTipText("Copies the selected pages to the clipboard");
         menuItem.setActionCommand("thumb_copy");
         menuItem.addActionListener(menuHandler);
         popup.add(menuItem);
@@ -205,7 +211,6 @@ class ThumbTable extends JTable {
     void updateSelection() {
         FileHolder h = BSW.instance().getPreviewedImage().getPreviewHolder();
         int pos = holders.indexOf(h);
-        System.out.println("sel "+pos);
         if (pos >=0) {
             getSelectionModel().setSelectionInterval(pos, pos);
         }
@@ -254,9 +259,9 @@ class ThumbTable extends JTable {
             thumb.set(img);
             setBorder(isSelected ? selectedBorder : normalBorder);
             lable.setText(holder.getName());
-            if (found && rowHeight == 0) {
-                rowHeight = getPreferredSize().height;
-                ThumbTable.this.setRowHeight(rowHeight);
+            if (found && customRowHeight == 0) {
+                customRowHeight = getPreferredSize().height;
+                ThumbTable.this.setRowHeight(customRowHeight);
             }
             return this;
         }

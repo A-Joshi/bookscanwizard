@@ -22,13 +22,13 @@ import java.awt.Transparency;
 import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
-import net.sourceforge.bookscanwizard.Operation;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
 import net.sourceforge.bookscanwizard.ColorOp;
 import net.sourceforge.bookscanwizard.FileHolder;
+import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.util.FixedIHSColorSpace;
 import net.sourceforge.bookscanwizard.util.Utils;
 

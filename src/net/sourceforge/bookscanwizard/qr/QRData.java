@@ -105,7 +105,7 @@ public class QRData {
     public String getPoints() {
         StringBuilder str = new StringBuilder();
         for (Point2D pt : points) {
-            str.append(pt.getX()+","+pt.getY()+", ");
+            str.append(pt.getX()).append(",").append(pt.getY()).append(", ");
         }
         str.setLength(str.length()-2);
         return str.toString();

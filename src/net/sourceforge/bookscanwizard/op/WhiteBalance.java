@@ -102,7 +102,7 @@ public class WhiteBalance extends Operation {
                 .append(pct(whiteLevels[i]))
                 .append(", ");
         }
-        retVal.append(pct(avgBlack)+","+pct(avgWhite));
+        retVal.append(pct(avgBlack)).append(",").append(pct(avgWhite));
         return retVal.toString();
     }
 

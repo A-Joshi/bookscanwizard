@@ -18,6 +18,7 @@
 package net.sourceforge.bookscanwizard.op;
 
 import java.awt.image.RenderedImage;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.media.jai.JAI;
 import javax.media.jai.LookupTableJAI;
@@ -46,7 +47,7 @@ public class Gamma extends Operation implements ColorOp {
             for (int i = 0; i < bands; i++) {
                 double original = getArgs()[i] * 255 / 100;
                 double gamma = calcAdjustment(original, GRAY_STANDARD);
-                logger.info("gamma: "+original+" "+gamma+" "+adjust(original, gamma));
+                logger.log(Level.INFO, "gamma: {0} {1} {2}", new Object[]{original, gamma, adjust(original, gamma)});
                 byte[] gammaRow = new byte[256];
                 for (int j = 0; j <= 255; j++) {
                     gammaRow[j] = (byte) Math.round(adjust(j, gamma));

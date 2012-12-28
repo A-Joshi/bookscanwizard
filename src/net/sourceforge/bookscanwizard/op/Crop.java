@@ -19,7 +19,6 @@
 package net.sourceforge.bookscanwizard.op;
 
 import java.awt.geom.Point2D;
-import net.sourceforge.bookscanwizard.Operation;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 import javax.media.jai.JAI;
@@ -27,6 +26,7 @@ import javax.media.jai.PerspectiveTransform;
 import net.sourceforge.bookscanwizard.BSW;
 import net.sourceforge.bookscanwizard.CropOp;
 import net.sourceforge.bookscanwizard.FileHolder;
+import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.UserException;
 import net.sourceforge.bookscanwizard.ViewerPanel;
 

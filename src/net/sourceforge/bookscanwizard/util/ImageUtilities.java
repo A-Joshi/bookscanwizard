@@ -17,7 +17,7 @@
  */
 
 package net.sourceforge.bookscanwizard.util;
-
+// modified from:
 /*
  *    GeoTools - The Open Source Java GIS Toolkit
  *    http://geotools.org
@@ -35,6 +35,8 @@ package net.sourceforge.bookscanwizard.util;
  *    Lesser General Public License for more details.
  */
 
+import com.sun.media.imageioimpl.common.PackageUtil;
+import com.sun.media.jai.operator.ImageReadDescriptor;
 import java.awt.Dimension;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -58,7 +60,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Vector;
-
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.spi.IIORegistry;
@@ -75,9 +76,6 @@ import javax.media.jai.OpImage;
 import javax.media.jai.ParameterBlockJAI;
 import javax.media.jai.PlanarImage;
 import javax.media.jai.RenderedOp;
-
-import com.sun.media.imageioimpl.common.PackageUtil;
-import com.sun.media.jai.operator.ImageReadDescriptor;
 
 
 /**
@@ -529,28 +527,6 @@ public final class ImageUtilities {
             }
         }
         throw new IllegalArgumentException("UNKNOW_INTERPOLATION: "+type);
-    }
-
-    /**
-     * Returns the interpolation name for the specified interpolation object.
-     * This method tries to infer the name from the object's class name.
-     *
-     * @param Interpolation The interpolation object, or {@code null} for "nearest"
-     *        (which is an other way to say "no interpolation").
-     */
-    public static String getInterpolationName(Interpolation interp) {
-        if (interp == null) {
-            interp = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
-        }
-        final String prefix = "Interpolation";
-        for (Class<?> classe = interp.getClass(); classe!=null; classe=classe.getSuperclass()) {
-            String name = Classes.getShortName(classe);
-            int index = name.lastIndexOf(prefix);
-            if (index >= 0) {
-                return name.substring(index + prefix.length());
-            }
-        }
-        return Classes.getShortClassName(interp);
     }
 
     /**

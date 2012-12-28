@@ -17,12 +17,12 @@
  */
 package net.sourceforge.bookscanwizard.op;
 
-import net.sourceforge.bookscanwizard.Operation;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 import javax.media.jai.JAI;
 import net.sourceforge.bookscanwizard.ColorOp;
 import net.sourceforge.bookscanwizard.FileHolder;
+import net.sourceforge.bookscanwizard.Operation;
 
 /**
  * Increate or decrease the Brightness of the images.  If one number is given,

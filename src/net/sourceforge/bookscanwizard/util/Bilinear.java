@@ -179,7 +179,7 @@ public class Bilinear {
     private static int fuzzTestInvBilerp(int num_trials) {
         int num_failed = 0;
 
-        double x0 = 0, y0 = 0, x1 = 0, y1 = 0, x2 = 0, y2 = 0, x3 = 0, y3 = 0, x = 0, y = 0, s, t, s2, t2, orig_s, orig_t;
+        double x0, y0, x1, y1, x2, y2, x3, y3, x, y, s, t, s2, t2, orig_s, orig_t;
         int num_st;
         int itrial;
         for (itrial = 0; itrial < num_trials; itrial++) {

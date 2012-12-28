@@ -18,9 +18,8 @@
 
 package net.sourceforge.bookscanwizard;
 
-import java.io.IOException;
-import net.sourceforge.bookscanwizard.util.Sequence;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,6 +28,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.sourceforge.bookscanwizard.qr.QRData;
+import net.sourceforge.bookscanwizard.util.Sequence;
 import net.sourceforge.bookscanwizard.util.Utils;
 
 /**

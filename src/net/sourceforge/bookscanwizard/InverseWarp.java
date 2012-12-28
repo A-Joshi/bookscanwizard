@@ -24,7 +24,7 @@ import javax.media.jai.Warp;
 /**
  * A warp operation that attempts to determine the inverse warp.  The warp
  * must be regular enough that an iterative approach will be able to solve
- * the warp.
+ * the warp.  It is experimental.
  */
 public final class InverseWarp extends Warp {
     private Warp warp;

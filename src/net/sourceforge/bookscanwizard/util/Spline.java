@@ -73,7 +73,7 @@ public class Spline {
             // switch the order around back to the original order
             correctResults[order[i]] = results[i];
         }
-        return results;
+        return correctResults;
     }
 
     public static double poly_interpolate(double[] dataX, double[] dataY, double x, int power) {

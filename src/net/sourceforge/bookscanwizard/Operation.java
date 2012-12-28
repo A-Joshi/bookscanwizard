@@ -24,7 +24,6 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -183,7 +182,7 @@ abstract public class Operation {
             if (end < 0) {
                 break;
             }
-            String value = null;
+            String value;
             String key = arguments.substring(pos+1, end);
             if (key.isEmpty()) {
                 value = "$";
@@ -293,7 +292,7 @@ abstract public class Operation {
         } catch (NoClassDefFoundError ex) {
             throw new UserException("Could not find operation "+name);
         }
-        Operation operation = null;
+        Operation operation;
         List<Operation> retVal = null;
         if (cls != null) {
             operation = (Operation) cls.newInstance();

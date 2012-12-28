@@ -42,6 +42,7 @@ public class LazyHashMap<K,V> extends HashMap<K, V> {
     }
 
     public Object getFirstItem(String key) {
+        @SuppressWarnings("element-type-mismatch")
         Collection value = (Collection) get(key);
         if (value != null && value.iterator().hasNext()) {
             return value.iterator().next();
