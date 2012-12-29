@@ -22,6 +22,8 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.RenderingHints;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -38,12 +40,14 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.table.AbstractTableModel;
@@ -67,11 +71,9 @@ public class ThumbTable extends JTable {
                                new BSWThreadFactory(Thread.MIN_PRIORITY));
     private int customRowHeight = 0;
     private JPopupMenu popup;
-    private ActionListener menuHandler;
     
     public ThumbTable(ActionListener menuHandler) {
         super(new HolderDataModel());
-        this.menuHandler = menuHandler;
         ThumbTableCellRenderer renderer = new ThumbTableCellRenderer();
         getColumnModel().getColumn(0).setCellRenderer(renderer);
         setTableHeader(null);
@@ -119,6 +121,7 @@ public class ThumbTable extends JTable {
         menuItem.setActionCommand("thumb_copy");
         menuItem.addActionListener(menuHandler);
         popup.add(menuItem);
+        setTransferHandler(new ThumbTransferHandler());
     }
     
     public FileHolder getSelectedHolder() {
@@ -309,6 +312,18 @@ public class ThumbTable extends JTable {
             } catch (IOException ex) {
                 Logger.getLogger(ThumbTable.class.getName()).log(Level.SEVERE, null, ex);
             }
+        }
+    }
+    
+    private class ThumbTransferHandler extends TransferHandler {
+        @Override
+        public int getSourceActions(JComponent c) {
+            return COPY;
+        }
+
+        @Override
+        protected Transferable createTransferable(JComponent c) {
+            return new StringSelection(calcPageConfig());
         }
     }
 }

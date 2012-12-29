@@ -347,7 +347,7 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
     }
 
     void multScale(float f) {
-        postScale *= f;
+        setPostScale(postScale * f);
     }
     
     int getSliderValue() {

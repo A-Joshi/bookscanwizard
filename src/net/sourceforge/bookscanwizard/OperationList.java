@@ -48,6 +48,7 @@ public class OperationList extends JFrame {
     private final BoundsHelper boundsListener;
 
     private static Class[] operations = {
+        AddBorder.class,
         AutoLevels.class,
         BarcodePerspective.class,
         Barcodes.class,
@@ -55,12 +56,15 @@ public class OperationList extends JFrame {
         Brightness.class,
         Color.class,
         CreateArchiveZip.class,
+        CreatePDF.class,
         Crop.class,
         CropAndScale.class,
 //      Deprecated
 //        DeselectPages.class,
         EstimateDPI.class,
+//        Despeckle.class,
         Gamma.class,
+//        GaussianBlur.class, 
         ImageStatistics.class,
         InterpolateCrop.class,
         Levels.class,
@@ -83,6 +87,7 @@ public class OperationList extends JFrame {
         ScaleToDPI.class,
         ScaleToFirst.class,
         SetDestination.class,
+        SetDestinationDPI.class,
         SetPreviewScale.class,
         SetDestinationDPI.class,
         SetSourceDPI.class,
@@ -90,6 +95,7 @@ public class OperationList extends JFrame {
         Sharpen.class,
         StartPage.class,
 //      Not ready for prime time
+        // Unwarp
 //        WhiteBalance.class
         Whiteout.class
     };
