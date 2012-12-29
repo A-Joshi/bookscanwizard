@@ -40,6 +40,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.media.jai.JAI;
+import javax.media.jai.operator.TransposeType;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -52,6 +54,7 @@ import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
+import net.sourceforge.bookscanwizard.op.Rotate;
 import net.sourceforge.bookscanwizard.util.BlockingLifoQueue;
 import net.sourceforge.bookscanwizard.util.Utils;
 
@@ -71,6 +74,8 @@ public class ThumbTable extends JTable {
                                new BSWThreadFactory(Thread.MIN_PRIORITY));
     private int customRowHeight = 0;
     private JPopupMenu popup;
+    private TransposeType leftTranspose;
+    private TransposeType rightTranspose;
     
     public ThumbTable(ActionListener menuHandler) {
         super(new HolderDataModel());
@@ -175,6 +180,11 @@ public class ThumbTable extends JTable {
         return str.toString();
     }
     
+    public void refeshThumbs() {
+        images.clear();
+        customRowHeight = 0;
+        update();
+    }
     
     public void update() {
         MainFrame fr =  BSW.instance().getMainFrame();
@@ -216,6 +226,14 @@ public class ThumbTable extends JTable {
         int pos = holders.indexOf(h);
         if (pos >=0) {
             getSelectionModel().setSelectionInterval(pos, pos);
+        }
+    }
+
+    void setTranspose(TransposeType leftTranspose, TransposeType rightTranspose) {
+        if (this.leftTranspose != leftTranspose || this.rightTranspose != rightTranspose) {
+            this.leftTranspose = leftTranspose;
+            this.rightTranspose = rightTranspose;
+            refeshThumbs();
         }
     }
 
@@ -306,6 +324,10 @@ public class ThumbTable extends JTable {
         public void run() {
             try {
                 RenderedImage img = holder.getThumbnail();
+                TransposeType transpose = holder.getPosition() == FileHolder.LEFT ? Rotate.getLeftTranspose() : Rotate.getRightTranspose();
+                if (transpose != null) {
+                    img = JAI.create("transpose", img,transpose);
+                }
                 img = Utils.getScaledInstance(img, IMAGE_WIDTH, IMAGE_WIDTH * img.getHeight() / img.getWidth(), RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
                 images.put(holder, img);
                 update(holder);

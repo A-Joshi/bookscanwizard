@@ -18,18 +18,19 @@
 
 package net.sourceforge.bookscanwizard.op;
 
-import java.util.List;
-import net.sourceforge.bookscanwizard.PageSet;
-import net.sourceforge.bookscanwizard.FileHolder;
-import net.sourceforge.bookscanwizard.Operation;
-import javax.media.jai.operator.TransposeType;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
+import java.util.List;
 import javax.media.jai.InterpolationBilinear;
 import javax.media.jai.JAI;
+import static javax.media.jai.operator.TransposeDescriptor.ROTATE_180;
 import static javax.media.jai.operator.TransposeDescriptor.ROTATE_270;
 import static javax.media.jai.operator.TransposeDescriptor.ROTATE_90;
-import static javax.media.jai.operator.TransposeDescriptor.ROTATE_180;
+import javax.media.jai.operator.TransposeType;
+import net.sourceforge.bookscanwizard.BSW;
+import net.sourceforge.bookscanwizard.FileHolder;
+import net.sourceforge.bookscanwizard.NewConfigListener;
+import net.sourceforge.bookscanwizard.Operation;
 
 /**
  * Rotates an image.  The rotation can either be specified in degrees,
@@ -37,16 +38,40 @@ import static javax.media.jai.operator.TransposeDescriptor.ROTATE_180;
  * from left to right.
  */
 public class Rotate extends Operation {
+    private static boolean init;
     private double degrees;
+    private static TransposeType leftTranspose;
+    private static TransposeType rightTranspose;
+    private static boolean foundLeftTranspose;
+    private static boolean foundRightTranspose;
 
     @Override
     protected List<Operation> setup(List<Operation> operationList) throws Exception {
+        init();
         double[] args = getArgs();
         if (args.length == 1) {
             degrees = args[0];
         } else {
             args = getScaledArgs();
             degrees = Math.toDegrees(Math.atan2(args[1] - args[3], args[2] - args[0]));
+        }
+        int thumnailDegree = (int) (Math.floor(degrees / 90 + .5) * 90);
+        if (thumnailDegree < 0) {
+            thumnailDegree += 360;
+        }
+        TransposeType thumbnailTranspose = null;
+        if (thumnailDegree == 90) {
+            thumbnailTranspose = ROTATE_90;
+        } else if (thumnailDegree == 180) {
+            thumbnailTranspose = ROTATE_180;
+        } else if (thumnailDegree == 270) {
+            thumbnailTranspose = ROTATE_270;
+        }
+        if (getPageSet().getFileHolders().iterator().next().getPosition() == FileHolder.LEFT && !foundLeftTranspose) {
+            leftTranspose = thumbnailTranspose;
+        }
+        if (getPageSet().getFileHolders().iterator().next().getPosition() == FileHolder.RIGHT && !foundRightTranspose) {
+            rightTranspose = thumbnailTranspose;
         }
         return operationList;
     }
@@ -76,6 +101,28 @@ public class Rotate extends Operation {
             pb.add(angle);
             pb.add(new InterpolationBilinear());
             return JAI.create("rotate", pb);
+        }
+    }
+
+    public static TransposeType getLeftTranspose() {
+        return leftTranspose;
+    }
+
+    public static TransposeType getRightTranspose() {
+        return rightTranspose;
+    }
+    
+    synchronized private static void init() {
+        if (!init) {
+            init = true;
+            BSW.instance().addNewConfigListener(new NewConfigListener(){
+                public void newConfig() {
+                    leftTranspose = null;
+                    rightTranspose = null;
+                    foundLeftTranspose = false;
+                    foundRightTranspose = false;
+                }
+            });
         }
     }
 }

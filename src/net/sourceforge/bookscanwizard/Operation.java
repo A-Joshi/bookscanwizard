@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 import javax.imageio.spi.ImageWriterSpi;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
+import net.sourceforge.bookscanwizard.op.Rotate;
 import net.sourceforge.bookscanwizard.util.ImageUtilities;
 
 /**
@@ -92,6 +93,7 @@ abstract public class Operation {
 
 
         setAllOperations(operations);
+        validate();
         return operations;
     }
 
@@ -451,6 +453,12 @@ abstract public class Operation {
         return maxPass;
     }
 
+    private static void validate() {
+        if (BSW.instance().isInPreview()) {
+            BSW.instance().getMainFrame().getThumbTable().setTranspose(Rotate.getLeftTranspose(), Rotate.getRightTranspose());
+        }
+    }
+    
     static {
         // the native version has problems with compression.
         ImageUtilities.allowNativeCodec("jpeg2000", ImageWriterSpi.class, false);
