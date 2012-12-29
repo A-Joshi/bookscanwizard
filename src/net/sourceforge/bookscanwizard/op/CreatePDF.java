@@ -41,6 +41,7 @@ import net.sourceforge.bookscanwizard.BSW;
 import net.sourceforge.bookscanwizard.FileHolder;
 import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.PageSet;
+import net.sourceforge.bookscanwizard.SaveOperation;
 import net.sourceforge.bookscanwizard.UserException;
 import net.sourceforge.bookscanwizard.op.Metadata.KeyValue;
 import net.sourceforge.bookscanwizard.util.Utils;
@@ -49,7 +50,7 @@ import org.w3c.dom.Element;
 /**
  * Creates a pdf of all the images.
  */
-public class CreatePDF extends Operation {
+public class CreatePDF extends Operation implements SaveOperation {
     private Document document;
     private String format;
     // The semaphores are used to ensure that the previous page is rendered
@@ -64,6 +65,10 @@ public class CreatePDF extends Operation {
         }
         if (getTextArgs().length > 1) {
             format = getTextArgs()[1];
+        }
+        File parent = new File(getTextArgs()[0]).getParentFile();
+        if (parent.equals(PageSet.getSourceDir())) {
+            throw new UserException("The output file must be saved to a differnet directory from the source files");
         }
         return operationList;
     }

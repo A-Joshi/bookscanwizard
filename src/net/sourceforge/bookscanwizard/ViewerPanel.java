@@ -25,6 +25,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
@@ -50,7 +51,6 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.RenderedImage;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -62,8 +62,10 @@ import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
+import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.TransferHandler;
+import net.sourceforge.bookscanwizard.util.Interpolate;
 
 /**
  * A panel to display the current image, as well as code to select the
@@ -76,14 +78,16 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
     private Path2D.Float plus;
     private Point lastPoint;
     private Point lastPressPoint;
-    private boolean previewed;
     private PerspectiveTransform previewTransform;
     private Point2D[] previewCrop;
     private double zoom;
+    private float postScale = 1F;
     private static int MAX_DISTANCE_TO_POINT = 12;
     private double xCropScale = 1;
     private double yCropScale = 1;
-    private RenderedImage fullSource;
+    private Interpolate sliderInterpolate = new Interpolate(-100, Math.log(.05), 100, Math.log(2));
+    private Point lastViewportPoint;
+    private boolean suppressClick;
 
     private boolean isInDrag;
 
@@ -103,16 +107,19 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
                 // not sure what is going on here.. We should be getting clicks
                 // not drags if the movement is below the threshold.  But
                 // at least for me it isn't working.  So we use the mouseRelease event.
-                if (e.getSource().equals(ViewerPanel.this) && lastPressPoint != null &&
-                   lastPressPoint.distance(e.getPoint()) < DragSource.getDragThreshold()) {
-                    myMouseClicked(e);
+                if (suppressClick) {
+                    suppressClick = false;
+                } else {
+                    if (e.getSource().equals(ViewerPanel.this) && lastPressPoint != null &&
+                       lastPressPoint.distance(e.getPoint()) < DragSource.getDragThreshold()) {
+                        myMouseClicked(e);
+                    }
                 }
                 lastPressPoint = null;
                 isInDrag = false;
             }
 
             public void myMouseClicked(MouseEvent e) {
-                previewed = false;
                 requestFocusInWindow();
 
                 if (e.getButton() != MouseEvent.BUTTON1) {
@@ -137,8 +144,9 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
             public void mousePressed(MouseEvent e) {
                 lastPoint = e.getPoint();
                 lastPressPoint = e.getPoint();
+                lastViewportPoint = e.getPoint();
             }
-
+            
             @Override
             public void mouseDragged(MouseEvent e) {
                 if ((e.getModifiersEx() & MouseEvent.BUTTON1_DOWN_MASK) == 0) {
@@ -147,6 +155,7 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
                 if (!isInDrag && (lastPressPoint == null || lastPressPoint.distance(e.getPoint()) < DragSource.getDragThreshold())) {
                     return;
                 }
+                boolean dragImage = false;
                 isInDrag = true;
                 if (scaledPoints.size() > 1) {
                     boolean pan = false;
@@ -199,8 +208,22 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
                             registrationPoint.setLocation(getScaledPoint(scrPt));
                         }
                         lastPoint = e.getPoint();
+                    } else {
+                        dragImage = true;
                     }
                     repaint();
+                } else {
+                    dragImage = true;
+                }
+                if (dragImage) {
+                    suppressClick = true;
+                    JViewport viewport = (JViewport) getParent();
+                    Point pt = viewport.getViewPosition();
+                    int x = lastViewportPoint.x - e.getPoint().x;
+                    int y = lastViewportPoint.y - e.getPoint().y;
+                    pt.x +=x;
+                    pt.y +=y;
+                    viewport.setViewPosition(pt);
                 }
             }
 
@@ -214,8 +237,8 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
         addMouseWheelListener(new MouseWheelListener(){
             @Override
             public void mouseWheelMoved(MouseWheelEvent e) {
-                zoom = -e.getWheelRotation() /8D + 1;
-                menuHandler.actionPerformed(new ActionEvent(e.getSource(), 1, "zoom"));
+                float zoom = (float) (-e.getWheelRotation() /8D + 1);
+                multScale(zoom);
                 e.consume();
             }
         });
@@ -309,6 +332,32 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
         } else {
             setCursor(oldCursor);
         }
+    }
+    
+    public float getPostScale() {
+        return (float) postScale;
+    }
+
+    public void setPostScale(float postScale) {
+        if (postScale != this.postScale) {
+            this.postScale = postScale;
+            repaint();
+            BSW.instance().getMainFrame().getSlider().setValue(getSliderValue());
+        }
+    }
+
+    void multScale(float f) {
+        postScale *= f;
+    }
+    
+    int getSliderValue() {
+        int value =  (int) sliderInterpolate.inverse((Math.log(postScale)));
+        return value;
+    }
+
+    void setSliderValue(int value) {
+        float scale = (float) Math.exp(sliderInterpolate.interpolate(value));
+        setPostScale(scale);
     }
 
     private static class PopupItem extends JMenuItem {
@@ -466,10 +515,11 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
 
     @Override
     public void paintComponent(Graphics g) {
-        super.paintComponent(g);
+        superPaintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         g2.setColor(Color.BLUE);
         AffineTransform tr = new AffineTransform();
+        tr.scale(postScale, postScale);
         Polygon poly = new Polygon();
         List<Point> points = getImagePoints();
         for (int i=0; i < points.size(); i++) {
@@ -540,7 +590,6 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
 
     public void clearPoints() {
         previewCrop = null;
-        previewed = false;
         scaledPoints.clear();
         registrationPoints.clear();
         xCropScale = 1;
@@ -554,7 +603,6 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
         yCropScale = 1;
         previewCrop = null;
         scaledPoints.addAll(Arrays.asList(points));
-        previewed = true;
         repaint();
     }
 
@@ -584,15 +632,6 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
         }
         str.setLength(str.length() - 2);
         return str.toString();
-    }
-
-    @Override
-    public void set(RenderedImage im) {
-        fullSource = im;
-//        super.set(Utils.getDirectColorModelImage(im));
-//        im = Utils.getScaledInstance(im, im.getWidth(), im.getHeight(), RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-//        source = fullSource;
-        super.set(im);
     }
     
     private boolean isPointInside(Point2D scaledPoint) {
@@ -636,14 +675,14 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
     }
 
     private Point2D getScaledPoint(Point pt) {
-        double scale = BSW.instance().getPostScale();
+        double scale = postScale;
         double x = (pt.x - getOrigin().x) / scale;
         double y = (pt.y - getOrigin().y) / scale;
         return new Point2D.Double(x, y);
     }
 
     private Point getImagePoint(Point2D pt) {
-        double scale = BSW.instance().getPostScale();
+        double scale = postScale;
         int x = (int) Math.round((pt.getX() * scale + getOrigin().x));
         int y = (int) Math.round((pt.getY() * scale + getOrigin().y));
         return new Point(x, y);
@@ -675,8 +714,8 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
     private void markDeleted(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
         BasicStroke stroke = new BasicStroke(3);
-        float width = getSource().getWidth();
-        float height = getSource().getHeight();
+        float width = getSource().getWidth() * postScale;
+        float height = getSource().getHeight() * postScale;
         Line2D line1 = new Line2D.Float(0, 0, width, height);
         Line2D line2 = new Line2D.Float(width, 0, 0, height);
         g2.setColor(Color.RED);
@@ -710,5 +749,38 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
             setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
         }
     }
-    
+
+    // a modified version of DisplayJAI.paintComponent that handles scaling.
+    public synchronized void superPaintComponent(Graphics g) {
+
+        Graphics2D g2d = (Graphics2D)g;
+
+        // empty component (no image)
+        if ( source == null ) {
+            g2d.setColor(getBackground());
+            g2d.fillRect(0, 0, getWidth(), getHeight());
+            return;
+        }
+
+        // clear damaged component area
+        Rectangle clipBounds = g2d.getClipBounds();
+        g2d.setColor(getBackground());
+        g2d.fillRect(clipBounds.x,
+                     clipBounds.y,
+                     clipBounds.width,
+                     clipBounds.height);
+
+        // account for borders
+        Insets insets = getInsets();
+        int tx = insets.left + originX;
+        int ty = insets.top  + originY;
+
+        // Translation moves the entire image within the container
+        try {
+            AffineTransform tr = AffineTransform.getScaleInstance(postScale, postScale);
+            tr.translate(tx, ty);
+            g2d.drawRenderedImage(source, tr);
+        } catch( OutOfMemoryError e ) {
+        }
+    }
 }

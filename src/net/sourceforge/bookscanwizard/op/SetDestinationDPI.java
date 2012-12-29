@@ -20,16 +20,13 @@ package net.sourceforge.bookscanwizard.op;
 
 import java.util.List;
 import net.sourceforge.bookscanwizard.Operation;
+import net.sourceforge.bookscanwizard.PageSet;
 
-/**
- * Sets the scale of the preview images to be loaded.  Setting this to a 
- * smaller value than 1 will allow previews to be faster.
- */
-public class SetPreviewScale extends Operation {
-    @Override 
+public class SetDestinationDPI extends Operation {
+    @Override
     protected List<Operation> setup(List<Operation> operationList) throws Exception {
-        double scale = getArgs()[0];
-//        pageSet.setPreviewScale(scale);
+        int dpi = (int) getArgs()[0];
+        PageSet.setDestinationDPI(dpi);
         return operationList;
     }
 }

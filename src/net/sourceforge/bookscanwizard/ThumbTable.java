@@ -46,8 +46,6 @@ import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import net.sourceforge.bookscanwizard.util.BlockingLifoQueue;
@@ -66,7 +64,7 @@ public class ThumbTable extends JTable {
     private static final int threadCt = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
     private static final Executor executor = 
         new ThreadPoolExecutor(threadCt, threadCt, 0L, TimeUnit.MILLISECONDS, lifoQueue,
-                               new BSWThreadFactory());            
+                               new BSWThreadFactory(Thread.MIN_PRIORITY));
     private int customRowHeight = 0;
     private JPopupMenu popup;
     private ActionListener menuHandler;
@@ -77,24 +75,20 @@ public class ThumbTable extends JTable {
         ThumbTableCellRenderer renderer = new ThumbTableCellRenderer();
         getColumnModel().getColumn(0).setCellRenderer(renderer);
         setTableHeader(null);
-        getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                if (!e.getValueIsAdjusting()) {
-                    if (getSelectionModel().getMinSelectionIndex() == getSelectionModel().getMaxSelectionIndex()){
-                        if (getSelectedRow() >=0) {
-                            UserFeedbackHelper.doAction(e, new Runnable() {
-                                public void run() {
-                                    FileHolder holder = holders.get(getSelectedRow());
-                                    // TODO:  decide if we should use this or not.
-//                                    BSW.instance().getPreviewedImage().setFileHolder(holder);
-                                }
-                            });
+        addMouseListener( new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == 1 &&  e.getClickCount() == 2) {
+                    UserFeedbackHelper.doAction(e, new Runnable() {
+                        public void run() {
+                            FileHolder holder = holders.get(getSelectedRow());
+                            System.out.println("selected: "+getSelectedRow()+" "+holder);
+                            BSW.instance().getPreviewedImage().setFileHolder(holder);
                         }
-                    }
+                    });
                 }
             }
-        });
-        addMouseListener( new MouseAdapter() {
+
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (e.isPopupTrigger()) {
@@ -131,31 +125,37 @@ public class ThumbTable extends JTable {
         return holders.get(getSelectedRow());
     }
 
+    /**
+     * Returns a Page configuration setting based on the selected
+     * table cells.
+     */
     public String calcPageConfig() {
-        StringBuilder str = new StringBuilder();
-        MainFrame fr = BSW.instance().getMainFrame();
-        boolean left = fr.getLeftThumb().isSelected();
-        boolean right = fr.getRightThumb().isSelected();
+        final StringBuilder str = new StringBuilder();
+        final MainFrame fr = BSW.instance().getMainFrame();
+        final boolean left = fr.getLeftThumb().isSelected();
+        final boolean right = fr.getRightThumb().isSelected();
         str.append("Pages = ");
         if (left && right) {
             str.append("all ");
         } else if (left) {
             str.append("left ");
         } else if (right) {
-            str.append("right");
+            str.append("right ");
         } else {
             throw new RuntimeException("no pages selected");
         }
+        final int min = selectionModel.getMinSelectionIndex();
+        final int max = selectionModel.getMaxSelectionIndex();
         int firstPos = -1;
         int lastPos = -1;
-        for (int i=selectionModel.getMinSelectionIndex(); i <= selectionModel.getMaxSelectionIndex(); i++) {
+        for (int i=min; i <= max; i++) {
             if (selectionModel.isSelectedIndex(i)) {
                 if (firstPos < 0) {
                     firstPos = i;
                 }
                 lastPos = i;
             }
-            if (i == selectionModel.getMaxSelectionIndex() || !selectionModel.isSelectedIndex(i)) {
+            if (i == max || !selectionModel.isSelectedIndex(i)) {
                 if (firstPos >=0) {
                     str.append(holders.get(firstPos).getName());
                     if (lastPos != firstPos) {
@@ -304,7 +304,6 @@ public class ThumbTable extends JTable {
             try {
                 RenderedImage img = holder.getThumbnail();
                 img = Utils.getScaledInstance(img, IMAGE_WIDTH, IMAGE_WIDTH * img.getHeight() / img.getWidth(), RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-                System.out.println("size: "+img.getWidth()+"x"+img.getHeight());
                 images.put(holder, img);
                 update(holder);
             } catch (IOException ex) {

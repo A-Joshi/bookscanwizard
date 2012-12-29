@@ -29,15 +29,15 @@ import net.sourceforge.bookscanwizard.BSW;
 import net.sourceforge.bookscanwizard.FileHolder;
 import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.PageSet;
+import net.sourceforge.bookscanwizard.SaveOperation;
 import net.sourceforge.bookscanwizard.UserException;
 import net.sourceforge.bookscanwizard.s3.ArchiveTransfer;
 import net.sourceforge.bookscanwizard.util.Utils;
 
 /**
- *
- * @author Steve
+ * Creates a zip file of jp2 files that are formatted for the Internet Archive.
  */
-public class CreateArchiveZip extends Operation  {
+public class CreateArchiveZip extends Operation implements SaveOperation {
     private static ZipOutputStream zipOut;
     private static Dimension lastImageSize;
     private static int layerCount;

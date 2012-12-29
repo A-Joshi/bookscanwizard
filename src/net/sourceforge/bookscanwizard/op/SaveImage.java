@@ -19,12 +19,12 @@
 package net.sourceforge.bookscanwizard.op;
 
 import com.sun.media.imageio.plugins.jpeg2000.J2KImageWriteParam;
-import com.sun.media.jai.codec.TIFFEncodeParam;
-import com.sun.media.jai.codec.TIFFField;
+import static com.sun.media.imageio.plugins.tiff.BaselineTIFFTagSet.RESOLUTION_UNIT_INCH;
+import static com.sun.media.imageio.plugins.tiff.BaselineTIFFTagSet.TAG_RESOLUTION_UNIT;
 import static com.sun.media.imageio.plugins.tiff.BaselineTIFFTagSet.TAG_X_RESOLUTION;
 import static com.sun.media.imageio.plugins.tiff.BaselineTIFFTagSet.TAG_Y_RESOLUTION;
-import static com.sun.media.imageio.plugins.tiff.BaselineTIFFTagSet.TAG_RESOLUTION_UNIT;
-import static com.sun.media.imageio.plugins.tiff.BaselineTIFFTagSet.RESOLUTION_UNIT_INCH;
+import com.sun.media.jai.codec.TIFFEncodeParam;
+import com.sun.media.jai.codec.TIFFField;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -45,6 +45,7 @@ import net.sourceforge.bookscanwizard.BSW;
 import net.sourceforge.bookscanwizard.FileHolder;
 import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.PageSet;
+import net.sourceforge.bookscanwizard.SaveOperation;
 import net.sourceforge.bookscanwizard.UserException;
 import net.sourceforge.bookscanwizard.util.Utils;
 import org.w3c.dom.Element;
@@ -53,7 +54,7 @@ import org.w3c.dom.NodeList;
 /**
  * Saves the image.
  */
-public class SaveImage extends Operation  {
+public class SaveImage extends Operation implements SaveOperation {
     private static final Logger logger = Logger.getLogger(SaveImage.class.getName());
 
     @Override
@@ -98,7 +99,14 @@ public class SaveImage extends Operation  {
         // with imageio.
 
         TIFFEncodeParam param = new TIFFEncodeParam();
-        param.setCompression( pageSet.getCompressionType());
+        int compression;
+        if (getTextArgs().length > 2) {
+            String type = getTextArgs()[2];
+            compression =  SetTiffOptions.getTiffCompressionType(type);
+        } else {
+            compression = pageSet.getCompressionType();
+        }
+        param.setCompression(compression);
         if (dpi > 0) {
             TIFFField[] extras = new TIFFField[3];
             extras[0] = new TIFFField(TAG_X_RESOLUTION, TIFFField.TIFF_RATIONAL, 1, new long[][] {{dpi, 1},{0 ,0}});

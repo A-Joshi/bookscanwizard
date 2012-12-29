@@ -104,7 +104,7 @@ public final class ImageUtilities {
     static {
 
     	// do we wrappers at hand?
-        boolean mediaLib = false;
+        boolean mediaLib;
         Class mediaLibImage = null;
         try {
             mediaLibImage = Class.forName("com.sun.medialib.mlib.Image");

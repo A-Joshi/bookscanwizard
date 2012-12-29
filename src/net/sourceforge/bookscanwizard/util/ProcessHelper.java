@@ -86,7 +86,7 @@ public class ProcessHelper {
             if (jarIndex < 1) {
                 continue;
             }
-            String jarLocation = null;
+            String jarLocation;
             if (urlString.startsWith("jar:file:")) {
                 // jdk5 webstart cache AND development
                 jarLocation = urlString.substring(4, jarIndex + 4);

@@ -59,7 +59,7 @@ public class PrefsHelper {
             boolean opListVisible = prefs.getBoolean("operationListVisible", true);
             mainFrame.getOperationList().setVisible(opListVisible);
             float scale = prefs.getFloat("scale", 1);
-            bsw.setPostScale(scale);
+            mainFrame.getViewerPanel().setPostScale(scale);
             Rectangle bounds = (Rectangle) getObject("mainBounds");
             if (bounds != null) {
                 mainFrame.setBounds(bounds);
@@ -100,7 +100,7 @@ public class PrefsHelper {
         BSW bsw = BSW.instance();
         MainFrame mainFrame = bsw.getMainFrame();
         prefs.putBoolean("operationListVisible", mainFrame.getOperationList().isVisible());
-        prefs.putFloat("scale", bsw.getPostScale());
+        prefs.putFloat("scale", mainFrame.getViewerPanel().getPostScale());
         putObject("mainBounds", mainFrame.getBoundsHelper().getUnmaximizedBounds());
         prefs.putInt("mainState", mainFrame.getBoundsHelper().getLastState());
         putObject("helperBounds", mainFrame.getOperationList().getBoundsHelper().getUnmaximizedBounds());
@@ -119,6 +119,10 @@ public class PrefsHelper {
     
     synchronized public static void setPref(String key, Object value) {
         miscPrefs.put(key, value);
+    }
+    
+    synchronized public static HashMap<String,Object> getPrefs() {
+        return miscPrefs;
     }
 
     synchronized public static String getPrefString(String key) {

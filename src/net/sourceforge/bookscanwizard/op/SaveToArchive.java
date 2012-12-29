@@ -27,6 +27,7 @@ import javax.swing.SwingUtilities;
 import net.sourceforge.bookscanwizard.BSW;
 import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.PrefsHelper;
+import net.sourceforge.bookscanwizard.SaveOperation;
 import net.sourceforge.bookscanwizard.UserException;
 import net.sourceforge.bookscanwizard.s3.ArchiveTransfer;
 import net.sourceforge.bookscanwizard.s3.ProgressListener;
@@ -35,7 +36,7 @@ import net.sourceforge.bookscanwizard.s3.ProgressListener;
  *
  * @author Steve
  */
-public class SaveToArchive extends Operation {
+public class SaveToArchive extends Operation implements SaveOperation {
     private static ZipOutputStream zipOut;
     private static boolean abortRequested;
     private static SaveToArchive lastSave;

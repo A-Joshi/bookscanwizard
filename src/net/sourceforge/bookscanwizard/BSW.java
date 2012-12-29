@@ -79,6 +79,7 @@ import net.sourceforge.bookscanwizard.qr.PrintCodesDialog;
 import net.sourceforge.bookscanwizard.qr.ReadCodes;
 import net.sourceforge.bookscanwizard.qr.SplitBooks;
 import net.sourceforge.bookscanwizard.start.NewBook;
+import net.sourceforge.bookscanwizard.start.PreferenceWizard;
 import net.sourceforge.bookscanwizard.unwarp.FilterWizard;
 import net.sourceforge.bookscanwizard.util.ProcessHelper;
 
@@ -94,14 +95,16 @@ public class BSW {
     private static File currentDirectory = new File(".").getAbsoluteFile();
     private static TileCache tileCache;
 
+    public static double getPreviewScale() {
+        return 1;
+    }
+
     private AtomicInteger completedCount = new AtomicInteger();
 
     private MainFrame mainFrame;
     private PreviewedImage previewedImage = new PreviewedImage();
     private boolean override = false;
 
-    private static double previewScale = 1;
-    private float postScale = 1F;
     private File configFile;
 
     private MenuActionListener menuHandler = new MenuActionListener();
@@ -338,7 +341,7 @@ public class BSW {
         return Operation.getOperations(config);
     }
 
-    private void preview() throws Exception {
+    public void preview() throws Exception {
         RenderedImage img = previewedImage.getPreviewProcessedImage();
         mainFrame.setImage(img, previewedImage.getPreviewHolder());
     }
@@ -356,6 +359,9 @@ public class BSW {
             }
             if ("new".equals(cmd)) {
                 newBatch();
+            } else if ("preferences".equals(cmd)) {
+                PreferenceWizard wizard = new PreferenceWizard();
+                wizard.getConfig();
             } else if ("open".equals(cmd)) {
                 openConfig();
             } else if ("save".equals(cmd)) {
@@ -381,14 +387,11 @@ public class BSW {
                 }
                 mainFrame.getPageListBox().setSelectedIndex(mainFrame.getPageListBox().getSelectedIndex() + inc);
             } else if ("zoomIn".equals(cmd)) {
-                setPostScale(postScale * 1.5F);
-                preview();
+                getMainFrame().getViewerPanel().multScale(1.5f);
             } else if ("zoomOut".equals(cmd)) {
-                setPostScale(postScale / 1.5F);
-                preview();
+                getMainFrame().getViewerPanel().multScale(1f / 1.5F);
             } else if ("zoom".equals(cmd)) {
-                setPostScale((float) (postScale * getMainFrame().getViewerPanel().getZoom()));
-                preview();
+                throw new RuntimeException("not implemented");
             } else if ("about".equals(cmd)) {
                 mainFrame.getAboutDialog().setVisible(true);
             } else if ("command_helper".equals(cmd)) {
@@ -609,10 +612,10 @@ public class BSW {
     private synchronized void runBatch(String configText, final Batch batch) throws Exception {
         abort = false;
         logger.fine("running....");
-        setPreviewScale(1);
         final List<Operation> operations = getConfig(configText);
         // Create the threadPool with a bit lower than normal priority
-        threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), new BSWThreadFactory());
+        threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), 
+                     new BSWThreadFactory(BSWThreadFactory.LOW_PRIORITY));
         if (operations.isEmpty()) {
             throw new UserException("Add the source directory of the book with the LoadImages operation");
         }
@@ -801,26 +804,8 @@ public class BSW {
         }
     }
 
-    public static void setPreviewScale(double previewScale) {
-        BSW.previewScale = previewScale;
-    }
-
-    public static double getPreviewScale() {
-        return isBatchMode() ? 1 : previewScale;
-    }
-
     public static boolean isBatchMode() {
         return batchMode;
-    }
-
-    public float getPostScale() {
-        return (float) previewScale * postScale;
-    }
-
-    public void setPostScale(float postScale) {
-        postScale = Math.max(.01f, postScale);
-        postScale = Math.min(2, postScale);
-        this.postScale = postScale;
     }
 
     public boolean isInPreview() {
@@ -965,10 +950,6 @@ public class BSW {
             try {
                 if (previewImage == null && previewHolder != null) {
                     previewImage = previewHolder.getImage();
-                    if (getPreviewScale() != 1F) {
-                        previewImage = JAI.create("SubsampleAverage",
-                            previewImage, getPreviewScale(), getPreviewScale(), BSW.SPEED_HINTS);
-                    }
                 }
             } catch (Exception e) {
                 previewImage = null;

@@ -96,8 +96,8 @@ public class NewBook {
                    "SetDestination = ");
         str.append(settings.get(DESTINATION_DIRECTORY));
         str.append("\n\n"+
-                   "# Sets the final DPI and compression\n"+
-                   "SetTiffOptions = ");
+                   "# Sets the final DPI\n"+
+                   "SetDestinationDPI = ");
         String dpi = (String) settings.get(DESTINATION_DPI);
         dpi = dpi.replace("Keep Source DPI", "0");
         str.append(dpi);
@@ -147,6 +147,7 @@ public class NewBook {
             str.append("#Change to a binary (black & white) image, with a clipping point of 60%\n"+
                        "Color=bw 60\n\n");
         }
+        str.append("SaveImage tiff DEFLATE\n\n");
         return str.toString();
     }
 

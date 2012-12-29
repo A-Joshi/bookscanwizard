@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.sourceforge.bookscanwizard.FileHolder;
+import net.sourceforge.bookscanwizard.PageSet;
 import net.sourceforge.bookscanwizard.UserException;
 
 /**
@@ -44,6 +45,9 @@ public class ScaleToDPI extends Scale {
         }
         if (destinationDPI == 0) {
             throw new UserException("ScaleToDPI: Destination DPI is not set");
+        }
+        if (getPageSet().getDestinationDPI() == 0) {
+            PageSet.setDestinationDPI((int) destinationDPI);
         }
         if (sourceDPI == 0 || Float.isNaN(sourceDPI)) {
             throw new UserException("ScaleToDPI: Source DPI is not set");

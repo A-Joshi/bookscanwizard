@@ -19,20 +19,15 @@
 package net.sourceforge.bookscanwizard.start;
 
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.text.JTextComponent;
 
 public class Page1 extends AbstractPage {
 
@@ -178,27 +173,4 @@ public class Page1 extends AbstractPage {
         add(pane);
         add(Box.createVerticalStrut(10));
     }
-
-    private class FileChooser implements ActionListener {
-        private JTextComponent tc;
-
-        public FileChooser(JTextComponent tc) {
-            this.tc = tc;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            final JFileChooser fc = new JFileChooser();
-            fc.setDialogTitle("Working Directory");
-            fc.setCurrentDirectory(new File(tc.getText()));
-            fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            fc.setApproveButtonText("Select");
-            int returnVal = fc.showOpenDialog(Page1.this);
-            if (returnVal != JFileChooser.APPROVE_OPTION) {
-                return;
-            }
-            tc.setText(fc.getSelectedFile().getPath());
-        }
-    }
-
 }

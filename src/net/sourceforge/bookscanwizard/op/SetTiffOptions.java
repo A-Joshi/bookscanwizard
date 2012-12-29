@@ -31,20 +31,29 @@ public class SetTiffOptions extends Operation {
         PageSet.setDestinationDPI(Integer.parseInt(args[0]));
         if (args.length > 0) {
             String type = args[1];
-            int compressionType;
-            if (type.equals("NONE")) {
-                compressionType = TIFFEncodeParam.COMPRESSION_NONE;
-             } else if (type.equals("DEFLATE")) {
-                compressionType = TIFFEncodeParam.COMPRESSION_DEFLATE;
-             } else if (type.equals("GROUP4")) {
-                compressionType = TIFFEncodeParam.COMPRESSION_GROUP4;
-             } else if (type.equals("JPEG")) {
-                compressionType = TIFFEncodeParam.COMPRESSION_JPEG_TTN2;
-            } else {
-                throw new UserException("Could not find compression type "+type);
-            }
-            pageSet.setCompressionType(compressionType);
+            pageSet.setCompressionType(getTiffCompressionType(type));
         }
         return operationList;
+    }
+    
+    /**
+     * Returns the compression type to use for saving TIFF images.
+     * @param type name of the compression
+     * @return the integer that represents the compression type.
+     */
+    public static int getTiffCompressionType(String type) {
+        int compressionType;
+        if (type.equals("NONE")) {
+            compressionType = TIFFEncodeParam.COMPRESSION_NONE;
+         } else if (type.equals("DEFLATE")) {
+            compressionType = TIFFEncodeParam.COMPRESSION_DEFLATE;
+         } else if (type.equals("GROUP4")) {
+            compressionType = TIFFEncodeParam.COMPRESSION_GROUP4;
+         } else if (type.equals("JPEG")) {
+            compressionType = TIFFEncodeParam.COMPRESSION_JPEG_TTN2;
+        } else {
+            throw new UserException("Could not find compression type "+type);
+        }
+        return compressionType;
     }
 }

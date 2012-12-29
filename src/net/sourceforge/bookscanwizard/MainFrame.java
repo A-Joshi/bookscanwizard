@@ -36,7 +36,6 @@ import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
-import java.awt.image.renderable.ParameterBlock;
 import java.net.URI;
 import java.net.URL;
 import java.util.Collections;
@@ -44,9 +43,7 @@ import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.media.jai.JAI;
 import javax.media.jai.RenderedOp;
-import javax.media.jai.operator.SubsampleBinaryToGrayDescriptor;
 import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -67,16 +64,19 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
+import javax.swing.JSlider;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 
 /**
  * The GUI front end to the BSW
  */
-public class MainFrame extends JFrame {
+public final class MainFrame extends JFrame {
     private final ViewerPanel viewerPanel;
     private final ConfigEntry configEntry;
     private final JLabel status;
@@ -112,6 +112,8 @@ public class MainFrame extends JFrame {
     private final JCheckBox leftThumb;
     private final JCheckBox rightThumb;
     private final ThumbTable thumbTable;
+
+    private final JSlider slider;
 
     public MainFrame(final ActionListener menuHandler) {
         super("Book Scan Wizard");
@@ -219,7 +221,7 @@ public class MainFrame extends JFrame {
         menuItem.setActionCommand("preview");
         menuItem.addActionListener(menuHandler);
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        actionsMenu.add(menuItem);
+        actionsMenu.add(menuItem); 
 
         menuItem = new JMenuItem("Submit");
         menuItem.setMnemonic(KeyEvent.VK_S);
@@ -309,7 +311,15 @@ public class MainFrame extends JFrame {
             }
         });
         toolsMenu.add(horizontalLayout);
-/*
+// TODO:  get preferences working.
+/*        menuItem = new JMenuItem("Preferences");
+        menuItem.setMnemonic(KeyEvent.VK_P);
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        menuItem.setActionCommand("preferences");
+        menuItem.addActionListener(menuHandler);
+        toolsMenu.add(menuItem);*/
+        
+        /*
         menuItem = new JMenuItem("Laser Filter...");
         menuItem.setMnemonic(KeyEvent.VK_L);
         menuItem.setToolTipText("A tool that can help define a filter to recognize laser lines");
@@ -369,7 +379,8 @@ public class MainFrame extends JFrame {
         thumbPanel.setLayout(new BorderLayout());
         thumbTable = new ThumbTable(menuHandler);
         JScrollPane thumbScroll = new JScrollPane(thumbTable);
-        thumbScroll.setPreferredSize(new Dimension(ThumbTable.IMAGE_WIDTH+80, 1));
+        thumbScroll.setPreferredSize(new Dimension(ThumbTable.IMAGE_WIDTH+24, 1));
+        thumbScroll.setMinimumSize(thumbScroll.getPreferredSize());
         thumbPanel.add(thumbScroll, BorderLayout.CENTER);
         JPanel northPanel = new JPanel();
         northPanel.setLayout(new FlowLayout());
@@ -499,19 +510,26 @@ public class MainFrame extends JFrame {
         buttonPanel.add(showColors);
         buttonPanel.add(Box.createHorizontalStrut(2));
 
-        JButton zoomIn = new JButton("Zoom in");
-        zoomIn.setToolTipText("Zooms in on the previewed image");
-        zoomIn.setActionCommand("zoomIn");
-        zoomIn.addActionListener(menuHandler);
-        buttonPanel.add(zoomIn);
-        buttonPanel.add(Box.createHorizontalStrut(2));
+        JPanel panel = new JPanel();
+        panel.setPreferredSize(new Dimension(20, 1));
+        buttonPanel.add(panel);
+        
+        slider = new JSlider();
+        slider.setToolTipText("Sets the size of the preview image");
+        slider.setMinimum(-100);
+        slider.setMaximum(100);
+        slider.setValue(getViewerPanel().getSliderValue());
+        slider.setMinimumSize(new Dimension(150, 1));
+        slider.addChangeListener(new ChangeListener(){
+            public void stateChanged(ChangeEvent e) {
+                JSlider source = (JSlider)e.getSource();
+                viewerPanel.setSliderValue(source.getValue());
+            }
+        });
+        
+        slider.setPreferredSize(new Dimension(200,20));
+        buttonPanel.add(slider);
 
-        JButton zoomOut = new JButton("Zoom out");
-        zoomOut.setToolTipText("Zooms out on the previewed image");
-        zoomOut.setActionCommand("zoomOut");
-        zoomOut.addActionListener(menuHandler);
-
-        buttonPanel.add(zoomOut);
         buttonPanel.add(Box.createHorizontalStrut(10));
         status = new JLabel();
         buttonPanel.add(status);
@@ -588,21 +606,6 @@ public class MainFrame extends JFrame {
             viewerPanel.set(new BufferedImage(1,1, BufferedImage.TYPE_INT_RGB));
             return;
         }
-        float postScale = BSW.instance().getPostScale();
-        if (postScale != 1) {
-            if (img.getSampleModel().getNumBands() == 1
-                    && img.getSampleModel().getSampleSize()[0] == 1
-                    && postScale < 1)
-            {
-                img = SubsampleBinaryToGrayDescriptor
-                    .create(img, postScale, postScale, BSW.SPEED_HINTS);
-            } else {
-                ParameterBlock pb = new ParameterBlock().addSource(img).
-                        add(postScale).
-                        add(postScale);
-                img = JAI.create("scale", pb, BSW.SPEED_HINTS);
-            }
-        }
         viewerPanel.setOrigin(-img.getMinX(), -img.getMinY());
         // renders the data now so the busy cursor works right.
         if (img instanceof RenderedOp) {
@@ -631,7 +634,6 @@ public class MainFrame extends JFrame {
         pageListBox.setModel(new DefaultComboBoxModel(files));
         if (selected != null) {
             FileHolder currentSelected = (FileHolder)pageListBox.getSelectedItem();
-            System.out.println("--- "+currentSelected+" "+selected);
             if (!selected.equals(currentSelected) ) {
                 pageListBox.setSelectedItem(selected);
             }
@@ -737,5 +739,9 @@ public class MainFrame extends JFrame {
     
     public ThumbTable getThumbTable() {
         return thumbTable;
+    }
+
+    public JSlider getSlider() {
+        return slider;
     }
 }

@@ -29,9 +29,9 @@ public class BSWThreadFactory implements ThreadFactory {
     final ThreadGroup group;
     final AtomicInteger threadNumber = new AtomicInteger(1);
     final String namePrefix;
-    private static final int PRIORITY = (Thread.MIN_PRIORITY + Thread.NORM_PRIORITY) /2;
+    public static final int LOW_PRIORITY = (Thread.MIN_PRIORITY + Thread.NORM_PRIORITY) /2;
 
-    public BSWThreadFactory() {
+    public BSWThreadFactory(int priority) {
         SecurityManager s = System.getSecurityManager();
         group = (s != null)? s.getThreadGroup() :
                              Thread.currentThread().getThreadGroup();
@@ -48,8 +48,8 @@ public class BSWThreadFactory implements ThreadFactory {
         if (!t.isDaemon()) {
             t.setDaemon(true);
         }
-        if (t.getPriority() != PRIORITY) {
-            t.setPriority(PRIORITY);
+        if (t.getPriority() != LOW_PRIORITY) {
+            t.setPriority(LOW_PRIORITY);
         }
         return t;
     }

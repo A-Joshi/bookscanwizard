@@ -32,7 +32,6 @@ import java.util.regex.Pattern;
 import javax.imageio.spi.ImageWriterSpi;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
-import net.sourceforge.bookscanwizard.op.SaveImage;
 import net.sourceforge.bookscanwizard.util.ImageUtilities;
 
 /**
@@ -120,7 +119,7 @@ abstract public class Operation {
     private static void verifySaveOperationExists(List<Operation> ops) throws Exception {
         boolean found = false;
         for (Operation op : ops) {
-            if (op instanceof SaveImage) {
+            if (op instanceof SaveOperation) {
                 found = true;
                 break;
             }
@@ -331,6 +330,18 @@ abstract public class Operation {
         return allOperations;
     }
 
+    /**
+     * Preview operations.  If the page is deleted, it will not perform
+     * perspective or color operations, and only cropping if it is done
+     * before a perspective operation.
+     * 
+     * @param ops The operations to preview
+     * @param holder The holder of the current page
+     * @param img The image to be processed.
+     * @param cursorAfterConfig if the last operation should be previewed instead of rendered.
+     * 
+     * @return the image with the operations performed.
+     */
     public static RenderedImage previewOperations(List<Operation> ops, FileHolder holder, RenderedImage img, boolean cursorAfterConfig) throws Exception {
         if (holder == null) {
             return null;
@@ -344,14 +355,25 @@ abstract public class Operation {
         if (!ops.isEmpty() && !cursorAfterConfig) {
             lastOperation = ops.get(ops.size()-1);
         }
+        boolean perspectiveSkipped = false;
         for (Operation op : ops) {
             boolean preview = false;
             if (op.getPageSet().getFileHolders().contains(holder)) {
                 if (op instanceof ColorOp) {
+                    if (holder.isDeleted() || holder.isProblemFile()) {
+                        continue;
+                    }
                     preview = !main.isShowColors();
                 } else if (op instanceof CropOp) {
+                    if (perspectiveSkipped) { // only happens for problem or deleted images
+                        continue;
+                    }
                     preview = op == lastOperation || !main.isShowCrops();
                 } else if (op instanceof PerspectiveOp) {
+                    if (holder.isDeleted() || holder.isProblemFile()) {
+                        perspectiveSkipped = true;
+                        continue;
+                    }
                     preview = op == lastOperation || !main.isShowPerspective();
                 }
                 if (preview) {

@@ -123,10 +123,6 @@ public class PageSet {
         return BSW.getPreviewScale();
     }
 
-    public void setPreviewScale(double previewScale) {
-        BSW.setPreviewScale(previewScale);
-    }
-
     public static File getSourceDir() {
         return sourceDir;
     }

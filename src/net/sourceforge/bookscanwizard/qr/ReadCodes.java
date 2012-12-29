@@ -88,7 +88,8 @@ public class ReadCodes {
     }
 
     public List<QRData> getCodes() throws IOException, InterruptedException, ExecutionException {
-        ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), new BSWThreadFactory());
+        ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), 
+                new BSWThreadFactory(BSWThreadFactory.LOW_PRIORITY));
         final ArrayList<Future<List<QRData>>> futures = new ArrayList<Future<List<QRData>>>();
 
         for (final File f : files) {
