@@ -157,6 +157,7 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
                 }
                 boolean dragImage = false;
                 isInDrag = true;
+                boolean suppressDragImage = false;
                 if (scaledPoints.size() > 1) {
                     boolean pan = false;
                     Point sPoint = new Point(e.getX(), e.getY());
@@ -188,6 +189,7 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
                     } else {
                         if (nearestPt.distance(sPoint) <= MAX_DISTANCE_TO_POINT) {
                             nearest.setLocation(scaledPoint);
+                            suppressDragImage = true;
                         } else {
                             pan = isPointInside(scaledPoint);
                         }
@@ -209,7 +211,7 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
                         }
                         lastPoint = e.getPoint();
                     } else {
-                        dragImage = true;
+                        dragImage = !suppressDragImage;
                     }
                     repaint();
                 } else {
