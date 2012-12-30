@@ -38,10 +38,9 @@ public class ScaleToFirst extends Operation {
             height = img.getHeight();
         } else {
             if (img.getWidth() != width || img.getHeight() != height) {
-                img = Scale.qualityScale(img, img.getWidth() / width, img.getHeight() / height);
+                img = Scale.qualityScale(img, width / img.getWidth() , height / img.getHeight());
             }
         }
         return img;
     }
 }
-

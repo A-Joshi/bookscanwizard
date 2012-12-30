@@ -308,7 +308,7 @@ abstract public class Operation {
         verifySaveOperationExists(ops);
         RenderedImage img = null;
         for (Operation op : ops) {
-            if (!holder.isDeleted() && op.getPageSet().getFileHolders().contains(holder)) {
+            if (!holder.isDeleted() && op.getPageSet().getFileHolders().contains(holder) || op instanceof ProcessDeleted) {
                 if (op.matchesPass()) {
                     if (img == null) {
                         img = holder.getImage();

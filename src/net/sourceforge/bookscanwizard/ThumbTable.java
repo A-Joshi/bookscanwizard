@@ -76,6 +76,7 @@ public class ThumbTable extends JTable {
     private JPopupMenu popup;
     private TransposeType leftTranspose;
     private TransposeType rightTranspose;
+    private volatile int resetSeq = 0;
     
     public ThumbTable(ActionListener menuHandler) {
         super(new HolderDataModel());
@@ -126,6 +127,13 @@ public class ThumbTable extends JTable {
         menuItem.setActionCommand("thumb_copy");
         menuItem.addActionListener(menuHandler);
         popup.add(menuItem);
+        menuItem = new JMenuItem("Remove Pages");
+        menuItem.setToolTipText("Marks the selected pages as ones that should not be converted");
+        menuItem.setActionCommand("thumb_remove_pages");
+        menuItem.addActionListener(menuHandler);
+        popup.add(menuItem);
+
+        
         setTransferHandler(new ThumbTransferHandler());
     }
     
@@ -142,7 +150,6 @@ public class ThumbTable extends JTable {
         final MainFrame fr = BSW.instance().getMainFrame();
         final boolean left = fr.getLeftThumb().isSelected();
         final boolean right = fr.getRightThumb().isSelected();
-        str.append("Pages = ");
         if (left && right) {
             str.append("all ");
         } else if (left) {
@@ -181,12 +188,17 @@ public class ThumbTable extends JTable {
     }
     
     public void refeshThumbs() {
+        lifoQueue.clear();
         images.clear();
         customRowHeight = 0;
+        resetSeq++;
         update();
     }
     
     public void update() {
+        update(false);
+    }
+    public void update(boolean refreshThumbs) {
         MainFrame fr =  BSW.instance().getMainFrame();
         boolean left = fr.getLeftThumb().isSelected();
         boolean right = fr.getRightThumb().isSelected();
@@ -202,7 +214,7 @@ public class ThumbTable extends JTable {
                 for (int i=holders.size()-1; i>=0; i--) {
                     FileHolder holder = holders.get(i);
                     if (!images.containsKey(holder)) {
-                        ImageRequest imgRequest = new ImageRequest(holders.get(i));
+                        ImageRequest imgRequest = new ImageRequest(holders.get(i), resetSeq);
                         executor.execute(imgRequest);
                     }
                 }
@@ -273,7 +285,7 @@ public class ThumbTable extends JTable {
             if (img == null) {
                 found = false;
                 img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
-                ImageRequest imgRequest = new ImageRequest(holder);
+                ImageRequest imgRequest = new ImageRequest(holder, resetSeq);
                 lifoQueue.remove(imgRequest);
                 executor.execute(imgRequest);
             }
@@ -290,7 +302,13 @@ public class ThumbTable extends JTable {
 
     private class ImageRequest implements Runnable {
         private FileHolder holder;
+        private int resetSeq;
         
+        public ImageRequest(FileHolder h, int resetSeq) {
+            this.holder = h;
+            this.resetSeq = resetSeq;
+        }
+
         @Override
         public int hashCode() {
             int hash = 5;
@@ -317,10 +335,6 @@ public class ThumbTable extends JTable {
             return holder;
         }
 
-        public ImageRequest(FileHolder h) {
-            this.holder = h;
-        }
-
         public void run() {
             try {
                 RenderedImage img = holder.getThumbnail();
@@ -329,8 +343,10 @@ public class ThumbTable extends JTable {
                     img = JAI.create("transpose", img,transpose);
                 }
                 img = Utils.getScaledInstance(img, IMAGE_WIDTH, IMAGE_WIDTH * img.getHeight() / img.getWidth(), RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-                images.put(holder, img);
-                update(holder);
+                if (this.resetSeq == resetSeq) {
+                    images.put(holder, img);
+                    update(holder);
+                }
             } catch (IOException ex) {
                 Logger.getLogger(ThumbTable.class.getName()).log(Level.SEVERE, null, ex);
             }

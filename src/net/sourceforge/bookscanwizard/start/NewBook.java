@@ -50,6 +50,7 @@ public class NewBook {
     public static final String ESTIMATED_DPI1 = "estimated_dpi_1";
     public static final String FOCAL_LENGTH2 = "focal length2";
     public static final String ESTIMATED_DPI2= "estimated_dpi_2";
+    public static final String FILE_FORMAT = "file_format";
 
     private Wizard wizard;
 
@@ -95,28 +96,19 @@ public class NewBook {
                    "# The Destination directory\n" +
                    "SetDestination = ");
         str.append(settings.get(DESTINATION_DIRECTORY));
-        str.append("\n\n"+
-                   "# Sets the final DPI\n"+
-                   "SetDestinationDPI = ");
-        String dpi = (String) settings.get(DESTINATION_DPI);
-        dpi = dpi.replace("Keep Source DPI", "0");
-        str.append(dpi);
-        str.append(" ");
-        str.append(settings.get(COMPRESSION));
         str.append("\n\n");
         if (((Boolean) settings.get(USE_FOCAL_LENGTH))) {
             str.append("# Estimate the source DPI from the focal length setting\n");
             str.append(EstimateDPI.getConfig()).append("\n\n");
         }
         String rotate;
-        str.append("# Configure the left pages\n"+
+        str.append("# Configure the page rotations\n"+
                    "Pages = left\n");
         rotate = (String) settings.get(LEFT_ORIENT);
         if (!rotate.equals("0")) {
             str.append("Rotate = ").append(rotate).append("\n");
         }
-        str.append("\n# Configure the right pages\n"+
-                   "Pages = right\n");
+        str.append("Pages = right\n");
         rotate = (String) settings.get(RIGHT_ORIENT);
         if (!rotate.equals("0")) {
             str.append("Rotate = ").append(rotate).append("\n");
@@ -130,24 +122,41 @@ public class NewBook {
         str.append("########################################################################\n"+
                    "### Insert commands to fix keystone, color, etc.\n"+
                    "########################################################################\n"+
+                   "#Click on the 4 corners of a page, then right click to correct keystoning.\n"+
+                   "#Click on 2 corners, then right click to crop.\n"+
                    "Pages=all\n"+
                    "\n\n");
 
         str.append("########################################################################\n\n");
         str.append("Pages=all\n");
         String color = (String) settings.get(OUTPUT_TYPE);
-        if ("Gray".equals(color) || "B/W".equals(color)) {
+        System.out.println("color: "+color);
+        if ("Greyscale".equals(color) || "B/W".equals(color)) {
             str.append("Color = gray\n\n");
-        }
-        if (!dpi.equals("0")) {
-            str.append("# Rescale the image to match the final DPI\n"+
-                       "ScaleToDPI=\n\n");
         }
         if ("B/W".equals(color)) {
             str.append("#Change to a binary (black & white) image, with a clipping point of 60%\n"+
                        "Color=bw 60\n\n");
         }
-        str.append("SaveImage tiff DEFLATE\n\n");
+
+        String dpi = (String) settings.get(DESTINATION_DPI);
+        dpi = dpi.replace("Keep Source DPI", "0");
+        if (!dpi.equals("0")) {
+            str.append("# Rescale the image to match the final DPI\n" + "ScaleToDPI=").append(dpi).append("\n\n");
+        }
+        str.append("# This will ensure the left and right pages are exactly the same size.\n");
+        str.append("ScaleToFirst=\n\n");
+        
+        String imagetype = (String) settings.get(FILE_FORMAT);
+        String compression = (String) settings.get(COMPRESSION);
+        if (compression == null) {
+            compression = "";
+        }
+        if (imagetype.equals("PDF")) {
+            str.append("CreatePDF = output/processed.pdf\n");
+        } else {
+            str.append("SaveImage = ").append(imagetype).append(" ").append(compression).append("\n\n");
+        }
         return str.toString();
     }
 

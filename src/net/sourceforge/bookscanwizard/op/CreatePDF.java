@@ -30,6 +30,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.concurrent.Semaphore;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageTypeSpecifier;
@@ -41,6 +43,7 @@ import net.sourceforge.bookscanwizard.BSW;
 import net.sourceforge.bookscanwizard.FileHolder;
 import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.PageSet;
+import net.sourceforge.bookscanwizard.ProcessDeleted;
 import net.sourceforge.bookscanwizard.SaveOperation;
 import net.sourceforge.bookscanwizard.UserException;
 import net.sourceforge.bookscanwizard.op.Metadata.KeyValue;
@@ -50,7 +53,8 @@ import org.w3c.dom.Element;
 /**
  * Creates a pdf of all the images.
  */
-public class CreatePDF extends Operation implements SaveOperation {
+public class CreatePDF extends Operation implements SaveOperation, ProcessDeleted {
+    private static final Logger logger = Logger.getLogger(CreatePDF.class.getName());
     private Document document;
     private String format;
     // The semaphores are used to ensure that the previous page is rendered
@@ -70,6 +74,14 @@ public class CreatePDF extends Operation implements SaveOperation {
         if (parent.equals(PageSet.getSourceDir())) {
             throw new UserException("The output file must be saved to a differnet directory from the source files");
         }
+        List<FileHolder> holders = getPageSet().getFileHolders();
+        semaphores = new Semaphore[holders.size()+1];
+        Semaphore s = new Semaphore(1);
+        for (int i=0; i < holders.size(); i++) {
+            semaphores[i]=s;
+            s = new Semaphore(0);
+        }
+        semaphores[semaphores.length-1] = s;
         return operationList;
     }
     
@@ -77,26 +89,14 @@ public class CreatePDF extends Operation implements SaveOperation {
     protected RenderedImage previewOperation(FileHolder holder, RenderedImage img) throws Exception {
         return img;
     }
-
+    
     @Override
     protected RenderedImage performOperation(FileHolder holder, RenderedImage img) throws Exception {
-        if (!holder.isDeleted() && !BSW.instance().isInPreview()) {
-            // do this here instead of the setup because StartPage can redefine
-            // the pages after running setup.
-            if (semaphores == null) {
-                List<FileHolder> holders = getPageSet().getFileHolders();
-                semaphores = new Semaphore[holders.size()+1];
-                Semaphore s = new Semaphore(1);
-                for (int i=0; i < holders.size(); i++) {
-                    semaphores[i]=s;
-                    if (!holders.get(i).isDeleted()) {
-                        s = new Semaphore(0);
-                    }
-                }
-                semaphores[semaphores.length-1] = s;
-            }
+        int pos = getPageSet().getFileHolders().indexOf(holder);
+        if (holder.isDeleted()) {
+            semaphores[pos].acquire();
+        } else {
             BufferedImage bi = Utils.renderedToBuffered(img);
-            int pos = getPageSet().getFileHolders().indexOf(holder);
             // check to make sure the previous page has been released before continuing.
             semaphores[pos].acquire();
             byte[] imageBytes = getImageAsBytes(bi, format, PageSet.getDestinationDPI(), getCompression());
@@ -108,6 +108,7 @@ public class CreatePDF extends Operation implements SaveOperation {
                 document = new Document();
                 document.setMargins(0, 0, 0, 0);
                 File f = BSW.getFileFromCurrentDir(getTextArgs()[0]);
+                logger.log(Level.INFO, "Creating {0}", f.getAbsolutePath());
                 PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(f));
                 pdfWriter.setFullCompression();
                 pdfWriter.setViewerPreferences(PdfWriter.PageLayoutTwoPageRight);
@@ -128,9 +129,9 @@ public class CreatePDF extends Operation implements SaveOperation {
             itextImage.setBorder(0);
             document.add(itextImage);
             // release the page so the next page can continue.
-            if (pos+1 < semaphores.length) {
-                semaphores[pos+1].release();
-            }
+        }
+        if (pos+1 < semaphores.length) {
+            semaphores[pos+1].release();
         }
         return img;
     }
@@ -211,8 +212,6 @@ public class CreatePDF extends Operation implements SaveOperation {
 
     private void addMetaData(Document document) {
         for (KeyValue meta : Metadata.getMetaData()) {
-            System.out.println("ccc: "+meta.getKey()+" "+meta.getValue());
-                    
             if (meta.getValue().isEmpty()) {
                 continue;
             }

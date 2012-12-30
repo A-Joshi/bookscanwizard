@@ -19,6 +19,9 @@
 package net.sourceforge.bookscanwizard.start;
 
 import java.awt.Dimension;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.io.Serializable;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -102,26 +105,59 @@ public class Page1 extends AbstractPage {
         pane.add(Box.createHorizontalGlue());
         add(Box.createVerticalStrut(10));
 
+        final JPanel compressionPane = new JPanel();
+        
         pane = new JPanel();
         pane.setLayout(new BoxLayout(pane, BoxLayout.LINE_AXIS));
-        label = new JLabel("Use Compression");
+        label = new JLabel("File Format");
         label.setPreferredSize(LABEL_SIZE);
         pane.add(label);
-        choices = new String[] {"NONE", "DEFLATE", "GROUP4"};
+        choices = new String[] {"TIFF", "JPEG", "PDF", "JP2", "PNG"};
         comboBox = new JComboBox(choices) {
             @Override
             public Dimension getMaximumSize() {
                 return super.getPreferredSize();
             }
         };
+        comboBox.setName(NewBook.FILE_FORMAT);
+        comboBox.addItemListener(new ItemListener(){
+
+            public void itemStateChanged(ItemEvent e) {
+                JComboBox source = (JComboBox) e.getSource();
+                compressionPane.setVisible(source.getSelectedItem().equals("TIFF"));
+                getDefaults().put(NewBook.FILE_FORMAT, (Serializable) source.getSelectedItem());
+            }
+        });
+        value = (String) getDefaults().get(NewBook.FILE_FORMAT);
+        if (value == null) {
+            value = "JPEG";
+        }
+        comboBox.setSelectedItem(value);
+        pane.add(comboBox);
+        add(pane);
+        pane.add(Box.createHorizontalGlue());
+        add(Box.createVerticalStrut(10));
+        
+        compressionPane.setLayout(new BoxLayout(compressionPane, BoxLayout.LINE_AXIS));
+        label = new JLabel("Use Compression");
+        label.setPreferredSize(LABEL_SIZE);
+        compressionPane.add(label);
+        choices = new String[] {"NONE", "DEFLATE", "GROUP4", "JPEG"};
+        comboBox = new JComboBox(choices) {
+            @Override
+            public Dimension getMaximumSize() {
+                return super.getPreferredSize();
+            }
+        };
+            
         comboBox.setName(NewBook.COMPRESSION);
         value = (String) getDefaults().get(NewBook.COMPRESSION);
         if (value != null) {
             comboBox.setSelectedItem(value);
         }
-        pane.add(comboBox);
-        add(pane);
-        pane.add(Box.createHorizontalGlue());
+        compressionPane.add(comboBox);
+        add(compressionPane);
+        compressionPane.add(Box.createHorizontalGlue());
         add(Box.createVerticalStrut(10));
 
 

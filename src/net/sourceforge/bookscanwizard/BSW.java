@@ -469,12 +469,16 @@ public class BSW {
                 FileHolder h = getMainFrame().getThumbTable().getSelectedHolder();
                 getPreviewedImage().setFileHolder(h);
             } else if (cmd.equals("thumb_insert")) {
-               insertConfigNoPreview(getMainFrame().getThumbTable().calcPageConfig(), false, false);
+                String text = "Pages = " + getMainFrame().getThumbTable().calcPageConfig();
+               insertConfigNoPreview(text, false, false);
             } else if (cmd.equals("thumb_copy")) {
-                String page =getMainFrame().getThumbTable().calcPageConfig(); 
+                String page = "Pages = " + getMainFrame().getThumbTable().calcPageConfig();
                 Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
                 StringSelection data = new StringSelection(page);
                 clipboard.setContents(data, data);
+            } else if (cmd.equals("thumb_remove_pages")) {
+                String text ="RemovePages = "+getMainFrame().getThumbTable().calcPageConfig(); 
+                 insertConfigNoPreview(text, false, false);
             } else {
                 throw new UserException("Unknown action type: " + cmd);
             }
