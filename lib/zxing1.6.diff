@@ -1,0 +1,185 @@
+The zxing library included is a modified version of 1.6  (svn version 1599)
+The following is the diffs, which allow reading the QR code version
+from a scan, and setting a minimum QR code version for printing.
+
+Index: common/DecoderResult.java
+===================================================================
+--- common/DecoderResult.java	(revision 1600)
++++ common/DecoderResult.java	(working copy)
+@@ -17,6 +17,7 @@
+ package com.google.zxing.common;
+ 
+ import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
++import com.google.zxing.qrcode.decoder.Version;
+ 
+ import java.util.Vector;
+ 
+@@ -33,8 +34,9 @@
+   private final String text;
+   private final Vector byteSegments;
+   private final ErrorCorrectionLevel ecLevel;
++  private final Version version;
+ 
+-  public DecoderResult(byte[] rawBytes, String text, Vector byteSegments, ErrorCorrectionLevel ecLevel) {
++  public DecoderResult(byte[] rawBytes, String text, Vector byteSegments, ErrorCorrectionLevel ecLevel, Version version) {
+     if (rawBytes == null && text == null) {
+       throw new IllegalArgumentException();
+     }
+@@ -42,6 +44,7 @@
+     this.text = text;
+     this.byteSegments = byteSegments;
+     this.ecLevel = ecLevel;
++    this.version = version;
+   }
+ 
+   public byte[] getRawBytes() {
+@@ -60,4 +63,7 @@
+     return ecLevel;
+   }
+ 
+-}
+\ No newline at end of file
++  public Version getVersion() {
++      return version;
++  }
++}
+Index: datamatrix/decoder/DecodedBitStreamParser.java
+===================================================================
+--- datamatrix/decoder/DecodedBitStreamParser.java	(revision 1600)
++++ datamatrix/decoder/DecodedBitStreamParser.java	(working copy)
+@@ -110,7 +110,7 @@
+     if (resultTrailer.length() > 0) {
+       result.append(resultTrailer.toString());
+     }
+-    return new DecoderResult(bytes, result.toString(), byteSegments.isEmpty() ? null : byteSegments, null);
++    return new DecoderResult(bytes, result.toString(), byteSegments.isEmpty() ? null : byteSegments, null, null);
+   }
+   
+   /**
+Index: EncodeHintType.java
+===================================================================
+--- EncodeHintType.java	(revision 1600)
++++ EncodeHintType.java	(working copy)
+@@ -33,6 +33,11 @@
+    */
+   public static final EncodeHintType CHARACTER_SET = new EncodeHintType();
+ 
++  /**
++   * Specifies the minimum version number, for example in QR Codes(type Integer)
++   */
++  public static final EncodeHintType MIN_VERSION = new EncodeHintType();
++
+   private EncodeHintType() {
+   }
+ 
+Index: multi/qrcode/QRCodeMultiReader.java
+===================================================================
+--- multi/qrcode/QRCodeMultiReader.java	(revision 1600)
++++ multi/qrcode/QRCodeMultiReader.java	(working copy)
+@@ -61,6 +61,9 @@
+         if (decoderResult.getECLevel() != null) {
+           result.putMetadata(ResultMetadataType.ERROR_CORRECTION_LEVEL, decoderResult.getECLevel().toString());
+         }
++        if (decoderResult.getVersion() != null) {
++            result.putMetadata(ResultMetadataType.VERSION_NUMBER, decoderResult.getVersion());
++        }
+         results.addElement(result);
+       } catch (ReaderException re) {
+         // ignore and continue 
+Index: pdf417/decoder/DecodedBitStreamParser.java
+===================================================================
+--- pdf417/decoder/DecodedBitStreamParser.java	(revision 1600)
++++ pdf417/decoder/DecodedBitStreamParser.java	(working copy)
+@@ -123,7 +123,7 @@
+         throw FormatException.getFormatInstance();
+       }
+     }
+-    return new DecoderResult(null, result.toString(), null, null);
++    return new DecoderResult(null, result.toString(), null, null, null);
+   }
+ 
+   /**
+Index: qrcode/decoder/DecodedBitStreamParser.java
+===================================================================
+--- qrcode/decoder/DecodedBitStreamParser.java	(revision 1600)
++++ qrcode/decoder/DecodedBitStreamParser.java	(working copy)
+@@ -102,7 +102,7 @@
+       }
+     } while (!mode.equals(Mode.TERMINATOR));
+ 
+-    return new DecoderResult(bytes, result.toString(), byteSegments.isEmpty() ? null : byteSegments, ecLevel);
++    return new DecoderResult(bytes, result.toString(), byteSegments.isEmpty() ? null : byteSegments, ecLevel, version);
+   }
+ 
+   private static void decodeKanjiSegment(BitSource bits,
+Index: qrcode/encoder/Encoder.java
+===================================================================
+--- qrcode/encoder/Encoder.java	(revision 1600)
++++ qrcode/encoder/Encoder.java	(working copy)
+@@ -86,6 +86,13 @@
+     if (encoding == null) {
+       encoding = DEFAULT_BYTE_MODE_ENCODING;
+     }
++    int minVersion = 1;
++    if (hints != null) {
++        Integer minVersionObj = (Integer) hints.get(EncodeHintType.MIN_VERSION);
++        if (minVersionObj != null) {
++            minVersion = minVersionObj.intValue();
++        }
++    }
+ 
+     // Step 1: Choose the mode (encoding).
+     Mode mode = chooseMode(content, encoding);
+@@ -95,7 +102,7 @@
+     appendBytes(content, mode, dataBits, encoding);
+     // Step 3: Initialize QR code that can contain "dataBits".
+     int numInputBytes = dataBits.getSizeInBytes();
+-    initQRCode(numInputBytes, ecLevel, mode, qrCode);
++    initQRCode(numInputBytes, ecLevel, mode, qrCode, minVersion);
+ 
+     // Step 4: Build another bit vector that contains header and data.
+     BitArray headerAndDataBits = new BitArray();
+@@ -223,12 +230,12 @@
+    * modify "qrCode".
+    */
+   private static void initQRCode(int numInputBytes, ErrorCorrectionLevel ecLevel, Mode mode,
+-      QRCode qrCode) throws WriterException {
++      QRCode qrCode, int minVersion) throws WriterException {
+     qrCode.setECLevel(ecLevel);
+     qrCode.setMode(mode);
+ 
+     // In the following comments, we use numbers of Version 7-H.
+-    for (int versionNum = 1; versionNum <= 40; versionNum++) {
++    for (int versionNum = minVersion; versionNum <= 40; versionNum++) {
+       Version version = Version.getVersionForNumber(versionNum);
+       // numBytes = 196
+       int numBytes = version.getTotalCodewords();
+Index: qrcode/QRCodeReader.java
+===================================================================
+--- qrcode/QRCodeReader.java	(revision 1600)
++++ qrcode/QRCodeReader.java	(working copy)
+@@ -82,6 +82,9 @@
+     if (decoderResult.getECLevel() != null) {
+       result.putMetadata(ResultMetadataType.ERROR_CORRECTION_LEVEL, decoderResult.getECLevel().toString());
+     }
++    if (decoderResult.getVersion() != null) {
++      result.putMetadata(ResultMetadataType.VERSION_NUMBER, decoderResult.getVersion());
++    }
+     return result;
+   }
+ 
+Index: ResultMetadataType.java
+===================================================================
+--- ResultMetadataType.java	(revision 1600)
++++ ResultMetadataType.java	(working copy)
+@@ -58,6 +58,10 @@
+   public static final ResultMetadataType BYTE_SEGMENTS = new ResultMetadataType("BYTE_SEGMENTS");
+ 
+   /**
++   * The version number of the barcode, such as the QR-code version number
++   */
++  public static final ResultMetadataType VERSION_NUMBER = new ResultMetadataType("VERSION_NUMBER");
++  /**
+    * Error correction level used, if applicable. The value type depends on the
+    * format, but is typically a String.
+    */

@@ -54,7 +54,6 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
 import javax.imageio.ImageIO;
 import javax.media.jai.JAI;
 import javax.media.jai.TileCache;

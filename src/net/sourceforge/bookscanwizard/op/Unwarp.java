@@ -29,6 +29,7 @@ import net.sourceforge.bookscanwizard.unwarp.LaserUnwarp;
 public class Unwarp extends Operation {
     LaserUnwarp laserUnwarp;
 
+    @Override
     protected int getOperationMinPass() {
         return super.getMinPass() - 1;
     }

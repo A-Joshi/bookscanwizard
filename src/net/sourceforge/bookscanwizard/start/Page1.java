@@ -38,8 +38,6 @@ public class Page1 extends AbstractPage {
         return "Enter Scan Settings";
     }
 
-    private static Dimension LABEL_SIZE = new Dimension(200,1);
-
     public Page1() {
         JComponent pane;
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));

@@ -18,10 +18,10 @@
 
 package net.sourceforge.bookscanwizard.op;
 
-import net.sourceforge.bookscanwizard.ScaleOp;
 import java.awt.image.RenderedImage;
 import net.sourceforge.bookscanwizard.FileHolder;
 import net.sourceforge.bookscanwizard.Operation;
+import net.sourceforge.bookscanwizard.ScaleOp;
 
 /*
  * This scales all images to the size of the first image.  It can be used
