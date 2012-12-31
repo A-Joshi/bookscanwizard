@@ -93,7 +93,6 @@ abstract public class Operation {
 
 
         setAllOperations(operations);
-        validate();
         return operations;
     }
 
@@ -105,10 +104,10 @@ abstract public class Operation {
     }
 
     /**
-     * Previews an operation.  The default is to do nothing.
+     * Previews an operation.  The default is do the same operation for perform operation.
      */
     protected RenderedImage previewOperation(FileHolder holder, RenderedImage img) throws Exception {
-        return img;
+        return performOperation(holder, img);
     }
 
     /**
@@ -308,7 +307,7 @@ abstract public class Operation {
         verifySaveOperationExists(ops);
         RenderedImage img = null;
         for (Operation op : ops) {
-            if (!holder.isDeleted() && op.getPageSet().getFileHolders().contains(holder) || op instanceof ProcessDeleted) {
+            if ((!holder.isDeleted() || op instanceof ProcessDeleted) && op.getPageSet().getFileHolders().contains(holder)) {
                 if (op.matchesPass()) {
                     if (img == null) {
                         img = holder.getImage();
@@ -357,26 +356,22 @@ abstract public class Operation {
         if (!ops.isEmpty() && !cursorAfterConfig) {
             lastOperation = ops.get(ops.size()-1);
         }
-        boolean perspectiveSkipped = false;
+        holder.setDeleted(false); // if it is removed, the RemovePages command will switch it back.
         for (Operation op : ops) {
-            boolean preview = false;
-            if (op.getPageSet().getFileHolders().contains(holder)) {
+            boolean preview = true;
+            if ((!holder.isDeleted() || op instanceof ProcessDeleted) && op.getPageSet().getFileHolders().contains(holder)) {
                 if (op instanceof ColorOp) {
-                    if (holder.isDeleted() || holder.isProblemFile()) {
+                    if (!main.isShowColors()) {
                         continue;
                     }
-                    preview = !main.isShowColors();
                 } else if (op instanceof CropOp) {
-                    if (perspectiveSkipped) { // only happens for problem or deleted images
-                        continue;
-                    }
                     preview = op == lastOperation || !main.isShowCrops();
                 } else if (op instanceof PerspectiveOp) {
-                    if (holder.isDeleted() || holder.isProblemFile()) {
-                        perspectiveSkipped = true;
+                    preview = op == lastOperation || !main.isShowPerspective();
+                } else if (op instanceof ScaleOp) {
+                    if (!main.isShowScale()) {
                         continue;
                     }
-                    preview = op == lastOperation || !main.isShowPerspective();
                 }
                 if (preview) {
                     img = op.previewOperation(holder, img);
@@ -385,6 +380,7 @@ abstract public class Operation {
                 }
             }
         }
+        validate();
         return img;
     }
 

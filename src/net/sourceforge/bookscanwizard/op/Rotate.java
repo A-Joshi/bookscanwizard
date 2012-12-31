@@ -31,13 +31,14 @@ import net.sourceforge.bookscanwizard.BSW;
 import net.sourceforge.bookscanwizard.FileHolder;
 import net.sourceforge.bookscanwizard.NewConfigListener;
 import net.sourceforge.bookscanwizard.Operation;
+import net.sourceforge.bookscanwizard.ProcessDeleted;
 
 /**
  * Rotates an image.  The rotation can either be specified in degrees,
  * or as two points.  The two points should specify a horizontal line
  * from left to right.
  */
-public class Rotate extends Operation {
+public class Rotate extends Operation implements ProcessDeleted {
     private static boolean init;
     private double degrees;
     private static TransposeType leftTranspose;

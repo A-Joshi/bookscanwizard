@@ -37,6 +37,7 @@ public class PostCommand extends Operation{
         cmd = cmd.replace("%currentDir%", BSW.getCurrentDirectory().getAbsolutePath());
 
         String fileName = PageSet.getSourceDir().getAbsoluteFile().getParentFile().getName();
+        cmd = cmd.replace("%fileName%", fileName);
         cmd = cmd.replace("%parentAsName%", BSW.getCurrentDirectory().getAbsolutePath());
         logger.log(Level.INFO, "running external script: {0}", cmd);
         long time = System.currentTimeMillis();

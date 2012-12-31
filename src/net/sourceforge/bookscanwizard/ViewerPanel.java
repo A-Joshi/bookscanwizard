@@ -477,39 +477,38 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
         menuItem.setActionCommand("auto_rgb_levels");
         menuItem.addActionListener(menuHandler);
         popup.add(menuItem);
-
-        menuItem = new PopupItem("Gray Card", 0,2);
-        menuItem.setToolTipText("Adjusts white balance and and exposure");
-        menuItem.setActionCommand("gray_card");
-        menuItem.addActionListener(menuHandler);
-        popup.add(menuItem);
-
+        
         menuItem = new PopupItem("Whiteout", 2,999);
         menuItem.setToolTipText("Whites out an area of the image");
         menuItem.setActionCommand("whiteout");
         menuItem.addActionListener(menuHandler);
         popup.add(menuItem);
+        if (BSW.EXPERIMENTAL) {
+            menuItem = new PopupItem("Gray Card", 0,2);
+            menuItem.setToolTipText("Adjusts white balance and and exposure");
+            menuItem.setActionCommand("gray_card");
+            menuItem.addActionListener(menuHandler);
+            popup.add(menuItem);
 
-        /*
-        menuItem = new PopupItem("White balance", 0,2);
-        menuItem.setToolTipText("Adjusts white balance");
-        menuItem.setActionCommand("white_balance");
-        menuItem.addActionListener(menuHandler);
-        popup.add(menuItem);
-        */
-/*
-        // not really working right now.
-        menuItem = new PopupItem("Extend Color Range", 0,2);
-        menuItem.setToolTipText("Does the equivalent of autolevels, but doesn't change the brightness");
-        menuItem.setActionCommand("balanced_normalize_lighting");
-        menuItem.addActionListener(menuHandler);
-        popup.add(menuItem);
+            menuItem = new PopupItem("White balance", 0,2);
+            menuItem.setToolTipText("Adjusts white balance");
+            menuItem.setActionCommand("white_balance");
+            menuItem.addActionListener(menuHandler);
+            popup.add(menuItem);
 
-        menuItem = new PopupItem("Normalize Lighting", 0,2);
-        menuItem.setToolTipText("Use this on a blank (preferably gray), page to adjust for uneven lighting");
-        menuItem.setActionCommand("normalize_lighting");
-        menuItem.addActionListener(menuHandler);
-        popup.add(menuItem);*/
+            // not really working right now.
+            menuItem = new PopupItem("Extend Color Range", 0,2);
+            menuItem.setToolTipText("Does the equivalent of autolevels, but doesn't change the brightness");
+            menuItem.setActionCommand("balanced_normalize_lighting");
+            menuItem.addActionListener(menuHandler);
+            popup.add(menuItem);
+
+            menuItem = new PopupItem("Normalize Lighting", 0,2);
+            menuItem.setToolTipText("Use this on a blank (preferably gray), page to adjust for uneven lighting");
+            menuItem.setActionCommand("normalize_lighting");
+            menuItem.addActionListener(menuHandler);
+            popup.add(menuItem);
+        }
 
         MouseListener popupListener = new PopupListener(popup);
         addMouseListener(popupListener);

@@ -77,8 +77,7 @@ public class NewBook {
         File sourceDir = new File((String) settings.get(SOURCE_DIRECTORY));
         File leftDir = BSW.getFileFromCurrentDir(new File(sourceDir, "l").getPath()).getAbsoluteFile();
         File rightDir = BSW.getFileFromCurrentDir(new File(sourceDir, "r").getPath()).getAbsoluteFile();
-
-        System.out.println("source: "+sourceDir+" "+leftDir+" "+leftDir.isDirectory());
+        str.append("# *** Load Files ***\n");
         if (leftDir.isDirectory() && rightDir.isDirectory()) {
             str.append("# the source directory, with subdirectories for left & right files\n");
             str.append("LoadLRImages = ");
@@ -102,7 +101,7 @@ public class NewBook {
             str.append(EstimateDPI.getConfig()).append("\n\n");
         }
         String rotate;
-        str.append("# Configure the page rotations\n"+
+        str.append("# *** Page Rotations ***\n"+
                    "Pages = left\n");
         rotate = (String) settings.get(LEFT_ORIENT);
         if (!rotate.equals("0")) {
@@ -119,16 +118,10 @@ public class NewBook {
             str.append("# Use barcodes.csv to define operations \n"+
                        "Barcodes =\n");
         }
-        str.append("########################################################################\n"+
-                   "### Insert commands to fix keystone, color, etc.\n"+
-                   "########################################################################\n"+
-                   "#Click on the 4 corners of a page, then right click to correct keystoning.\n"+
-                   "#Click on 2 corners, then right click to crop.\n"+
-                   "Pages=all\n"+
-                   "\n\n");
-
-        str.append("########################################################################\n\n");
-        str.append("Pages=all\n");
+        str.append("# *** Remove Pages ***\n");
+        str.append("# *** Perspective ***\n");
+        str.append("# *** Crops ***\n");
+        str.append("# *** Filters ***\n");
         String color = (String) settings.get(OUTPUT_TYPE);
         System.out.println("color: "+color);
         if ("Greyscale".equals(color) || "B/W".equals(color)) {
@@ -138,7 +131,7 @@ public class NewBook {
             str.append("#Change to a binary (black & white) image, with a clipping point of 60%\n"+
                        "Color=bw 60\n\n");
         }
-
+        str.append("# *** Scaling ***\n");
         String dpi = (String) settings.get(DESTINATION_DPI);
         dpi = dpi.replace("Keep Source DPI", "0");
         if (!dpi.equals("0")) {
@@ -147,6 +140,9 @@ public class NewBook {
         str.append("# This will ensure the left and right pages are exactly the same size.\n");
         str.append("ScaleToFirst=\n\n");
         
+        str.append("# *** Output ***\n");
+        str.append("Pages=all\n");
+
         String imagetype = (String) settings.get(FILE_FORMAT);
         String compression = (String) settings.get(COMPRESSION);
         if (compression == null) {

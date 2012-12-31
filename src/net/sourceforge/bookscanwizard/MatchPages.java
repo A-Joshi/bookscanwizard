@@ -43,7 +43,7 @@ import net.sourceforge.bookscanwizard.util.Utils;
  * same time and any problem files will be marked as such and saved to the end
  * of the list.
  *
- * This will also handle shots from cameras who's cameras are not synchronized,
+ * This will also handle shots from cameras whose cameras are not synchronized,
  * as this will first compare the times from the last two photos from each
  * camera, and will use determine the offset from those.  For this to work correctly,
  * the last pictures taken should be done at the same time.

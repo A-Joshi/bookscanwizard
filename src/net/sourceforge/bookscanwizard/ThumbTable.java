@@ -18,15 +18,20 @@
 package net.sourceforge.bookscanwizard;
 
 import com.sun.media.jai.widget.DisplayJAI;
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.IOException;
@@ -90,7 +95,6 @@ public class ThumbTable extends JTable {
                     UserFeedbackHelper.doAction(e, new Runnable() {
                         public void run() {
                             FileHolder holder = holders.get(getSelectedRow());
-                            System.out.println("selected: "+getSelectedRow()+" "+holder);
                             BSW.instance().getPreviewedImage().setFileHolder(holder);
                         }
                     });
@@ -196,9 +200,6 @@ public class ThumbTable extends JTable {
     }
     
     public void update() {
-        update(false);
-    }
-    public void update(boolean refreshThumbs) {
         MainFrame fr =  BSW.instance().getMainFrame();
         boolean left = fr.getLeftThumb().isSelected();
         boolean right = fr.getRightThumb().isSelected();
@@ -246,6 +247,8 @@ public class ThumbTable extends JTable {
             this.leftTranspose = leftTranspose;
             this.rightTranspose = rightTranspose;
             refeshThumbs();
+        } else {
+            update();
         }
     }
 
@@ -267,14 +270,33 @@ public class ThumbTable extends JTable {
     private class ThumbTableCellRenderer extends JPanel implements TableCellRenderer {
         private Border selectedBorder;
         private Border normalBorder;
-        private JLabel lable = new JLabel();
-        private DisplayJAI thumb = new DisplayJAI();
+        private JLabel label = new JLabel();
+        private boolean deleted;
+        private DisplayJAI thumb = new DisplayJAI() {
+            @Override
+            public void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (deleted) {
+                    Graphics2D g2 = (Graphics2D) g;
+                    BasicStroke stroke = new BasicStroke(1);
+                    Dimension size = getSize();
+                    float width = size.width;
+                    float height = size.height;
+                    Line2D line1 = new Line2D.Float(0, 0, width, height);
+                    Line2D line2 = new Line2D.Float(width, 0, 0, height);
+                    g2.setColor(Color.RED);
+                    g2.setStroke(stroke);
+                    g2.draw(line1);
+                    g2.draw(line2);
+                }
+            }
+        };
         
         public ThumbTableCellRenderer() {
             selectedBorder = new LineBorder(Color.RED, 3);
             normalBorder = new LineBorder(Color.BLACK, 3);
             setLayout(new BorderLayout());
-            add(lable, BorderLayout.SOUTH);
+            add(label, BorderLayout.SOUTH);
             add(thumb, BorderLayout.NORTH);
         }
 
@@ -291,7 +313,10 @@ public class ThumbTable extends JTable {
             }
             thumb.set(img);
             setBorder(isSelected ? selectedBorder : normalBorder);
-            lable.setText(holder.getName());
+            label.setText(holder.getName());
+            int p = (holder.getPosition() == FileHolder.LEFT) ? JLabel.LEFT : JLabel.RIGHT;
+            label.setHorizontalAlignment(p);
+            deleted = holder.isDeleted();
             if (found && customRowHeight == 0) {
                 customRowHeight = getPreferredSize().height;
                 ThumbTable.this.setRowHeight(customRowHeight);

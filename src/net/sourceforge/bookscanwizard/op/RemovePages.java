@@ -25,13 +25,14 @@ import net.sourceforge.bookscanwizard.FileHolder;
 import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.PageMatch;
 import net.sourceforge.bookscanwizard.PageSet;
+import net.sourceforge.bookscanwizard.ProcessDeleted;
 
 /**
  * Disables the processing of the listed pages.  This can be a list of pages
  * or ranges, and preceeded by a 0 or 1.
  *
  */
-public class RemovePages extends Operation {
+public class RemovePages extends Operation implements ProcessDeleted {
     private PageMatch pageMatch;
     private PageSet allPages;
 
@@ -44,6 +45,12 @@ public class RemovePages extends Operation {
         pageMatch = new PageMatch(list);
         allPages = new PageSet(pageSet);
         allPages.setFileHolders(pageSet.getSourceFiles());
+        for (FileHolder h : getPageSet().getFileHolders()) {
+            if (pageMatch.matches(h.getName())) {
+                h.setDeleted(true);
+            System.out.println("xxx1 "+h.getName()+" "+h.hashCode());
+            }
+        }
         return operationList;
     }
 

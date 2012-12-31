@@ -32,7 +32,7 @@ import net.sourceforge.bookscanwizard.UserException;
 import net.sourceforge.bookscanwizard.util.JpegMetaData;
 
 /**
- * This examines the focal from the jpeg exif metadata, and uses that
+ * This examines the focal length from the jpeg exif metadata, and uses that
  * information to estimate the source DPI of the image.  This method assumes
  * that the distance to page remains the same, and the FocalLength accurately
  * represents the relative zoom level.
@@ -132,6 +132,7 @@ public class EstimateDPI extends Operation {
                 for (FileHolder holder : op.getPageSet().getFileHolders()) {
                     Float previous = currentDPI.get(holder.getPosition());
                     if (previous == null || dpi != previous) {
+                        currentDPI.put(holder.getPosition(), dpi);
                         TreeMap<Float,Float> side = (holder.getPosition() == FileHolder.LEFT ? left : right);
                         if (op instanceof EstimateDPI) {
                             EstimateDPI est = (EstimateDPI) op;

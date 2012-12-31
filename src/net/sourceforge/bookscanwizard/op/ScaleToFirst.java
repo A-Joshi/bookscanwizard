@@ -18,6 +18,7 @@
 
 package net.sourceforge.bookscanwizard.op;
 
+import net.sourceforge.bookscanwizard.ScaleOp;
 import java.awt.image.RenderedImage;
 import net.sourceforge.bookscanwizard.FileHolder;
 import net.sourceforge.bookscanwizard.Operation;
@@ -27,7 +28,7 @@ import net.sourceforge.bookscanwizard.Operation;
  * to correct for differences between the zoom levels for the left & right sides.
  *
  */
-public class ScaleToFirst extends Operation {
+public class ScaleToFirst extends Operation implements ScaleOp {
     private float width;
     private float height;
 

@@ -40,7 +40,7 @@ public class Levels extends Operation implements ColorOp {
             throw new UserException("There must be at least two parameters for the Levels command");
         }
         if (getArgs().length % 2 > 0) {
-            throw new UserException("There must be an even numbert of parameters for the Levels command");
+            throw new UserException("There must be an even number of parameters for the Levels command");
         }
         double[] scale = new double[getArgs().length / 2];
         double[] offset = new double[scale.length];

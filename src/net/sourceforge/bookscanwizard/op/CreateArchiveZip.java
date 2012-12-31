@@ -52,6 +52,11 @@ public class CreateArchiveZip extends Operation implements SaveOperation {
         ArchiveTransfer.checkMetaData(Metadata.getMetaData());
         return operationList;
     }
+    
+    @Override
+    protected RenderedImage previewOperation(FileHolder holder, RenderedImage img) throws Exception {
+        return img;
+    }
 
     @Override
     protected RenderedImage performOperation(FileHolder holder, RenderedImage img) throws Exception {

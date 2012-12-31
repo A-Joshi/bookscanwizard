@@ -72,6 +72,7 @@ import net.sourceforge.bookscanwizard.op.Barcodes;
 import net.sourceforge.bookscanwizard.op.EstimateDPI;
 import net.sourceforge.bookscanwizard.op.NormalizeLighting;
 import net.sourceforge.bookscanwizard.op.Pages;
+import net.sourceforge.bookscanwizard.op.RemovePages;
 import net.sourceforge.bookscanwizard.op.SaveToArchive;
 import net.sourceforge.bookscanwizard.op.WhiteBalance;
 import net.sourceforge.bookscanwizard.qr.PrintCodes;
@@ -87,6 +88,8 @@ import net.sourceforge.bookscanwizard.util.ProcessHelper;
  * The main program
  */
 public class BSW {
+    /** If this is set to true, this enables features that are under development */
+    public static final boolean EXPERIMENTAL = false;
     public static final Logger parentLogger = Logger.getLogger(BSW.class.getPackage().getName());
     private static final Logger logger = Logger.getLogger(BSW.class.getName());
     public static final RenderingHints QUALITY_HINTS = new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
@@ -462,11 +465,12 @@ public class BSW {
                 }
                 insertConfigNoPreview(dpiInfo, false, false);
             } else if (cmd.startsWith("op ")) {
-                insertConfigNoPreview(cmd.substring(3)+" = ", false, false);
+                insertConfigNoPreview(cmd.substring(3)+" = ", false, true);
             } else if (cmd.equals("thumb_checkbox")) {
                 getMainFrame().getThumbTable().update();
             } else if (cmd.equals("thumb_select")) {
                 FileHolder h = getMainFrame().getThumbTable().getSelectedHolder();
+                System.out.println("sel: "+h+" "+h.isDeleted());
                 getPreviewedImage().setFileHolder(h);
             } else if (cmd.equals("thumb_insert")) {
                 String text = "Pages = " + getMainFrame().getThumbTable().calcPageConfig();
@@ -478,7 +482,7 @@ public class BSW {
                 clipboard.setContents(data, data);
             } else if (cmd.equals("thumb_remove_pages")) {
                 String text ="RemovePages = "+getMainFrame().getThumbTable().calcPageConfig(); 
-                 insertConfigNoPreview(text, false, false);
+                 insertConfigNoPreview(text, false, true);
             } else {
                 throw new UserException("Unknown action type: " + cmd);
             }
@@ -498,16 +502,8 @@ public class BSW {
         private void insertCoordinates(String prefix) throws Exception {
             String text = mainFrame.getViewerPanel().getPointDef();
             if (text.length() > 0) {
-                String currentName = getPreviewedImage().getPreviewHolder().getName();
                 Operation op = previewOperations.get(previewOperations.size()-1);
                 text = prefix+" "+ text;
-                // if the page displayed isn't the first page, of the set, 
-                // add a StartPage operation.
-                if (!currentName.equals(op.getPageSet().getFileHolders().iterator().next().getName()) &&
-                    !currentName.equals(op.getPageSet().getMinFile()))
-                {
-                    text = "StartPage = "+currentName+"\n"+text;
-                }
                 insertConfig(text, false, true);
              }
         }
@@ -722,28 +718,69 @@ public class BSW {
             document.remove(start, end - start);
             end = start;
         }
-        String lastPageLine = null;
-        for (String line : (config.getDocument().getText(0, end)+text).split("\n")) {
-            Matcher matcher = Operation.MATCH_OP.matcher(line);
-            if (matcher.matches() && matcher.group(1).equals("Pages")) {
-                lastPageLine = line;
+        SectionName sectionName;
+        boolean addCurrentPage = false;
+        if (ensurePosition && !replace) {
+            System.out.println("found: "+newText);
+            Operation op = null;
+            for (String newLine : newText.split("\n")) {
+                op =  Operation.getStandaloneOp(newLine);
             }
-        }
-        if (lastPageLine != null) {
-            Pages pages = (Pages) Operation.getStandaloneOp(lastPageLine);
-            if (ensurePosition && ((pages.getPosition() != previewedImage.getPreviewHolder().getPosition()) ||
-                !pages.getPageSet().getFileHolders().contains(previewedImage.getPreviewHolder())))
-            {
-                String pos;
-                if (ensurePosition) {
-                    pos = (previewedImage.getPreviewHolder().getPosition()
-                          == FileHolder.LEFT ? "left" : "right");
-                } else {
-                    pos = "all";
+            sectionName = SectionName.getSectionFromOp(op);
+            String match = sectionName.getMatchString();
+            boolean sectionBegan = false;
+            boolean lastPageMatched = false;
+            start = 0;
+            int lastMatchLine = 0;
+            for (String line : config.getText().split("\n")) {
+                if(sectionBegan && line.contains("# *** ")) {
+                    end = start;
+                    break;
                 }
-                text = "Pages = " +pos+"\n"+ text;
+                if (line.contains(match)) {
+                    sectionBegan = true;
+                }
+                if (!line.trim().isEmpty()) {
+                    start += line.length()+1;
+                }
+                if (sectionBegan) {
+                    Operation testOp = Operation.getStandaloneOp(line);
+                    if (testOp instanceof Pages) {
+                        Pages pages = (Pages) testOp;
+                        int previewPos = previewedImage.getPreviewHolder().getPosition();
+                        int pagePos = pages.getPosition();
+                        if ((pagePos == FileHolder.ALL || previewPos == pagePos) && 
+                            pages.getPageSet().getFileHolders().contains(previewedImage.getPreviewHolder()))
+                        {
+                            lastPageMatched = true;
+                        } else {
+                            lastPageMatched = false;
+                        }
+                    }
+                    if (lastPageMatched) {
+                        lastMatchLine = start;
+                        if (testOp != null && testOp.getClass() == op.getClass()) {
+                            addCurrentPage = true;
+                        }
+                    }
+                }
+                if (line.trim().isEmpty()) {
+                    start += line.length()+1;
+                }
+            }
+            if (lastMatchLine > 0) {
+                end = lastMatchLine;
+                if (addCurrentPage && !(op instanceof RemovePages)) {
+                    String currentName = previewedImage.getPreviewHolder().getName();
+                    text = "StartPage = "+currentName+"\n"+text;
+                }
+            } else if (!(op instanceof RemovePages)) {
+               String posText = (previewedImage.getPreviewHolder().getPosition()
+                          == FileHolder.LEFT ? "left" : "right");
+                text = "Pages = "+posText+"\n"+text;
             }
         }
+        
         document.insertString(end, text, null);
         config.setSelectionStart(end);
         config.setSelectionEnd(end + text.length());
@@ -871,7 +908,7 @@ public class BSW {
 
     private void autoLevels(boolean separateRGB) throws Exception {
         String config = new ConfigAutoLevels().getConfig(getConfigImage(),separateRGB);
-        insertConfig(config, false, false);
+        insertConfig(config, false, true);
     }
 
     private void normalizeLighting() throws Exception {
@@ -903,17 +940,18 @@ public class BSW {
         private String configEntry;
 
         public void setFileHolder(FileHolder fileHolder) {
-            if (previewHolder != fileHolder && (previewHolder == null || !previewHolder.equals(fileHolder))) {
+            if (fileHolder != null)
+            if (previewHolder != fileHolder && (previewHolder == null || previewHolder != fileHolder)) {
                 previewHolder = fileHolder;
                 previewImage = null;
                 previewProcessedImage = null;
                 getMainFrame().getPageListBox().setSelectedItem(fileHolder);
-                getMainFrame().getThumbTable().updateSelection();
                 try {
                     preview();
                 } catch (Exception ex) {
                     Logger.getLogger(BSW.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                getMainFrame().getThumbTable().updateSelection();
             }
             if (fileHolder == null) {
                 configEntry = "";
@@ -995,9 +1033,9 @@ public class BSW {
         }
         if (line.contains("RemovePages")) {
             line = line + ", "+ previewedImage.getPreviewHolder().getName();
-            insertConfig(line, true, false);
+            insertConfig(line, true, true);
         } else {
-            insertConfig("RemovePages = " + previewedImage.getPreviewHolder().getName(), false, false);
+            insertConfig("RemovePages = " + previewedImage.getPreviewHolder().getName(), false, true);
         }
     }
 

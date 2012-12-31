@@ -28,6 +28,7 @@ import javax.media.jai.ROI;
 import javax.media.jai.ROIShape;
 import javax.media.jai.RenderedOp;
 import javax.media.jai.TiledImage;
+import net.sourceforge.bookscanwizard.ColorOp;
 import net.sourceforge.bookscanwizard.FileHolder;
 import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.UserException;
@@ -35,7 +36,7 @@ import net.sourceforge.bookscanwizard.UserException;
 /**
  * Whites out a section of the image.
  */
-public class Whiteout extends Operation {
+public class Whiteout extends Operation implements ColorOp {
     private ROI roi;
 
     @Override

@@ -96,6 +96,8 @@ public final class MainFrame extends JFrame {
     private JCheckBox showCrops = new JCheckBox();
     private JCheckBox showPerspective = new JCheckBox();
     private JCheckBox showColors = new JCheckBox();
+    private JCheckBox showScale = new JCheckBox();
+
     private JButton runButton;
     private JComponent focusedComponent;
 
@@ -312,22 +314,22 @@ public final class MainFrame extends JFrame {
         });
         toolsMenu.add(horizontalLayout);
 // TODO:  get preferences working.
-/*        menuItem = new JMenuItem("Preferences");
-        menuItem.setMnemonic(KeyEvent.VK_P);
-        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        menuItem.setActionCommand("preferences");
-        menuItem.addActionListener(menuHandler);
-        toolsMenu.add(menuItem);*/
-        
-        /*
-        menuItem = new JMenuItem("Laser Filter...");
-        menuItem.setMnemonic(KeyEvent.VK_L);
-        menuItem.setToolTipText("A tool that can help define a filter to recognize laser lines");
-        menuItem.setActionCommand("laser_filter");
-        menuItem.addActionListener(menuHandler);
-        toolsMenu.add(menuItem);
-*/
-        toolsMenu.add(new JSeparator());
+        if (BSW.EXPERIMENTAL) {
+            menuItem = new JMenuItem("Preferences");
+            menuItem.setMnemonic(KeyEvent.VK_P);
+            menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+            menuItem.setActionCommand("preferences");
+            menuItem.addActionListener(menuHandler);
+            toolsMenu.add(menuItem);
+
+            menuItem = new JMenuItem("Laser Filter...");
+            menuItem.setMnemonic(KeyEvent.VK_L);
+            menuItem.setToolTipText("A tool that can help define a filter to recognize laser lines");
+            menuItem.setActionCommand("laser_filter");
+            menuItem.addActionListener(menuHandler);
+            toolsMenu.add(menuItem);
+            toolsMenu.add(new JSeparator());
+        }
 
         menuItem  = new JMenuItem("Add Metadata for the book...");
         menuItem.setMnemonic(KeyEvent.VK_M);
@@ -466,7 +468,7 @@ public final class MainFrame extends JFrame {
 
         showPerspective.setText("Perspective");
         showPerspective.setToolTipText("<html><body>If checked it will preview the perspective.<br>Otherwise it will display the perspective marks.</body></html>");
-        showPerspective.setSelected(true);
+//        showPerspective.setSelected(true);
         showPerspective.setActionCommand("preview");
         showPerspective.addActionListener(menuHandler);
         buttonPanel.add(showPerspective);
@@ -485,7 +487,7 @@ public final class MainFrame extends JFrame {
 
         showCrops.setText("Crops");
         showCrops.setToolTipText("<html><body>If checked it will preview the corp.<br>Otherwise it will display the crop marks.</body></html>");
-        showCrops.setSelected(true);
+//        showCrops.setSelected(true);
         showCrops.setActionCommand("preview");
         showCrops.addActionListener(menuHandler);
         buttonPanel.add(showCrops);
@@ -508,6 +510,13 @@ public final class MainFrame extends JFrame {
         showColors.setActionCommand("preview");
         showColors.addActionListener(menuHandler);
         buttonPanel.add(showColors);
+        buttonPanel.add(Box.createHorizontalStrut(2));
+
+        showScale.setText("Scale");
+        showScale.setToolTipText("If checked it will perform scaling operations during the preview");
+        showScale.setActionCommand("preview");
+        showScale.addActionListener(menuHandler);
+        buttonPanel.add(showScale);
         buttonPanel.add(Box.createHorizontalStrut(2));
 
         JPanel panel = new JPanel();
@@ -644,7 +653,6 @@ public final class MainFrame extends JFrame {
             pageListBox.setSelectedIndex(0);
         }
         pageListBox.setMaximumRowCount(25);
-        thumbTable.update();
     }
     public void setBusy(boolean busy) {
         busyLevel += (busy ? 1 : -1);
@@ -708,6 +716,10 @@ public final class MainFrame extends JFrame {
 
     public boolean isShowColors() {
         return showColors.isSelected();
+    }
+
+    public boolean isShowScale() {
+        return showScale.isSelected();
     }
 
     public BoundsHelper getBoundsHelper() {

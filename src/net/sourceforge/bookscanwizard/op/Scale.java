@@ -27,12 +27,13 @@ import javax.media.jai.JAI;
 import net.sourceforge.bookscanwizard.BSW;
 import net.sourceforge.bookscanwizard.FileHolder;
 import net.sourceforge.bookscanwizard.Operation;
+import net.sourceforge.bookscanwizard.ScaleOp;
 
 /**
  * Scales an image. Normally this isn't needed since saving a file will scale
  * it to the value that matches the DPI.
  */
-public class Scale extends Operation {
+public class Scale extends Operation implements ScaleOp {
     @Override
     public RenderedImage performOperation(FileHolder holder, RenderedImage img) throws Exception {
         float xScale = (float) getArgs()[0];
