@@ -67,6 +67,12 @@ import javax.swing.text.Document;
 import net.sourceforge.bookscanwizard.config.ConfigAutoLevels;
 import net.sourceforge.bookscanwizard.config.ConfigBalancedAutoLevels;
 import net.sourceforge.bookscanwizard.config.ConfigGrayCard;
+import net.sourceforge.bookscanwizard.gui.AboutDialog;
+import net.sourceforge.bookscanwizard.gui.ConfigEntry;
+import net.sourceforge.bookscanwizard.gui.MainFrame;
+import net.sourceforge.bookscanwizard.gui.MetadataGui;
+import net.sourceforge.bookscanwizard.gui.UploadFile;
+import net.sourceforge.bookscanwizard.gui.UserFeedbackHelper;
 import net.sourceforge.bookscanwizard.op.Barcodes;
 import net.sourceforge.bookscanwizard.op.EstimateDPI;
 import net.sourceforge.bookscanwizard.op.NormalizeLighting;
@@ -702,7 +708,7 @@ public class BSW {
      *        to match the selected page.
      * @throws Exception 
      */
-    void insertConfigNoPreview(String newText, boolean replace, boolean ensurePosition) throws Exception {
+    public void insertConfigNoPreview(String newText, boolean replace, boolean ensurePosition) throws Exception {
         String text = newText;
         ConfigEntry config = mainFrame.getConfigEntry();
         Document document = config.getDocument();
@@ -932,7 +938,7 @@ public class BSW {
         return img;
     }
 
-    class PreviewedImage {
+    public class PreviewedImage {
         private FileHolder previewHolder;
         private RenderedImage previewImage;
         private RenderedImage previewProcessedImage;
@@ -1016,7 +1022,7 @@ public class BSW {
         newConfigListeners.add(newConfigListener);
     }
 
-    PreviewedImage getPreviewedImage() {
+    public PreviewedImage getPreviewedImage() {
         return previewedImage;
     }
 

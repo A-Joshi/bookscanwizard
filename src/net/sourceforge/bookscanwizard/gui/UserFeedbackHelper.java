@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  */
 
-package net.sourceforge.bookscanwizard;
+package net.sourceforge.bookscanwizard.gui;
 
 import java.awt.Component;
 import java.awt.Cursor;
@@ -26,6 +26,7 @@ import java.awt.event.ActionListener;
 import java.util.EventObject;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import net.sourceforge.bookscanwizard.BSW;
 
 /**
  * This class contains a wrapper for an action listener that displays the busy

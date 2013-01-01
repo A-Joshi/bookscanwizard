@@ -15,7 +15,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-package net.sourceforge.bookscanwizard;
+package net.sourceforge.bookscanwizard.gui;
 
 import com.sun.media.jai.widget.DisplayJAI;
 import java.awt.BasicStroke;
@@ -59,6 +59,10 @@ import javax.swing.border.Border;
 import javax.swing.border.LineBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
+import net.sourceforge.bookscanwizard.BSW;
+import net.sourceforge.bookscanwizard.BSWThreadFactory;
+import net.sourceforge.bookscanwizard.FileHolder;
+import net.sourceforge.bookscanwizard.PageSet;
 import net.sourceforge.bookscanwizard.op.Rotate;
 import net.sourceforge.bookscanwizard.util.BlockingLifoQueue;
 import net.sourceforge.bookscanwizard.util.Utils;
@@ -234,7 +238,7 @@ public class ThumbTable extends JTable {
         });
     }
 
-    void updateSelection() {
+    public void updateSelection() {
         FileHolder h = BSW.instance().getPreviewedImage().getPreviewHolder();
         int pos = holders.indexOf(h);
         if (pos >=0) {
@@ -242,7 +246,7 @@ public class ThumbTable extends JTable {
         }
     }
 
-    void setTranspose(TransposeType leftTranspose, TransposeType rightTranspose) {
+    public void setTranspose(TransposeType leftTranspose, TransposeType rightTranspose) {
         if (this.leftTranspose != leftTranspose || this.rightTranspose != rightTranspose) {
             this.leftTranspose = leftTranspose;
             this.rightTranspose = rightTranspose;

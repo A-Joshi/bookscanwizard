@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  */
 
-package net.sourceforge.bookscanwizard;
+package net.sourceforge.bookscanwizard.gui;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;

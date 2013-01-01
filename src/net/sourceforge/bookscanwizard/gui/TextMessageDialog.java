@@ -15,7 +15,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-package net.sourceforge.bookscanwizard;
+package net.sourceforge.bookscanwizard.gui;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;

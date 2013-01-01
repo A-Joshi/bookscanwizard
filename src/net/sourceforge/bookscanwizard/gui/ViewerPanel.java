@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  */
 
-package net.sourceforge.bookscanwizard;
+package net.sourceforge.bookscanwizard.gui;
 
 import com.sun.media.jai.widget.DisplayJAI;
 import java.awt.BasicStroke;
@@ -65,6 +65,8 @@ import javax.swing.JSeparator;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.TransferHandler;
+import net.sourceforge.bookscanwizard.BSW;
+import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.util.Interpolate;
 
 /**
@@ -348,7 +350,7 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
         }
     }
 
-    void multScale(float f) {
+    public void multScale(float f) {
         setPostScale(postScale * f);
     }
     
@@ -520,7 +522,6 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
         Graphics2D g2 = (Graphics2D) g;
         g2.setColor(Color.BLUE);
         AffineTransform tr = new AffineTransform();
-        tr.scale(postScale, postScale);
         Polygon poly = new Polygon();
         List<Point> points = getImagePoints();
         for (int i=0; i < points.size(); i++) {

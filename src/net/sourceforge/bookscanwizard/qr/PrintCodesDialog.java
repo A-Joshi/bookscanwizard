@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.ListModel;
-import net.sourceforge.bookscanwizard.UserFeedbackHelper;
+import net.sourceforge.bookscanwizard.gui.UserFeedbackHelper;
 
 
 public class PrintCodesDialog extends javax.swing.JDialog {

@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  */
 
-package net.sourceforge.bookscanwizard;
+package net.sourceforge.bookscanwizard.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -71,6 +71,10 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import net.sourceforge.bookscanwizard.BSW;
+import net.sourceforge.bookscanwizard.BoundsHelper;
+import net.sourceforge.bookscanwizard.FileHolder;
+import net.sourceforge.bookscanwizard.OperationList;
 
 
 /**

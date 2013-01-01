@@ -24,7 +24,7 @@ import java.io.Serializable;
 import java.util.Map;
 import javax.swing.UIManager;
 import net.sourceforge.bookscanwizard.BSW;
-import net.sourceforge.bookscanwizard.UserFeedbackHelper;
+import net.sourceforge.bookscanwizard.gui.UserFeedbackHelper;
 import net.sourceforge.bookscanwizard.op.EstimateDPI;
 import org.netbeans.api.wizard.WizardDisplayer;
 import org.netbeans.spi.wizard.Wizard;

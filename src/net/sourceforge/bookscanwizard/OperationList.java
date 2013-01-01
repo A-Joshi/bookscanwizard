@@ -38,6 +38,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
+import net.sourceforge.bookscanwizard.gui.ConfigEntry;
 import net.sourceforge.bookscanwizard.op.*;
 import net.sourceforge.bookscanwizard.util.SelectableLabel;
 

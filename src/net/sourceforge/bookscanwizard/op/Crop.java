@@ -28,7 +28,7 @@ import net.sourceforge.bookscanwizard.CropOp;
 import net.sourceforge.bookscanwizard.FileHolder;
 import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.UserException;
-import net.sourceforge.bookscanwizard.ViewerPanel;
+import net.sourceforge.bookscanwizard.gui.ViewerPanel;
 
 /**
  * Crops a picture.  This should be passed two points: the upper right

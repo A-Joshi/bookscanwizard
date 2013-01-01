@@ -38,7 +38,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import net.sourceforge.bookscanwizard.AboutDialog;
+import net.sourceforge.bookscanwizard.gui.AboutDialog;
 import net.sourceforge.bookscanwizard.PageSet;
 import net.sourceforge.bookscanwizard.UserException;
 import net.sourceforge.bookscanwizard.op.Metadata;

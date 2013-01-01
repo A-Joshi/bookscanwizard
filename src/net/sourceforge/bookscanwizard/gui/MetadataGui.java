@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  */
 
-package net.sourceforge.bookscanwizard;
+package net.sourceforge.bookscanwizard.gui;
 
 import java.awt.Desktop;
 import java.awt.KeyboardFocusManager;
@@ -28,6 +28,8 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import net.sourceforge.bookscanwizard.BSW;
+import net.sourceforge.bookscanwizard.PrefsHelper;
 import net.sourceforge.bookscanwizard.op.Metadata;
 import net.sourceforge.bookscanwizard.op.Metadata.KeyValue;
 import net.sourceforge.bookscanwizard.s3.ArchiveTransfer;

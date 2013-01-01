@@ -32,6 +32,7 @@ import java.util.regex.Pattern;
 import javax.imageio.spi.ImageWriterSpi;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
+import net.sourceforge.bookscanwizard.gui.MainFrame;
 import net.sourceforge.bookscanwizard.op.Rotate;
 import net.sourceforge.bookscanwizard.util.ImageUtilities;
 
@@ -62,7 +63,7 @@ abstract public class Operation {
     private OpDefinition definition;
     protected PageSet pageSet;
 
-    static List<Operation> getOperations(String config) throws  Exception {
+    public static List<Operation> getOperations(String config) throws  Exception {
         BSW.instance().fireNewConfigListeners();
         PageSet pageSet = new PageSet();
         ArrayList<Operation> operations = new ArrayList<Operation>();
@@ -143,7 +144,7 @@ abstract public class Operation {
     public static void setAllOperations(List<Operation> allOperations) {
         Operation.allOperations = allOperations;
     }
-    final protected String getName() {
+    final public String getName() {
         return getClass().getSimpleName();
     }
     

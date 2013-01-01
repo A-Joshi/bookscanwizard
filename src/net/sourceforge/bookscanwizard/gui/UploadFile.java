@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  */
 
-package net.sourceforge.bookscanwizard;
+package net.sourceforge.bookscanwizard.gui;
 
 import java.awt.Desktop;
 import java.awt.event.ActionEvent;
@@ -27,6 +27,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import net.sourceforge.bookscanwizard.BSW;
+import net.sourceforge.bookscanwizard.Operation;
+import net.sourceforge.bookscanwizard.PrefsHelper;
 import net.sourceforge.bookscanwizard.op.SaveToArchive;
 
 /**
@@ -34,9 +37,8 @@ import net.sourceforge.bookscanwizard.op.SaveToArchive;
  * @author Steve
  */
 public class UploadFile extends javax.swing.JDialog {
-    private static UploadFile instance;
 
-    static void upload(ActionListener menuHandler) throws Exception {
+    public static void upload(ActionListener menuHandler) throws Exception {
         UploadFile uploadFile = new UploadFile(BSW.instance().getMainFrame(), true, menuHandler);
         uploadFile.setVisible(true);
     }

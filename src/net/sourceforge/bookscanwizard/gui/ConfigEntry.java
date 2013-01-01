@@ -15,7 +15,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-package net.sourceforge.bookscanwizard;
+package net.sourceforge.bookscanwizard.gui;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -54,6 +54,8 @@ import javax.swing.text.ViewFactory;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
+import net.sourceforge.bookscanwizard.OpDefinition;
+import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.op.CreateArchiveZip;
 
 public final class ConfigEntry extends JTextArea {
