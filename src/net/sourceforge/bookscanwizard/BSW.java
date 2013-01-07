@@ -37,6 +37,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -80,6 +81,7 @@ import net.sourceforge.bookscanwizard.op.Pages;
 import net.sourceforge.bookscanwizard.op.RemovePages;
 import net.sourceforge.bookscanwizard.op.SaveToArchive;
 import net.sourceforge.bookscanwizard.op.WhiteBalance;
+import net.sourceforge.bookscanwizard.gui.ImportImages;
 import net.sourceforge.bookscanwizard.qr.PrintCodes;
 import net.sourceforge.bookscanwizard.qr.PrintCodesDialog;
 import net.sourceforge.bookscanwizard.qr.ReadCodes;
@@ -100,7 +102,7 @@ public class BSW {
     public static final RenderingHints QUALITY_HINTS = new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
     public static final RenderingHints SPEED_HINTS = new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
     private static BSW instance;
-    private static File currentDirectory = new File(".").getAbsoluteFile();
+    private static Path currentDirectory = new File(".").getAbsoluteFile().toPath();
     private static TileCache tileCache;
 
     public static double getPreviewScale() {
@@ -268,7 +270,7 @@ public class BSW {
         this.configFile = configFile;
         FileReader fr;
         try {
-            setCurrentDirectory(configFile.getAbsoluteFile().getParentFile());
+            setCurrentDirectory(configFile.toPath());
 
             fr = new FileReader(configFile);
             BufferedReader reader = new BufferedReader(fr);
@@ -488,6 +490,9 @@ public class BSW {
             } else if (cmd.equals("thumb_remove_pages")) {
                 String text ="RemovePages = "+getMainFrame().getThumbTable().calcPageConfig(); 
                  insertConfigNoPreview(text, false, true);
+            } else if (cmd.equals("import_monitor")) {
+                ImportImages.getInstance().setVisible(true);
+                ImportImages.getInstance().requestFocus();
             } else {
                 throw new UserException("Unknown action type: " + cmd);
             }
@@ -723,7 +728,7 @@ public class BSW {
             document.remove(start, end - start);
             end = start;
         }
-        SectionName sectionName;
+        SectionName sectionName = null;
         boolean addCurrentPage = false;
         if (ensurePosition && !replace) {
             System.out.println("found: "+newText);
@@ -731,58 +736,62 @@ public class BSW {
             for (String newLine : newText.split("\n")) {
                 op =  Operation.getStandaloneOp(newLine);
             }
-            sectionName = SectionName.getSectionFromOp(op);
-            String match = sectionName.getMatchString();
-            boolean sectionBegan = false;
-            boolean lastPageMatched = false;
-            start = 0;
-            int lastMatchLine = 0;
-            for (String line : config.getText().split("\n")) {
-                if(sectionBegan && line.contains("# *** ")) {
-                    end = start;
-                    break;
-                }
-                if (line.contains(match)) {
-                    sectionBegan = true;
-                }
-                if (!line.trim().isEmpty()) {
-                    start += line.length()+1;
-                }
-                if (sectionBegan) {
-                    Operation testOp = Operation.getStandaloneOp(line);
-                    if (testOp instanceof Pages) {
-                        Pages pages = (Pages) testOp;
-                        int previewPos = previewedImage.getPreviewHolder().getPosition();
-                        int pagePos = pages.getPosition();
-                        if ((pagePos == FileHolder.ALL || previewPos == pagePos) && 
-                            pages.getPageSet().getFileHolders().contains(previewedImage.getPreviewHolder()))
-                        {
-                            lastPageMatched = true;
-                        } else {
-                            lastPageMatched = false;
-                        }
-                    }
-                    if (lastPageMatched) {
-                        lastMatchLine = start;
-                        if (testOp != null && testOp.getClass() == op.getClass()) {
-                            addCurrentPage = true;
-                        }
-                    }
-                }
-                if (line.trim().isEmpty()) {
-                    start += line.length()+1;
-                }
+            if (op != null) {
+                sectionName = SectionName.getSectionFromOp(op);
             }
-            if (lastMatchLine > 0) {
-                end = lastMatchLine;
-                if (addCurrentPage && !(op instanceof RemovePages)) {
-                    String currentName = previewedImage.getPreviewHolder().getName();
-                    text = "StartPage = "+currentName+"\n"+text;
+            if (sectionName != null) {
+                String match = sectionName.getMatchString();
+                boolean sectionBegan = false;
+                boolean lastPageMatched = false;
+                start = 0;
+                int lastMatchLine = 0;
+                for (String line : config.getText().split("\n")) {
+                    if(sectionBegan && line.contains("# *** ")) {
+                        end = start;
+                        break;
+                    }
+                    if (line.contains(match)) {
+                        sectionBegan = true;
+                    }
+                    if (!line.trim().isEmpty()) {
+                        start += line.length()+1;
+                    }
+                    if (sectionBegan) {
+                        Operation testOp = Operation.getStandaloneOp(line);
+                        if (testOp instanceof Pages) {
+                            Pages pages = (Pages) testOp;
+                            int previewPos = previewedImage.getPreviewHolder().getPosition();
+                            int pagePos = pages.getPosition();
+                            if ((pagePos == FileHolder.ALL || previewPos == pagePos) && 
+                                pages.getPageSet().getFileHolders().contains(previewedImage.getPreviewHolder()))
+                            {
+                                lastPageMatched = true;
+                            } else {
+                                lastPageMatched = false;
+                            }
+                        }
+                        if (lastPageMatched) {
+                            lastMatchLine = start;
+                            if (testOp != null && testOp.getClass() == op.getClass()) {
+                                addCurrentPage = true;
+                            }
+                        }
+                    }
+                    if (line.trim().isEmpty()) {
+                        start += line.length()+1;
+                    }
                 }
-            } else if (!(op instanceof RemovePages)) {
-               String posText = (previewedImage.getPreviewHolder().getPosition()
-                          == FileHolder.LEFT ? "left" : "right");
-                text = "Pages = "+posText+"\n"+text;
+                if (lastMatchLine > 0) {
+                    end = lastMatchLine;
+                    if (addCurrentPage && !(op instanceof RemovePages)) {
+                        String currentName = previewedImage.getPreviewHolder().getName();
+                        text = "StartPage = "+currentName+"\n"+text;
+                    }
+                } else if (!(op instanceof RemovePages)) {
+                   String posText = (previewedImage.getPreviewHolder().getPosition()
+                              == FileHolder.LEFT ? "left" : "right");
+                    text = "Pages = "+posText+"\n"+text;
+                }
             }
         }
         
@@ -873,30 +882,18 @@ public class BSW {
      * @return
      */
     public static File getFileFromCurrentDir(String path) {
-        File f = new File(path);
-        if (f.isAbsolute()) {
-            return f;
-        }
-        if (ProcessHelper.isWindows()) {
-            // on Windows it isn't considered absolute unless it includes a drive
-            // or is a unc path.. but for our purposes the following should
-            // be considered absolute.
-            if (path.contains(":") || f.getPath().startsWith(File.separator)) {
-                return f;
-            }
-        }
-        return new File(currentDirectory, path);
+        return currentDirectory.resolve(path).toFile();
     }
 
     /**
      * This will return the directory that the configuration file is in.
      */
     public static File getCurrentDirectory() {
-        return currentDirectory;
+        return currentDirectory.toFile();
     }
 
-    public static void setCurrentDirectory(File currentDirectory) {
-        BSW.currentDirectory = currentDirectory.getAbsoluteFile();
+    public static void setCurrentDirectory(Path currentDirectory) {
+        BSW.currentDirectory = currentDirectory;
     }
 
     public MainFrame getMainFrame() {
@@ -1072,7 +1069,7 @@ public class BSW {
             "       This will use the 'Title' and 'End Book' barcodes to split a bunch\n"+
             "       of scans to seperate books, and save a barcodes.csv for each directory.\n"+
             "      -threshold: is the value from 0-100 that will be used to convert it to a\n"+
-            "         black and white image.  Defualt is 118.\n"+
+            "         black and white image.  Default is 35.\n"+
             "      -scale: If this is defined, the images will be scaled down before\n"+
             "         scanning, which will make it faster.  Default is 1 (no scaling).\n"+
             "   -barcodes [-threshold n] [-scale n] directory\n"+

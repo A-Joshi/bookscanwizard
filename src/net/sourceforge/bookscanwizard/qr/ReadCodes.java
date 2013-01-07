@@ -66,14 +66,14 @@ public class ReadCodes {
     private static final int DEFAULT_THRESHOLD = 90;
     public static final String PREFIX = "BSW_";
     // scale down the image so the barcode reading will be faster.
-    private static float scale = 1f;
+    private static float scale = .25f;
     private static double threshold = DEFAULT_THRESHOLD;
     private static final Hashtable hints = new Hashtable();
 
-    private List<File> files;
+    private Collection<File> files;
     private LazyHashMap<String, List<QRData>> codes = new LazyHashMap<String, List<QRData>>(ArrayList.class);
 
-    public ReadCodes(List<File> files) {
+    public ReadCodes(Collection<File> files) {
         this.files = files;
     }
 
@@ -201,7 +201,7 @@ public class ReadCodes {
         return allData;
     }
 
-    public List<File> getFiles() {
+    public Collection<File> getFiles() {
         return files;
     }
 

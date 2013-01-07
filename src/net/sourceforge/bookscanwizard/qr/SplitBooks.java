@@ -21,6 +21,7 @@ package net.sourceforge.bookscanwizard.qr;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -48,13 +49,17 @@ public class SplitBooks {
             System.err.println("Invalid arguments to -split");
             System.exit(1);
         }
-        ReadCodes readCodes = new ReadCodes(mainArgs.get(0), scale);
         File destination = new File(mainArgs.get(1));
         String subdir = null;
         if (mainArgs.size() > 2) {
             subdir = mainArgs.get(2);
         }
-        List<File> files = readCodes.getFiles();
+        SplitBooks splitBooks = new SplitBooks(args[0], destination, subdir, scale);
+    }
+    
+    public SplitBooks(String source, File destination, String subdir, float scale) throws Exception {
+        ReadCodes readCodes = new ReadCodes(source, scale);
+        Collection<File> files = readCodes.getFiles();
         LazyHashMap<String, List<File>> books =
             new LazyHashMap<String, List<File>>(ArrayList.class);
         LazyHashMap<String, List<QRData>> bookCodes =

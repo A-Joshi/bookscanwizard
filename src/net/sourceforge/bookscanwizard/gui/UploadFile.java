@@ -69,7 +69,7 @@ public class UploadFile extends javax.swing.JDialog {
         if (fileName == null) {
             fileName = "archive.zip";
         }
-        jFile.setSelectedFile(new File(BSW.getCurrentDirectory(), fileName));
+        jFile.setSelectedFile(BSW.getFileFromCurrentDir(fileName));
     }
 
     /** This method is called from within the constructor to

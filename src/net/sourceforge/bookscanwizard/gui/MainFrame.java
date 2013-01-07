@@ -74,7 +74,6 @@ import javax.swing.event.ChangeListener;
 import net.sourceforge.bookscanwizard.BSW;
 import net.sourceforge.bookscanwizard.BoundsHelper;
 import net.sourceforge.bookscanwizard.FileHolder;
-import net.sourceforge.bookscanwizard.OperationList;
 
 
 /**
@@ -255,6 +254,13 @@ public final class MainFrame extends JFrame {
 
         menuBar.add(toolsMenu);
 
+        menuItem = new JMenuItem("Import Montior");
+        menuItem.setMnemonic(KeyEvent.VK_L);
+        menuItem.setToolTipText("This will monitor a directory for new books.");
+        menuItem.setActionCommand("import_monitor");
+        menuItem.addActionListener(menuHandler);
+        toolsMenu.add(menuItem);
+
         menuItem = new JMenuItem("Load DPI Information");
         menuItem.setMnemonic(KeyEvent.VK_L);
         menuItem.setToolTipText("Creates a EstimateDPI command from saved data.");
@@ -317,7 +323,7 @@ public final class MainFrame extends JFrame {
             }
         });
         toolsMenu.add(horizontalLayout);
-// TODO:  get preferences working.
+// TODO:  get preferences worcking.
         if (BSW.EXPERIMENTAL) {
             menuItem = new JMenuItem("Preferences");
             menuItem.setMnemonic(KeyEvent.VK_P);
@@ -342,7 +348,7 @@ public final class MainFrame extends JFrame {
         menuItem.addActionListener(menuHandler);
         toolsMenu.add(menuItem);
 
-        menuItem  = new JMenuItem("Upload to the Archive...");
+        menuItem  = new JMenuItem("Upload to archive.org...");
         menuItem.setToolTipText("Uploads this book to the Internet Archive");
         menuItem.setActionCommand("upload");
         menuItem.addActionListener(menuHandler);
@@ -369,7 +375,7 @@ public final class MainFrame extends JFrame {
             }
         });
         helpMenu.add(menuItem);
-        menuItem = new JMenuItem("Show Command Helper");
+        menuItem = new JMenuItem("Show Command Help");
         menuItem.setMnemonic(KeyEvent.VK_S);
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0));
 

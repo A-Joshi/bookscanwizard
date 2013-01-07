@@ -279,9 +279,9 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
             // Now bind the Ctrl-C keystroke to a "Copy" command.
         InputMap im = new InputMap();
         im.setParent(getInputMap(WHEN_FOCUSED));
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_MASK), "cut");
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK), "copy");
-        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_MASK), "paste");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "cut");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "copy");
+        im.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "paste");
         setInputMap(WHEN_FOCUSED, im);
 
         ActionMap am = new ActionMap();

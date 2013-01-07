@@ -43,7 +43,6 @@ public class Rename extends Operation {
     }
 
     private void rename(PageSet pageSet) {
-        // if there are multiple threads, only let one through.
         String[] args = getTextArgs();
         for (int i=0; i < args.length; i+=3) {
             String pattern = args[i];

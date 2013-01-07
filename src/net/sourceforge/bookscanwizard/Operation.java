@@ -32,7 +32,9 @@ import java.util.regex.Pattern;
 import javax.imageio.spi.ImageWriterSpi;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
+import net.sourceforge.bookscanwizard.OpDefinition.Argument;
 import net.sourceforge.bookscanwizard.gui.MainFrame;
+import net.sourceforge.bookscanwizard.gui.OperationList;
 import net.sourceforge.bookscanwizard.op.Rotate;
 import net.sourceforge.bookscanwizard.util.ImageUtilities;
 
@@ -197,6 +199,28 @@ abstract public class Operation {
             }
         }
     }
+    
+    /**
+     * Validates that a command contains valid arguments.  The default is to 
+     * validate that the required parameters are filled in.
+     */
+    protected void validateArguments() {
+        OpDefinition def = OperationList.findDefinition(getClass().getSimpleName());
+        if (def == null) {
+            return;
+        }
+        int required = 0;
+        for (Argument arg : def.getArguments()) {
+            if (arg.isRequired()) {
+                required++;
+            } else {
+                break;
+            }
+        }
+        if (required > getTextArgs().length) {
+            throw new UserException(getClass().getSimpleName()+" requires "+required+" parameters, but only "+getTextArgs().length+" were included");
+        }
+    }
 
     final protected String[] getTextArgs() {
         Matcher matcher = ARG_PATTERN.matcher(arguments);
@@ -235,6 +259,10 @@ abstract public class Operation {
         throw new UserException("Could not find file "+name);
     }
 
+    /**
+     * Converts a line to an operation, for the purpose of editing the 
+     * configuration
+     */
     public static Operation getStandaloneOp(String line) throws Exception {
         Matcher matcher = MATCH_OP.matcher(line);
         if (!matcher.find()) {
@@ -258,9 +286,13 @@ abstract public class Operation {
         }
         if (cls != null) {
             Operation operation = (Operation) cls.newInstance();
-            operation.init(args, null);
-            operation.pageSet = new PageSet(null);
-            operation.setup(Collections.singletonList(operation));
+            try {
+                operation.init(args, null);
+                operation.pageSet = new PageSet(null);
+                operation.setup(Collections.singletonList(operation));
+            } catch (Exception e) {
+                // ignore.
+            }
             return operation;
         }
         return null;
@@ -299,6 +331,7 @@ abstract public class Operation {
             operation = (Operation) cls.newInstance();
             operation.init(args, reader);
             operation.pageSet = pageSet;
+            operation.validateArguments();
             retVal = operation.setup(Collections.singletonList(operation));
         }
         return retVal;

@@ -65,7 +65,7 @@ public class NewBook {
             return null;
         }
         System.out.println(settings);
-        BSW.setCurrentDirectory(new File((String) settings.get(WORKING_DIRECTORY)));
+        BSW.setCurrentDirectory(new File((String) settings.get(WORKING_DIRECTORY)).toPath());
         settings.put(WORKING_DIRECTORY, BSW.getCurrentDirectory().getParent());
         AbstractPage.putMatchingSettings(settings);
 

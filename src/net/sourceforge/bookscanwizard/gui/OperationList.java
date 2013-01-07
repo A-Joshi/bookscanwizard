@@ -15,7 +15,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-package net.sourceforge.bookscanwizard;
+package net.sourceforge.bookscanwizard.gui;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -24,7 +24,6 @@ import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
@@ -38,17 +37,20 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
-import net.sourceforge.bookscanwizard.gui.ConfigEntry;
+import net.sourceforge.bookscanwizard.BSW;
+import net.sourceforge.bookscanwizard.BoundsHelper;
+import net.sourceforge.bookscanwizard.OpDefinition;
+import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.op.*;
 import net.sourceforge.bookscanwizard.util.SelectableLabel;
 
 public class OperationList extends JFrame {
     private SelectableLabel argNotes;
     private JTable table;
-    private ArrayList<OpDefinition> defs;
+    private static final ArrayList<OpDefinition> defs;
     private final BoundsHelper boundsListener;
 
-    private static Class[] operations = {
+    private static final Class[] operations = {
         AddBorder.class,
         AutoLevels.class,
         BarcodePerspective.class,
@@ -104,18 +106,6 @@ public class OperationList extends JFrame {
     public OperationList(JFrame mainFrame) {
         super("BSW Help");
         setIconImage(mainFrame.getIconImage());
-        defs = new ArrayList<OpDefinition>();
-        Vector<String> ops = new Vector<String>();
-        for (Class cls : operations) {
-            try {
-                Operation op = (Operation) cls.newInstance();
-                defs.add(op.getDefinition());
-            } catch (InstantiationException ex) {
-                Logger.getLogger(OperationList.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IllegalAccessException ex) {
-                Logger.getLogger(OperationList.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
         DefaultTableColumnModel columnModel = new DefaultTableColumnModel();
         TableColumn col1 = new TableColumn(0, 150);
         col1.setHeaderValue("Operation");
@@ -229,13 +219,13 @@ public class OperationList extends JFrame {
         }
     }
 
-    public OpDefinition findDefinition(String name) {
+    public static OpDefinition findDefinition(String name) {
         for (OpDefinition def : defs) {
             if (def.getName().equals(name)) {
                 return def;
             }
         }
-        throw new IllegalArgumentException("Could not find: "+name);
+        return null;
     }
 
     public String getColumnNotes(OpDefinition def) {
@@ -267,5 +257,19 @@ public class OperationList extends JFrame {
 
     public BoundsHelper getBoundsHelper() {
         return boundsListener;
+    }
+    
+    static {
+        defs = new ArrayList<OpDefinition>();
+        for (Class cls : operations) {
+            try {
+                Operation op = (Operation) cls.newInstance();
+                defs.add(op.getDefinition());
+            } catch (InstantiationException ex) {
+                Logger.getLogger(OperationList.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IllegalAccessException ex) {
+                Logger.getLogger(OperationList.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 }

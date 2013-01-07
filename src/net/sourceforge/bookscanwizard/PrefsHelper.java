@@ -33,6 +33,8 @@ import javax.swing.JFrame;
 import javax.swing.JSplitPane;
 import net.sourceforge.bookscanwizard.gui.MainFrame;
 import net.sourceforge.bookscanwizard.op.EstimateDPI;
+import net.sourceforge.bookscanwizard.gui.ImportImages;
+import net.sourceforge.bookscanwizard.qr.ImportImagesData;
 import net.sourceforge.bookscanwizard.start.AbstractPage;
 
 /**
@@ -92,6 +94,10 @@ public class PrefsHelper {
             if (tmp != null) {
                 miscPrefs = (HashMap<String, Object>) getObject("miscPrefs");
             }
+            tmp  = getObject("import");
+            if (tmp != null) {
+                ImportImages.getInstance().setImportData((ImportImagesData) tmp);
+            }
         } catch (Exception ex) {
             logger.log(Level.WARNING, null, ex);
         }
@@ -112,6 +118,7 @@ public class PrefsHelper {
         putObject("dpiInfo", EstimateDPI.getInfo());
         putObject("wizard", (Serializable) AbstractPage.getDefaults());
         putObject("miscPrefs", miscPrefs);
+        putObject("import", ImportImages.getInstance().getImportData());
     }
     
     synchronized public static Object getPref(String key) {

@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -166,6 +167,21 @@ public class QRData {
             reader.close();
         }
         return map;
+    }
+    
+    @Override
+    public String toString() {
+        try {
+            StringWriter str = new StringWriter();
+            ICsvBeanWriter writer = new CsvBeanWriter(str, CsvPreference.EXCEL_PREFERENCE);
+            writer.write(this, COLUMNS);
+            writer.close();
+            return str.toString();
+        } catch (RuntimeException ex) {
+            throw ex;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
