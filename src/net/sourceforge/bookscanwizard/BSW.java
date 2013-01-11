@@ -18,12 +18,7 @@
 
 package net.sourceforge.bookscanwizard;
 
-import java.awt.Cursor;
-import java.awt.Event;
 import java.awt.RenderingHints;
-import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -33,10 +28,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,38 +51,21 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.media.jai.JAI;
 import javax.media.jai.TileCache;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
-import javax.swing.text.Document;
-import net.sourceforge.bookscanwizard.config.ConfigAutoLevels;
-import net.sourceforge.bookscanwizard.config.ConfigBalancedAutoLevels;
-import net.sourceforge.bookscanwizard.config.ConfigGrayCard;
 import net.sourceforge.bookscanwizard.gui.AboutDialog;
 import net.sourceforge.bookscanwizard.gui.ConfigEntry;
+import net.sourceforge.bookscanwizard.gui.GuiActions;
 import net.sourceforge.bookscanwizard.gui.MainFrame;
 import net.sourceforge.bookscanwizard.gui.MetadataGui;
-import net.sourceforge.bookscanwizard.gui.UploadFile;
 import net.sourceforge.bookscanwizard.gui.UserFeedbackHelper;
-import net.sourceforge.bookscanwizard.op.Barcodes;
-import net.sourceforge.bookscanwizard.op.EstimateDPI;
-import net.sourceforge.bookscanwizard.op.NormalizeLighting;
-import net.sourceforge.bookscanwizard.op.Pages;
-import net.sourceforge.bookscanwizard.op.RemovePages;
 import net.sourceforge.bookscanwizard.op.SaveToArchive;
-import net.sourceforge.bookscanwizard.op.WhiteBalance;
-import net.sourceforge.bookscanwizard.gui.ImportImages;
-import net.sourceforge.bookscanwizard.qr.PrintCodes;
-import net.sourceforge.bookscanwizard.qr.PrintCodesDialog;
 import net.sourceforge.bookscanwizard.qr.ReadCodes;
 import net.sourceforge.bookscanwizard.qr.SplitBooks;
 import net.sourceforge.bookscanwizard.start.NewBook;
-import net.sourceforge.bookscanwizard.start.PreferenceWizard;
-import net.sourceforge.bookscanwizard.unwarp.FilterWizard;
-import net.sourceforge.bookscanwizard.util.ProcessHelper;
 
 /**
  * The main program
@@ -102,7 +78,7 @@ public class BSW {
     public static final RenderingHints QUALITY_HINTS = new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
     public static final RenderingHints SPEED_HINTS = new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
     private static BSW instance;
-    private static Path currentDirectory = new File(".").getAbsoluteFile().toPath();
+    private static Path currentDirectory = new File(".").getAbsoluteFile().getParentFile().toPath();
     private static TileCache tileCache;
 
     public static double getPreviewScale() {
@@ -117,7 +93,7 @@ public class BSW {
 
     private File configFile;
 
-    private MenuActionListener menuHandler = new MenuActionListener();
+    private GuiActions menuHandler = new GuiActions(this);
 
     private static boolean batchMode;
     private static boolean running;
@@ -134,6 +110,7 @@ public class BSW {
     }
 
     static {
+        System.out.println("cur: "+currentDirectory);
         tileCache = JAI.getDefaultInstance().getTileCache();
         ImageIO.scanForPlugins();
         LogManager.getLogManager().reset();
@@ -199,13 +176,13 @@ public class BSW {
 
         final BSW wizard = new BSW();
         BSW.instance = wizard;
-        final File file = new File(configLocation);
+        final File file = getFileFromCurrentDir(configLocation);
         if (configLocation != null) {
             try {
                 if (batchMode) {
                     String config = wizard.loadConfig(file);
                     long time = System.currentTimeMillis();
-                    wizard.runBatch(config, wizard.getNewProcessImages());
+                    wizard.runBatch(config, null);
                     logger.log(Level.INFO, "Total elapsed time: {0} seconds.", ((System.currentTimeMillis() - time) / 1000));
                     System.exit(0);
                 }
@@ -245,6 +222,7 @@ public class BSW {
     public BSW() {
         if (!batchMode) {
             mainFrame = new MainFrame(menuHandler);
+            menuHandler.setMainFrame(mainFrame);
             mainFrame.getPageListBox().addActionListener(new UserFeedbackHelper() {
                 @Override
                 public void cursorActionPerformed(ActionEvent e) throws Exception {
@@ -270,7 +248,7 @@ public class BSW {
         this.configFile = configFile;
         FileReader fr;
         try {
-            setCurrentDirectory(configFile.toPath());
+            setCurrentDirectory(configFile.getParentFile().toPath());
 
             fr = new FileReader(configFile);
             BufferedReader reader = new BufferedReader(fr);
@@ -297,7 +275,7 @@ public class BSW {
         return result;
     }
 
-    private void openConfig() throws Exception {
+    public void openConfig() throws Exception {
         File file = configFile;
         if (file == null) {
             file = getFileFromCurrentDir("book.bsw");
@@ -317,7 +295,7 @@ public class BSW {
         preview();
     }
 
-    private void saveConfig() throws IOException {
+    public void saveConfig() throws IOException {
         if (configFile == null) {
             saveConfigAs();
         } else {
@@ -327,7 +305,7 @@ public class BSW {
         }
     }
 
-    private void saveConfigAs() throws IOException {
+    public void saveConfigAs() throws IOException {
         File file = configFile;
         if (file == null) {
             file = getFileFromCurrentDir("book.bsw");
@@ -356,219 +334,23 @@ public class BSW {
         mainFrame.setImage(img, previewedImage.getPreviewHolder());
     }
 
-    private class MenuActionListener extends UserFeedbackHelper {
-        @Override
-        public void cursorActionPerformed(ActionEvent e) throws Exception {
-            String cmd = e.getActionCommand();
-            if ("abort".equals(cmd)) {
-                abort();
-                return;
-            }
-            if (running) {
-                throw new UserException("A process is running.  Either cancel the process or wait for it to complete before continuing.");
-            }
-            if ("new".equals(cmd)) {
-                newBatch();
-            } else if ("preferences".equals(cmd)) {
-                PreferenceWizard wizard = new PreferenceWizard();
-                wizard.getConfig();
-            } else if ("open".equals(cmd)) {
-                openConfig();
-            } else if ("save".equals(cmd)) {
-                saveConfig();
-            } else if ("save_as".equals(cmd)) {
-                saveConfigAs();
-            } else if ("exit".equals(cmd)) {
-                System.exit(0);
-            } else if ("preview".equals(cmd)) {
-                preview();
-            } else if ("run".equals(cmd)) {
-                runBatch(mainFrame.getConfigEntry().getText(), getNewProcessImages());
-            } else if ("previousPage".equals(cmd)) {
-                int inc = ((e.getModifiers() & Event.SHIFT_MASK) != 0) ? 2 : 1;
-                if (mainFrame.getPageListBox().getSelectedIndex() - inc < 0) {
-                    throw new UserException("You are at the first image");
-                }
-                mainFrame.getPageListBox().setSelectedIndex(mainFrame.getPageListBox().getSelectedIndex() - inc);
-            } else if ("nextPage".equals(cmd)) {
-                int inc = ((e.getModifiers() & Event.SHIFT_MASK) != 0) ? 2 : 1;
-                if (mainFrame.getPageListBox().getSelectedIndex() + inc >= mainFrame.getPageListBox().getItemCount()) {
-                    throw new UserException("You are at the last image");
-                }
-                mainFrame.getPageListBox().setSelectedIndex(mainFrame.getPageListBox().getSelectedIndex() + inc);
-            } else if ("zoomIn".equals(cmd)) {
-                getMainFrame().getViewerPanel().multScale(1.5f);
-            } else if ("zoomOut".equals(cmd)) {
-                getMainFrame().getViewerPanel().multScale(1f / 1.5F);
-            } else if ("zoom".equals(cmd)) {
-                throw new RuntimeException("not implemented");
-            } else if ("about".equals(cmd)) {
-                mainFrame.getAboutDialog().setVisible(true);
-            } else if ("command_helper".equals(cmd)) {
-                mainFrame.getOperationList().setVisible(true);
-            } else if ("perspective_and_crop".equals(cmd)) {
-               insertCoordinates("PerspectiveAndCrop =");
-            } else if ("perspective".equals(cmd)){
-                insertCoordinates("Perspective =");
-            } else if ("rotate".equals(cmd)) {
-                insertCoordinates("Rotate =");
-            } else if ("crop".equals(cmd)) {
-                insertCoordinates("Crop =");
-            } else if ("crop_and_scale".equals(cmd)) {
-                cropAndScale();
-            } else if ("whiteout".equals(cmd)) {
-                insertCoordinates("Whiteout =");
-            } else if ("copy_points_to_viewer".equals(cmd)) {
-                mainFrame.getViewerPanel().setPointDef(getConfigEntry().getCurrentLineOrSelection());
-            } else if ("create_script".equals(cmd)) {
-                createScript();
-            } else if ("auto_levels".equals(cmd)) {
-                autoLevels(false);
-            } else if ("auto_rgb_levels".equals(cmd)) {
-                autoLevels(true);
-            } else if ("gray_card".equals(cmd)) {
-                String config = new ConfigGrayCard().getConfig(getConfigImage());
-                insertConfig(config, false, true);
-            } else if ("remove_page".equals(cmd)) {
-                removePage();
-            } else if ("white_balance".equals(cmd)) {
-                String config = WhiteBalance.getConfig(getConfigImage());
-                insertConfig(config, false, true);
-            } else if ("balanced_normalize_lighting".equals(cmd)) {
-                String config = new ConfigBalancedAutoLevels().getConfig(getConfigImage());
-                insertConfig(config, false, true);
-            } else if ("normalize_lighting".equals(cmd)) {
-                normalizeLighting();
-            } else if ("laser_filter".equals(cmd)) {
-                FilterWizard filterWizard = new FilterWizard();
-                filterWizard.setImage(getPreviewedImage().getPreviewImage());
-                filterWizard.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-                filterWizard.setVisible(true);
-
-            } else if ("keystone_barcodes".equals(cmd)) {
-                PrintCodes.keystoneCodes();
-            } else if ("print_qr_codes".equals(cmd)) {
-                JDialog dialog = new PrintCodesDialog(getMainFrame(), false);
-                dialog.setVisible(true);
-            } else if ("metadata".equals(cmd)) {
-                prepareMetadata();
-            } else if ("upload".equals(cmd)) {
-                UploadFile.upload(menuHandler);
-            } else if ("do_upload".equals(cmd)) {
-                UploadFile uploadFile = ((UploadFile)((JComponent) e.getSource()).getTopLevelAncestor());
-                runBatch(mainFrame.getConfigEntry().getText(), new UploadImages(uploadFile));
-            } else if ("expand_barcode_operations".equals(cmd)) {
-                preview();
-                insertConfigNoPreview(Barcodes.getConfiguration(), true, false);
-            } else if ("preview_to_cursor".equals(cmd)) {
-                preview();
-            } else if ("save_dpi".equals(cmd)) {
-                preview();
-                EstimateDPI.saveFocalLength();
-            } else if ("op EstimateDPI".equals(cmd)) {
-                String dpiInfo = EstimateDPI.getConfig();
-                if (dpiInfo == null) {
-                    throw new UserException("No DPI information is saved");
-                }
-                insertConfigNoPreview(dpiInfo, false, false);
-            } else if (cmd.startsWith("op ")) {
-                insertConfigNoPreview(cmd.substring(3)+" = ", false, true);
-            } else if (cmd.equals("thumb_checkbox")) {
-                getMainFrame().getThumbTable().update();
-            } else if (cmd.equals("thumb_select")) {
-                FileHolder h = getMainFrame().getThumbTable().getSelectedHolder();
-                System.out.println("sel: "+h+" "+h.isDeleted());
-                getPreviewedImage().setFileHolder(h);
-            } else if (cmd.equals("thumb_insert")) {
-                String text = "Pages = " + getMainFrame().getThumbTable().calcPageConfig();
-               insertConfigNoPreview(text, false, false);
-            } else if (cmd.equals("thumb_copy")) {
-                String page = "Pages = " + getMainFrame().getThumbTable().calcPageConfig();
-                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                StringSelection data = new StringSelection(page);
-                clipboard.setContents(data, data);
-            } else if (cmd.equals("thumb_remove_pages")) {
-                String text ="RemovePages = "+getMainFrame().getThumbTable().calcPageConfig(); 
-                 insertConfigNoPreview(text, false, true);
-            } else if (cmd.equals("import_monitor")) {
-                ImportImages.getInstance().setVisible(true);
-                ImportImages.getInstance().requestFocus();
-            } else {
-                throw new UserException("Unknown action type: " + cmd);
-            }
-        }
-
-        private void cropAndScale() throws Exception {
-            String text = mainFrame.getViewerPanel().getPointDef();
-            if (text.length() > 0) {
-                text = "CropAndScale = "+ text+ " "+
-                        mainFrame.getViewerPanel().getXCropScale() + " " +
-                        mainFrame.getViewerPanel().getYCropScale() + " # " +
-                        previewedImage.getPreviewHolder().toString();
-                insertConfig(text, false, true);
-            }
-        }
-
-        private void insertCoordinates(String prefix) throws Exception {
-            String text = mainFrame.getViewerPanel().getPointDef();
-            if (text.length() > 0) {
-                Operation op = previewOperations.get(previewOperations.size()-1);
-                text = prefix+" "+ text;
-                insertConfig(text, false, true);
-             }
-        }
-
-        private void createScript() throws IOException {
-            final JFileChooser fc = new JFileChooser();
-            fc.setDialogTitle("Enter the name and location of the script to save");
-            fc.setApproveButtonText("Save");
-
-            int returnVal = fc.showOpenDialog(mainFrame);
-            if (returnVal != JFileChooser.APPROVE_OPTION) {
-                return;
-            }
-            File scriptFile = fc.getSelectedFile();
-            PrintWriter out = new PrintWriter(new FileWriter(scriptFile));
-            if (ProcessHelper.isWindows()) {
-                out.println("@echo off");
-            } else {
-                out.println("#/bin/sh");
-            }
-            out.print("java -classpath \"");
-            out.print(ProcessHelper.getRealClasspath());
-            out.print("\" -Xmx");
-            out.print(""+Runtime.getRuntime().maxMemory());
-            out.print(" ");
-            out.print(BSW.class.getName());
-            out.print(" ");
-            if (ProcessHelper.isWindows()) {
-                out.append("%*");
-            } else {
-                out.append("@$");
-            }
-            out.println();
-            out.close();
-            scriptFile.setExecutable(true);
-        }
+    public GuiActions getMenuHandler() {
+        return menuHandler;
     }
 
-    private class UploadImages implements Batch {
-        private UploadFile uploadFile;
-
-        public UploadImages (UploadFile uploadFile) {
-            this.uploadFile = uploadFile;
-        }
-
-        public List<Future<Void>> getFutures(List<Operation> operations) {
-            return new ArrayList<Future<Void>>();
-        }
-
-        public void postOperation() throws Exception {
-            uploadFile.performUpload();
-        }
+    public boolean isRunning() {
+        return running;
     }
 
-    private class ProcessImages implements Batch {
+    public List<Operation>  getPreviewOperations() {
+        return previewOperations;
+    }
+
+    public File getConfigFile() {
+        return configFile;
+    }
+    
+    public class ProcessImages implements Batch {
         private List<Operation> operations;
 
         public void postOperation() throws Exception {
@@ -618,8 +400,22 @@ public class BSW {
             return futures;
         }
     }
+    
+    public void runBatchList(List<File> configFiles) throws Exception {
+        System.out.println("run batch list");
+        for (File file : configFiles) {
+            String config = loadConfig(file);
+            runBatch(config, null);
+        }
+    }
 
-    private synchronized void runBatch(String configText, final Batch batch) throws Exception {
+    public synchronized void runBatch(String configText, Batch batchOverride) throws Exception {
+        final Batch batch;
+        if (batchOverride == null) {
+            batch = getNewProcessImages();
+        } else {
+            batch = batchOverride;
+        }
         abort = false;
         logger.fine("running....");
         final List<Operation> operations = getConfig(configText);
@@ -703,128 +499,7 @@ public class BSW {
         }
     }
 
-    /**
-     * Inserts text into the script.
-     * 
-     * @param newText The text insert
-     * @param replace If the selected text should be replaced.  Otherwise it
-     *        will do an insert.
-     * @param ensurePosition If the insert should insert a Pages setting if needed
-     *        to match the selected page.
-     * @throws Exception 
-     */
-    public void insertConfigNoPreview(String newText, boolean replace, boolean ensurePosition) throws Exception {
-        String text = newText;
-        ConfigEntry config = mainFrame.getConfigEntry();
-        Document document = config.getDocument();
-        int start = config.getSelectionStart();
-        int end = config.getSelectionEnd();
-        if (replace) {
-            if (end < start) {
-                int x = start;
-                start = end;
-                end = x;
-            }
-            document.remove(start, end - start);
-            end = start;
-        }
-        SectionName sectionName = null;
-        boolean addCurrentPage = false;
-        if (ensurePosition && !replace) {
-            System.out.println("found: "+newText);
-            Operation op = null;
-            for (String newLine : newText.split("\n")) {
-                op =  Operation.getStandaloneOp(newLine);
-            }
-            if (op != null) {
-                sectionName = SectionName.getSectionFromOp(op);
-            }
-            if (sectionName != null) {
-                String match = sectionName.getMatchString();
-                boolean sectionBegan = false;
-                boolean lastPageMatched = false;
-                start = 0;
-                int lastMatchLine = 0;
-                for (String line : config.getText().split("\n")) {
-                    if(sectionBegan && line.contains("# *** ")) {
-                        end = start;
-                        break;
-                    }
-                    if (line.contains(match)) {
-                        sectionBegan = true;
-                    }
-                    if (!line.trim().isEmpty()) {
-                        start += line.length()+1;
-                    }
-                    if (sectionBegan) {
-                        Operation testOp = Operation.getStandaloneOp(line);
-                        if (testOp instanceof Pages) {
-                            Pages pages = (Pages) testOp;
-                            int previewPos = previewedImage.getPreviewHolder().getPosition();
-                            int pagePos = pages.getPosition();
-                            if ((pagePos == FileHolder.ALL || previewPos == pagePos) && 
-                                pages.getPageSet().getFileHolders().contains(previewedImage.getPreviewHolder()))
-                            {
-                                lastPageMatched = true;
-                            } else {
-                                lastPageMatched = false;
-                            }
-                        }
-                        if (lastPageMatched) {
-                            lastMatchLine = start;
-                            if (testOp != null && testOp.getClass() == op.getClass()) {
-                                addCurrentPage = true;
-                            }
-                        }
-                    }
-                    if (line.trim().isEmpty()) {
-                        start += line.length()+1;
-                    }
-                }
-                if (lastMatchLine > 0) {
-                    end = lastMatchLine;
-                    if (addCurrentPage && !(op instanceof RemovePages)) {
-                        String currentName = previewedImage.getPreviewHolder().getName();
-                        text = "StartPage = "+currentName+"\n"+text;
-                    }
-                } else if (!(op instanceof RemovePages)) {
-                   String posText = (previewedImage.getPreviewHolder().getPosition()
-                              == FileHolder.LEFT ? "left" : "right");
-                    text = "Pages = "+posText+"\n"+text;
-                }
-            }
-        }
-        
-        document.insertString(end, text, null);
-        config.setSelectionStart(end);
-        config.setSelectionEnd(end + text.length());
-        config.requestFocus();
-    }
-
-    private void insertConfig(String origText, boolean replace, boolean ensurePosition) throws Exception {
-        insertConfigNoPreview(origText+"\n", replace, ensurePosition);
-         mainFrame.getConfigEntry().setSelectionEnd(mainFrame.getConfigEntry().getSelectionEnd()-1);
-
-        Operation op = Operation.getStandaloneOp(origText);
-        if (op instanceof PerspectiveOp) {
-            if (mainFrame.isShowPerspective()) {
-                getMainFrame().getViewerPanel().setPointDef("");
-                preview();
-            }
-        } else if (op instanceof CropOp) {
-            if (mainFrame.isShowCrops()) {
-                getMainFrame().getViewerPanel().setPointDef("");
-                preview();
-            }
-        } else if (op instanceof ColorOp) {
-            if (mainFrame.isShowColors()) {
-                preview();
-            }
-        } else {
-            preview();
-        }
-    }
-
+    
     private void processFile(List<Operation> operations, FileHolder holder) throws Exception {
         RenderedImage image = Operation.performOperations(holder, operations);
         if (image != null) {
@@ -840,7 +515,7 @@ public class BSW {
         }
     }
 
-    private void newBatch() throws Exception {
+    public void newBatch() throws Exception {
         int n = JOptionPane.showConfirmDialog(getMainFrame(),
                 "There is no config file in this directory.\nDo you want to use the Wizard to create one?",
                 "Book Scan Wizard",
@@ -908,17 +583,7 @@ public class BSW {
         return value;
     }
 
-    private void autoLevels(boolean separateRGB) throws Exception {
-        String config = new ConfigAutoLevels().getConfig(getConfigImage(),separateRGB);
-        insertConfig(config, false, true);
-    }
-
-    private void normalizeLighting() throws Exception {
-        String config = new NormalizeLighting().getConfig(previewedImage.getPreviewHolder(), getConfigImage());
-        insertConfig(config, false, true);
-    }
-
-    private RenderedImage getConfigImage() throws Exception {
+    public RenderedImage getConfigImage() throws Exception {
         RenderedImage img = previewedImage.getPreviewProcessedImage();
         Point2D[] pts = mainFrame.getViewerPanel().getPreviewCrop();
         if (pts!= null) {
@@ -942,22 +607,23 @@ public class BSW {
         private String configEntry;
 
         public void setFileHolder(FileHolder fileHolder) {
-            if (fileHolder != null)
-            if (previewHolder != fileHolder && (previewHolder == null || previewHolder != fileHolder)) {
-                previewHolder = fileHolder;
-                previewImage = null;
-                previewProcessedImage = null;
-                getMainFrame().getPageListBox().setSelectedItem(fileHolder);
-                try {
-                    preview();
-                } catch (Exception ex) {
-                    Logger.getLogger(BSW.class.getName()).log(Level.SEVERE, null, ex);
+            if (fileHolder != null) {
+                if (previewHolder != fileHolder && (previewHolder == null || previewHolder != fileHolder)) {
+                    previewHolder = fileHolder;
+                    previewImage = null;
+                    previewProcessedImage = null;
+                    getMainFrame().getPageListBox().setSelectedItem(fileHolder);
+                    try {
+                        preview();
+                    } catch (Exception ex) {
+                        Logger.getLogger(BSW.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    getMainFrame().getThumbTable().updateSelection();
                 }
-                getMainFrame().getThumbTable().updateSelection();
-            }
-            if (fileHolder == null) {
-                configEntry = "";
-                mainFrame.setImage(null, null);
+                if (fileHolder == null) {
+                    configEntry = "";
+                    mainFrame.setImage(null, null);
+                }
             }
         }
         
@@ -1028,26 +694,13 @@ public class BSW {
             listener.newConfig();
         }
     }
-    private void removePage() throws Exception {
-        String line = getConfigEntry().getCurrentLineOrSelection();
-        if (line.endsWith("\n")) {
-            line = line.substring(0, line.length()-1);
-        }
-        if (line.contains("RemovePages")) {
-            line = line + ", "+ previewedImage.getPreviewHolder().getName();
-            insertConfig(line, true, true);
-        } else {
-            insertConfig("RemovePages = " + previewedImage.getPreviewHolder().getName(), false, true);
-        }
-    }
-
-    private void prepareMetadata() throws Exception {
+    public void prepareMetadata() throws Exception {
         getConfig(getConfigEntry().getText());
         JDialog dialog = new MetadataGui(mainFrame, true);
         dialog.setVisible(true);
     }
 
-    private ProcessImages getNewProcessImages() {
+    public ProcessImages getNewProcessImages() {
         return new ProcessImages();
     }
 

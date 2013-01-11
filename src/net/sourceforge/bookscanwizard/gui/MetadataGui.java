@@ -618,7 +618,7 @@ public class MetadataGui extends javax.swing.JDialog {
                 }
                 doc.remove(pos, endLine-pos);
             }
-            BSW.instance().insertConfigNoPreview(str.toString(), false, false);
+            BSW.instance().getMenuHandler().insertConfigNoPreview(str.toString(), false, false);
             if (oldPos < 0) {
                 oldPos = entry.getText().length();
             }

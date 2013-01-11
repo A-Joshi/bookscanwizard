@@ -248,19 +248,44 @@ public final class MainFrame extends JFrame {
         menuItem.addActionListener(menuHandler);
         menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
         actionsMenu.add(menuItem);
+
+        JMenu batchMenu = new JMenu("Batch");
+        batchMenu.setMnemonic(KeyEvent.VK_B);
+        menuBar.add(batchMenu);
+
+        menuItem = new JMenuItem("Import Monitor");
+        menuItem.setMnemonic(KeyEvent.VK_I);
+        menuItem.setToolTipText("This will monitor a directory for new books.");
+        menuItem.setActionCommand("import_monitor");
+        menuItem.addActionListener(menuHandler);
+        batchMenu.add(menuItem);
+        
+        menuItem = new JMenuItem("Add to Batch");
+        menuItem.setMnemonic(KeyEvent.VK_A);
+        menuItem.setToolTipText("This will add the current book to the list to be converted");
+        menuItem.setActionCommand("add_to_batch");
+        menuItem.addActionListener(menuHandler);
+        batchMenu.add(menuItem);
+        
+        menuItem = new JMenuItem("Display batch list");
+        menuItem.setMnemonic(KeyEvent.VK_D);
+        menuItem.setToolTipText("This will display the books to be converted");
+        menuItem.setActionCommand("display_batch_list");
+        menuItem.addActionListener(menuHandler);
+        batchMenu.add(menuItem);
+        
+        menuItem = new JMenuItem("Start batch processing");
+        menuItem.setMnemonic(KeyEvent.VK_S);
+        menuItem.setToolTipText("This will start the queued batch requests");
+        menuItem.setActionCommand("start_batch_processing");
+        menuItem.addActionListener(menuHandler);
+        batchMenu.add(menuItem);
+        
         
         JMenu toolsMenu = new JMenu("Tools");
         toolsMenu.setMnemonic(KeyEvent.VK_T);
 
         menuBar.add(toolsMenu);
-
-        menuItem = new JMenuItem("Import Montior");
-        menuItem.setMnemonic(KeyEvent.VK_L);
-        menuItem.setToolTipText("This will monitor a directory for new books.");
-        menuItem.setActionCommand("import_monitor");
-        menuItem.addActionListener(menuHandler);
-        toolsMenu.add(menuItem);
-
         menuItem = new JMenuItem("Load DPI Information");
         menuItem.setMnemonic(KeyEvent.VK_L);
         menuItem.setToolTipText("Creates a EstimateDPI command from saved data.");
@@ -341,6 +366,8 @@ public final class MainFrame extends JFrame {
             toolsMenu.add(new JSeparator());
         }
 
+        toolsMenu.add(new JSeparator());
+
         menuItem  = new JMenuItem("Add Metadata for the book...");
         menuItem.setMnemonic(KeyEvent.VK_M);
         menuItem.setToolTipText("Adds metadata for inclusion in a PDF or for uploading to the Internet Archive");
@@ -402,7 +429,7 @@ public final class MainFrame extends JFrame {
         leftThumb.setActionCommand("thumb_checkbox");
         leftThumb.addActionListener(menuHandler);
         rightThumb = new JCheckBox("R");
-        leftThumb.setToolTipText("Displays the right page thumbnails");
+        rightThumb.setToolTipText("Displays the right page thumbnails");
         rightThumb.setSelected(true);
         rightThumb.setActionCommand("thumb_checkbox");
         rightThumb.addActionListener(menuHandler);
