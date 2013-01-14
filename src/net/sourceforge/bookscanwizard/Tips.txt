@@ -1,0 +1,49 @@
+Clicking on 4 corners on the image, then right clicking and choosing perspective, 
+will fix keystone distortion.
+
+You can bring up a page by either using the drop down list of pages at the top,
+or by doubleclicking, or right-clicking a thumbnail.
+
+Right clicking on the config section will allow you to choose from common 
+operations, or copy coordinates back to the viewer.
+
+To see all of the possible commands, choose Commands, Show Command Help (or 
+press F1).
+
+From the command help dialog, doubleclicking a row will insert the command into 
+your configuration.
+
+Using the LoadLRImages will find matching images even if there are some cases 
+where there are times when only one camera went off.
+
+Clicking on the checkboxes for Perspective, Crop, Filters, and Scale will let 
+you preview the results of the operations.  Leaving them off will speed up the
+program.
+
+To line up elements between the left & right pages, hold down the control key
+and click somewhere on the page that has something at the same location on the 
+other page.  It will display a marker that doesn't actually do anything, but 
+it will let you position the crop box in the same location.
+
+Holding down the ctrl key and pressing Z will undo a change to the configuration.
+Pressing ctrl Y will redo it (On the Mac, the keys are command Z and 
+command shift Z).
+
+You can select a range of thumbnails by clicking the first image, then hold down
+the shift and press the ending image.  You can add or remove single images to 
+the selection by holding down the ctrl key and then clicking the image.
+
+You can copy a range of selections as a list of pages by copying and pasting, 
+or right clicking the thumbnails.
+
+If you have a question about this program, the best place to find answers
+is on the Book Scan Wizard forum on diybookscanner.org:  
+http://www.diybookscanner.org/forum/viewforum.php?f=22
+
+The sections in the configuration are only guidelines. If you have a special
+need you can put pretty much any command anywhere you would like.  For example,
+if you are converting to greyscale, the program will be faster to change to
+greyscale before doing perspective operations.
+
+Pressing Preview will preview the configuration up to where the cursor is.  It
+won't run the config in the grey sections.

@@ -31,9 +31,10 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JFrame;
 import javax.swing.JSplitPane;
-import net.sourceforge.bookscanwizard.gui.MainFrame;
-import net.sourceforge.bookscanwizard.op.EstimateDPI;
 import net.sourceforge.bookscanwizard.gui.ImportImages;
+import net.sourceforge.bookscanwizard.gui.MainFrame;
+import net.sourceforge.bookscanwizard.gui.TipsDialog;
+import net.sourceforge.bookscanwizard.op.EstimateDPI;
 import net.sourceforge.bookscanwizard.qr.ImportImagesData;
 import net.sourceforge.bookscanwizard.start.AbstractPage;
 
@@ -98,6 +99,9 @@ public class PrefsHelper {
             if (tmp != null) {
                 ImportImages.getInstance().setImportData((ImportImagesData) tmp);
             }
+            TipsDialog.setTipNumber(prefs.getInt("tipNumber", 0));
+            mainFrame.getTipsDialog().getShowOnStartup().setSelected(prefs.getBoolean("showTips", true));
+            
         } catch (Exception ex) {
             logger.log(Level.WARNING, null, ex);
         }
@@ -119,6 +123,8 @@ public class PrefsHelper {
         putObject("wizard", (Serializable) AbstractPage.getDefaults());
         putObject("miscPrefs", miscPrefs);
         putObject("import", ImportImages.getInstance().getImportData());
+        prefs.putInt("tipNumber", TipsDialog.getTipNumber()+1);
+        prefs.putBoolean("showTips", mainFrame.getTipsDialog().getShowOnStartup().isSelected());
     }
     
     synchronized public static Object getPref(String key) {

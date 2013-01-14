@@ -61,8 +61,7 @@ import net.sourceforge.bookscanwizard.unwarp.FilterWizard;
 import net.sourceforge.bookscanwizard.util.ProcessHelper;
 
 /**
- *
- * @author Steve
+ * This contains the actions specific to the interactive processing.
  */
 public class GuiActions extends UserFeedbackHelper {
     private final BSW bsw;
@@ -127,6 +126,8 @@ public class GuiActions extends UserFeedbackHelper {
             mainFrame.getAboutDialog().setVisible(true);
         } else if ("command_helper".equals(cmd)) {
             mainFrame.getOperationList().setVisible(true);
+        } else if ("tip_of_the_day".equals(cmd)) {
+            mainFrame.showTipsDialog();
         } else if ("perspective_and_crop".equals(cmd)) {
            insertCoordinates("PerspectiveAndCrop =");
         } else if ("perspective".equals(cmd)){
@@ -290,9 +291,7 @@ public class GuiActions extends UserFeedbackHelper {
         }
     }
 
-
-
-/**
+    /**
      * Inserts text into the script.
      * 
      * @param newText The text insert
@@ -317,6 +316,7 @@ public class GuiActions extends UserFeedbackHelper {
             document.remove(start, end - start);
             end = start;
         }
+        replace = false;
         SectionName sectionName = null;
         boolean addCurrentPage = false;
         if (ensurePosition && !replace) {
@@ -372,7 +372,6 @@ public class GuiActions extends UserFeedbackHelper {
                                     break;
                                 }
                             } else if (replace) {
-                                lastMatchLine = -1;
                                 end = start;
                                 start = start - line.length() -1 ;
                                 document.remove(start, end-start);
@@ -387,15 +386,17 @@ public class GuiActions extends UserFeedbackHelper {
                         start += line.length()+1;
                     }
                 }
-                if (lastMatchLine > 0) {
-                    end = lastMatchLine;
-                    if (addCurrentPage && !(op instanceof RemovePages)) {
-                        text = "StartPage = "+currentName+"\n"+text;
+                if (!replace) {
+                    if (lastMatchLine > 0) {
+                        end = lastMatchLine;
+                        if (addCurrentPage && !(op instanceof RemovePages)) {
+                            text = "StartPage = "+currentName+"\n"+text;
+                        }
+                    } else if (!(op instanceof RemovePages)) {
+                       String posText = (bsw.getPreviewedImage().getPreviewHolder().getPosition()
+                                  == FileHolder.LEFT ? "left" : "right");
+                        text = "Pages = "+posText+"\n"+text;
                     }
-                } else if (!replace && !(op instanceof RemovePages)) {
-                   String posText = (bsw.getPreviewedImage().getPreviewHolder().getPosition()
-                              == FileHolder.LEFT ? "left" : "right");
-                    text = "Pages = "+posText+"\n"+text;
                 }
             }
         }
@@ -405,8 +406,6 @@ public class GuiActions extends UserFeedbackHelper {
         config.setSelectionEnd(end + text.length());
         config.requestFocus();
     }
-    
-    
     
     private void createScript() throws IOException {
         final JFileChooser fc = new JFileChooser();

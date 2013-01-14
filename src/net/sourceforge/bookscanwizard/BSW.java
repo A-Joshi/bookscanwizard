@@ -553,7 +553,7 @@ public class BSW {
     /**
      * This will return an absolute path as-is, or else return the path
      * relative from the current directory.
-     * @param f
+     * @param path
      * @return
      */
     public static File getFileFromCurrentDir(String path) {

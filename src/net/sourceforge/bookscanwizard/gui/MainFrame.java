@@ -34,6 +34,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.net.URI;
@@ -67,13 +69,17 @@ import javax.swing.JSeparator;
 import javax.swing.JSlider;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import net.sourceforge.bookscanwizard.BSW;
 import net.sourceforge.bookscanwizard.BoundsHelper;
 import net.sourceforge.bookscanwizard.FileHolder;
+import net.sourceforge.bookscanwizard.util.GuiHelper;
 
 
 /**
@@ -117,8 +123,11 @@ public final class MainFrame extends JFrame {
     private final JCheckBox leftThumb;
     private final JCheckBox rightThumb;
     private final ThumbTable thumbTable;
+    private final JLabel leftStatusLabel;
+    private final JLabel rightStatusLabel;
 
     private final JSlider slider;
+    private final TipsDialog tipsDialog;
 
     public MainFrame(final ActionListener menuHandler) {
         super("Book Scan Wizard");
@@ -409,6 +418,14 @@ public final class MainFrame extends JFrame {
         menuItem.setActionCommand("command_helper");
         menuItem.addActionListener(menuHandler);
         helpMenu.add(menuItem);
+
+        menuItem = new JMenuItem("Tip of the Day");
+        menuItem.setMnemonic(KeyEvent.VK_T);
+
+        menuItem.setActionCommand("tip_of_the_day");
+        menuItem.addActionListener(menuHandler);
+        helpMenu.add(menuItem);        
+        
         Container cp1 = getContentPane();
         cp1.setLayout(new BoxLayout(cp1, BoxLayout.X_AXIS));
         JPanel cp = new JPanel();
@@ -440,6 +457,7 @@ public final class MainFrame extends JFrame {
         
         cp.setLayout(new BoxLayout(cp, BoxLayout.Y_AXIS));
         viewerPanel = new ViewerPanel(menuHandler);
+        
         JScrollPane imageScroll = new JScrollPane(viewerPanel);
         imageScroll.getVerticalScrollBar().setUnitIncrement(10);
         imageScroll.setPreferredSize(new Dimension(400, 400));
@@ -562,14 +580,23 @@ public final class MainFrame extends JFrame {
         
         slider = new JSlider();
         slider.setToolTipText("Sets the size of the preview image");
-        slider.setMinimum(-100);
-        slider.setMaximum(100);
+        slider.setMinimum(-1000);
+        slider.setMaximum(1000);
         slider.setValue(getViewerPanel().getSliderValue());
         slider.setMinimumSize(new Dimension(150, 1));
         slider.addChangeListener(new ChangeListener(){
             public void stateChanged(ChangeEvent e) {
                 JSlider source = (JSlider)e.getSource();
                 viewerPanel.setSliderValue(source.getValue());
+            }
+        });
+        slider.addMouseListener(new MouseAdapter(){
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() == 3) {
+                    viewerPanel.setPostScale(1);
+                    e.consume();
+                }
             }
         });
         
@@ -594,6 +621,7 @@ public final class MainFrame extends JFrame {
         progressBar.setVisible(false);
         progressBar.setPreferredSize(new Dimension(2000,10));
         buttonPanel.add(progressBar);
+        
 
         splitPane =  new JSplitPane(JSplitPane.VERTICAL_SPLIT, true);
         splitPane.setDividerLocation(.5);
@@ -604,6 +632,20 @@ public final class MainFrame extends JFrame {
 
         JPanel viewerPane = new JPanel(new BorderLayout());
         viewerPane.add(imageScroll, BorderLayout.CENTER);
+
+        JPanel statusPanel = new JPanel();
+        statusPanel.setBorder(new BevelBorder(BevelBorder.LOWERED));
+        viewerPane.add(statusPanel, BorderLayout.SOUTH);
+        statusPanel.setPreferredSize(new Dimension(viewerPane.getWidth(), 18));
+        statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
+        leftStatusLabel = new JLabel();
+        leftStatusLabel.setHorizontalAlignment(SwingConstants.LEFT);
+        statusPanel.add(leftStatusLabel);
+        rightStatusLabel = new JLabel();
+        statusPanel.add(Box.createHorizontalGlue());
+        statusPanel.add(rightStatusLabel);
+        
+        
         leftPanel = new JPanel();
         leftPanel.setPreferredSize(new Dimension(5,1));
         viewerPane.add(leftPanel, BorderLayout.WEST);
@@ -615,7 +657,7 @@ public final class MainFrame extends JFrame {
         setPreferredSize(new Dimension(1800, 800));
         pack();
         aboutDialog = new AboutDialog(this);
-
+        tipsDialog = new TipsDialog(this, false);
         FocusListener fl = new FocusListener(){
             @Override
             public void focusGained(FocusEvent e) {
@@ -792,5 +834,32 @@ public final class MainFrame extends JFrame {
 
     public JSlider getSlider() {
         return slider;
+    }
+    
+    public void setStatusText(String leftStatus, String rightStatus) {
+        leftStatusLabel.setText(leftStatus);
+        rightStatusLabel.setText(rightStatus);
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        SwingUtilities.invokeLater(new Runnable(){
+
+            public void run() {
+                if (tipsDialog.getShowOnStartup().isSelected()) {
+                    showTipsDialog();
+                }
+            }
+        });
+    }
+
+    public void showTipsDialog() {
+        GuiHelper.centerOnParent(tipsDialog, true);
+        tipsDialog.setVisible(true);
+    }
+    
+    public TipsDialog getTipsDialog() {
+        return tipsDialog;
     }
 }

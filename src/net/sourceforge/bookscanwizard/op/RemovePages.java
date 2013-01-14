@@ -48,7 +48,6 @@ public class RemovePages extends Operation implements ProcessDeleted {
         for (FileHolder h : getPageSet().getFileHolders()) {
             if (pageMatch.matches(h.getName())) {
                 h.setDeleted(true);
-            System.out.println("xxx1 "+h.getName()+" "+h.hashCode());
             }
         }
         return operationList;

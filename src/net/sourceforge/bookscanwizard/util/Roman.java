@@ -86,7 +86,7 @@ public class Roman {
         return value;
     }
 
-    public static  void main(String args[]) {
+    public static void main(String args[]) {
         int[] tests = {1,4,16,19,501,999,1999,3001};
         for (int test : tests) {
             System.out.println(int2Roman(test));

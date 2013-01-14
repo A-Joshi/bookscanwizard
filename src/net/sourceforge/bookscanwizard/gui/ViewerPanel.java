@@ -23,6 +23,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
@@ -38,7 +39,6 @@ import java.awt.datatransfer.Transferable;
 import java.awt.dnd.DragSource;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
@@ -67,6 +67,7 @@ import javax.swing.KeyStroke;
 import javax.swing.TransferHandler;
 import net.sourceforge.bookscanwizard.BSW;
 import net.sourceforge.bookscanwizard.Operation;
+import net.sourceforge.bookscanwizard.util.Fraction;
 import net.sourceforge.bookscanwizard.util.Interpolate;
 
 /**
@@ -83,15 +84,17 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
     private PerspectiveTransform previewTransform;
     private Point2D[] previewCrop;
     private double zoom;
-    private float postScale = 1F;
+    private double postScale = 1D;
     private static int MAX_DISTANCE_TO_POINT = 12;
     private double xCropScale = 1;
     private double yCropScale = 1;
-    private Interpolate sliderInterpolate = new Interpolate(-100, Math.log(.05), 100, Math.log(2));
+    private Interpolate sliderInterpolate = new Interpolate(-1000, Math.log(.05), 1000, Math.log(2));
     private Point lastViewportPoint;
     private boolean suppressClick;
 
     private boolean isInDrag;
+    private static final double INCHES_TO_MM = 25.4;
+    
 
     public ViewerPanel(final ActionListener menuHandler) {
         setFocusable(true);
@@ -139,6 +142,7 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
                         nearest.setLocation(scaledPoint);
                     }
                 }
+                e.consume();
                 repaint();
             }
 
@@ -229,6 +233,7 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
                     pt.y +=y;
                     viewport.setViewPosition(pt);
                 }
+                e.consume();
             }
 
             @Override
@@ -342,7 +347,7 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
         return (float) postScale;
     }
 
-    public void setPostScale(float postScale) {
+    public void setPostScale(double postScale) {
         if (postScale != this.postScale) {
             this.postScale = postScale;
             repaint();
@@ -360,10 +365,10 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
     }
 
     void setSliderValue(int value) {
-        float scale = (float) Math.exp(sliderInterpolate.interpolate(value));
+        double scale = Math.exp(sliderInterpolate.interpolate(value));
         setPostScale(scale);
     }
-
+    
     private static class PopupItem extends JMenuItem {
         private int minPoints;
         private int maxPoints;
@@ -518,6 +523,7 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
 
     @Override
     public void paintComponent(Graphics g) {
+        updateStatus();
         superPaintComponent(g);
         Graphics2D g2 = (Graphics2D) g;
         g2.setColor(Color.BLUE);
@@ -623,6 +629,37 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
         }
         repaint();
     }
+    
+    /**
+     * Returns the cropped size, if there are either scaled points or
+     * if a crop is previewed. Otherwise return null.
+     */
+    public Dimension getCroppedSize() {
+        if (scaledPoints.size() == 2) {
+            double width = Math.abs(scaledPoints.get(1).getX() - scaledPoints.get(0).getX());
+            double height = Math.abs(scaledPoints.get(1).getY() - scaledPoints.get(0).getY());
+            return new Dimension((int) width, (int) height);
+        } else if (scaledPoints.size() == 4) {
+            double[] p = new double[8];
+            for (int i=0; i < 4; i++) {
+                p[i*2] = scaledPoints.get(i).getX();
+                p[i*2+1] = scaledPoints.get(i).getY();
+            }
+            // Copied from Perspective.java
+            double dx1 = Point2D.distance(p[0], p[1], p[2], p[3]);
+            double dx2 = Point2D.distance(p[6], p[7], p[4], p[5]);
+            double dx = (dx1 + dx2) / 2;
+            double dy1 = Point2D.distance(p[0], p[1], p[6], p[7]);
+            double dy2 = Point2D.distance(p[2], p[3], p[4], p[5]);
+            double dy = (dy1 + dy2) / 2;
+            return new Dimension((int) dx, (int) dy);
+        } else if (previewCrop != null) {
+            double width =  Math.abs(previewCrop[0].getX() - previewCrop[2].getX());
+            double height = Math.abs(previewCrop[0].getY() - previewCrop[2].getY());
+            return new Dimension((int) width, (int) height);
+        }
+        return null;
+    }
 
     public String getPointDef() {
         if (scaledPoints.isEmpty()) {
@@ -713,13 +750,41 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
         return false;
     }
 
+    private void updateStatus() {
+        StringBuilder str = new StringBuilder();
+        if (BSW.instance().getPreviewedImage().getPreviewHolder() == null) {
+            return;
+        }
+        double dpi = BSW.instance().getPreviewedImage().getPreviewHolder().getDPI();
+        double width =  (double) source.getWidth() / dpi;
+        double height = (double) source.getHeight() /dpi;
+        String leftStatus = String.format(
+                "%.0f DPI, Image: %s\" x %s\" (%.0fx%.0f mm), pixels: %dx%d", 
+                dpi, 
+                new Fraction(width, 8), new Fraction(height, 8), 
+                width * INCHES_TO_MM, height * INCHES_TO_MM,
+                source.getWidth(), source.getHeight());
+        str.append(leftStatus);
+        Dimension d = getCroppedSize();
+        if (d != null) {
+            height = (double) d.width / dpi;
+            width = (double) d.height / dpi;
+            leftStatus = String.format("  Crop: %s\" x %s\" (%.0f x %.0f mm)",
+                new Fraction(width, 8), new Fraction(height, 8), 
+                width * INCHES_TO_MM, height * INCHES_TO_MM);
+            str.append(leftStatus);
+        }
+        String rightStatus = String.format("Scale: %.2f", postScale);
+        BSW.instance().getMainFrame().setStatusText(str.toString(), rightStatus);
+    }
+
     private void markDeleted(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
         BasicStroke stroke = new BasicStroke(3);
-        float width = getSource().getWidth() * postScale;
-        float height = getSource().getHeight() * postScale;
-        Line2D line1 = new Line2D.Float(0, 0, width, height);
-        Line2D line2 = new Line2D.Float(width, 0, 0, height);
+        double width = getSource().getWidth() * postScale;
+        double height = getSource().getHeight() * postScale;
+        Line2D line1 = new Line2D.Double(0, 0, width, height);
+        Line2D line2 = new Line2D.Double(width, 0, 0, height);
         g2.setColor(Color.RED);
         g2.setStroke(stroke);
         g2.draw(line1);
