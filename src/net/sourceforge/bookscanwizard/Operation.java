@@ -59,6 +59,7 @@ abstract public class Operation {
     private static int minPass;
     private static int maxPass;
     private static volatile int currentPass =getMinPass();
+    protected static List<Operation> currentPreviewOps;
 
     protected String arguments;
     private static final Properties properties = new Properties();
@@ -381,6 +382,7 @@ abstract public class Operation {
         if (holder == null) {
             return null;
         }
+        currentPreviewOps = ops;
         MainFrame main = BSW.instance().getMainFrame();
         main.getViewerPanel().setPreviewCrop(null);
         if (ops.isEmpty()) {
@@ -389,6 +391,9 @@ abstract public class Operation {
         Operation lastOperation = null;
         if (!ops.isEmpty() && !cursorAfterConfig) {
             lastOperation = ops.get(ops.size()-1);
+        }
+        for (Operation op :ops) {
+            op.preprocess(holder, img, true);
         }
         holder.setDeleted(false); // if it is removed, the RemovePages command will switch it back.
         for (Operation op : ops) {
@@ -494,5 +499,14 @@ abstract public class Operation {
         ImageUtilities.allowNativeCodec("jpeg2000", ImageWriterSpi.class, false);
         // the native version doesn't want to return metadata.
         ImageUtilities.allowNativeCodec("jpeg", ImageWriterSpi.class, false);
+    }
+
+    /**
+     * This is called before a preview or process operation.
+     * 
+     * @param holder
+     * @param img 
+     */
+    protected void preprocess(FileHolder holder, RenderedImage img, boolean preview) throws Exception {
     }
 }

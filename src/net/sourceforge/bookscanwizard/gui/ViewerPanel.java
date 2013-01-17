@@ -510,12 +510,13 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
             menuItem.addActionListener(menuHandler);
             popup.add(menuItem);
 
-            menuItem = new PopupItem("Normalize Lighting", 0,2);
-            menuItem.setToolTipText("Use this on a blank (preferably gray), page to adjust for uneven lighting");
-            menuItem.setActionCommand("normalize_lighting");
-            menuItem.addActionListener(menuHandler);
-            popup.add(menuItem);
         }
+
+        menuItem = new PopupItem("Normalize Lighting", 0,2);
+        menuItem.setToolTipText("Use this on a blank (preferably gray), page to adjust for uneven lighting");
+        menuItem.setActionCommand("normalize_lighting");
+        menuItem.addActionListener(menuHandler);
+        popup.add(menuItem);
 
         MouseListener popupListener = new PopupListener(popup);
         addMouseListener(popupListener);

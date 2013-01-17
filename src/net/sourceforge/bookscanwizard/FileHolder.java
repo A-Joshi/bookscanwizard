@@ -42,6 +42,8 @@ public class FileHolder implements Comparable<FileHolder> {
    private String oldName;
    private int position;
    private boolean deleted;
+   private boolean forceOn;
+
    private float dpi;
 
    private List<QRData> qrData;
@@ -123,7 +125,7 @@ public class FileHolder implements Comparable<FileHolder> {
     }
 
     public boolean isDeleted() {
-        return deleted;
+        return deleted && !forceOn;
     }
 
     public synchronized void setDeleted(boolean deleted) {
@@ -189,20 +191,28 @@ public class FileHolder implements Comparable<FileHolder> {
         }
     }
     
-    public RenderedImage getImage() throws IOException {
-       if (source != null) {
-           return source.getImage(page);
-       } else {
-           RenderedImage img;
-           try {
-               img = Utils.renderedToBuffered(JAI.create("fileload", file.getPath()));
-           } catch (Exception e) {
-               System.out.println("could not read using JAI.. tring ImageIO..");
-               img = ImageIO.read(file);
-               img = Utils.getScaledInstance(img, img.getWidth(), img.getHeight(), 
-                       RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-           }
-           return img;
-       }
+    public RenderedImage getImage() {
+        try {
+            if (source != null) {
+                return source.getImage(page);
+            } else {
+                RenderedImage img;
+                    try {
+                        img = Utils.renderedToBuffered(JAI.create("fileload", file.getPath()));
+                    } catch (Exception e) {
+                        System.out.println("could not read using JAI.. tring ImageIO..");
+                        img = ImageIO.read(file);
+                        img = Utils.getScaledInstance(img, img.getWidth(), img.getHeight(), 
+                                RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+                    }
+                return img;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void setForceOn(boolean forceOn) {
+        this.forceOn = forceOn;
     }
 }

@@ -49,7 +49,6 @@ import net.sourceforge.bookscanwizard.config.ConfigBalancedAutoLevels;
 import net.sourceforge.bookscanwizard.config.ConfigGrayCard;
 import net.sourceforge.bookscanwizard.op.Barcodes;
 import net.sourceforge.bookscanwizard.op.EstimateDPI;
-import net.sourceforge.bookscanwizard.op.NormalizeLighting;
 import net.sourceforge.bookscanwizard.op.Pages;
 import net.sourceforge.bookscanwizard.op.RemovePages;
 import net.sourceforge.bookscanwizard.op.StartPage;
@@ -274,7 +273,7 @@ public class GuiActions extends UserFeedbackHelper {
     }
 
     private void normalizeLighting() throws Exception {
-        String config = new NormalizeLighting().getConfig(bsw.getPreviewedImage().getPreviewHolder(), bsw.getConfigImage());
+        String config =  "NormalizeLighting = "+bsw.getPreviewedImage().getPreviewHolder().getName();
         insertConfig(config, false, true);
     }
 
@@ -329,12 +328,20 @@ public class GuiActions extends UserFeedbackHelper {
                 sectionName = SectionName.getSectionFromOp(op);
             }
             if (sectionName != null) {
-                String match = sectionName.getMatchString();
                 String currentName = bsw.getPreviewedImage().getPreviewHolder().getName();
                 boolean sectionBegan = false;
                 boolean lastPageMatched = false;
                 start = 0;
                 int lastMatchLine = 0;
+                String match = sectionName.getMatchString();
+                SectionName originalName = sectionName;
+                while (!config.getText().contains(match)) {
+                    sectionName = SectionName.getPreviousSection(sectionName);
+                    match = sectionName.getMatchString();
+                    if (sectionName == SectionName.BEGIN_MARKER) {
+                        break;
+                    }
+                }
                 for (String line : config.getText().split("\n")) {
                     if(sectionBegan && line.contains("# *** ")) {
                         end = start;
@@ -346,7 +353,7 @@ public class GuiActions extends UserFeedbackHelper {
                     if (!line.trim().isEmpty()) {
                         start += line.length()+1;
                     }
-                    if (sectionBegan) {
+                    if (sectionBegan && originalName == sectionName) {
                         Operation testOp = Operation.getStandaloneOp(line);
                         if (testOp instanceof Pages) {
                             Pages pages = (Pages) testOp;
@@ -396,6 +403,9 @@ public class GuiActions extends UserFeedbackHelper {
                        String posText = (bsw.getPreviewedImage().getPreviewHolder().getPosition()
                                   == FileHolder.LEFT ? "left" : "right");
                         text = "Pages = "+posText+"\n"+text;
+                    }
+                    if (originalName != sectionName) {
+                        text = "# " + originalName.getMatchString()+"\n" + text;
                     }
                 }
             }

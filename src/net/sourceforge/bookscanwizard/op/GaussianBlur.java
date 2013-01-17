@@ -57,6 +57,10 @@ public class GaussianBlur extends Operation implements ColorOp {
         img = Kernels.convolveSymmetric(img, kernel, unsharp_hints);
         return img;
     }
+    
+    public static  RenderedImage blur(RenderedImage img, float radius) {
+        return blur(img, radius, radius < 1 ? radius : (float) Math.sqrt(radius));
+    }
 
     public static RenderedImage blur(RenderedImage img, float radius, float sigma) {
         RenderingHints unsharp_hints = new RenderingHints(

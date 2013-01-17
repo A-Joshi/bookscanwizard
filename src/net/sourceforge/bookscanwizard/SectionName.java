@@ -18,15 +18,19 @@
 
 package net.sourceforge.bookscanwizard;
 
+import java.util.Arrays;
+import net.sourceforge.bookscanwizard.op.NormalizeLighting;
 import net.sourceforge.bookscanwizard.op.RemovePages;
 
 /**
  * The list of config sections. 
  */
 public enum SectionName {
+    BEGIN_MARKER("Begin Marker"),
     LOAD_FILES ("Load Files"),
     REMOVE_PAGES("Remove Pages"),
     ROTATIONS ("Page Rotations"),
+    PRE_FILTERS("Prefilters"),
     PERSPECTIVE ("Perspective"),
     CROPS ("Crops"),
     FILTERS ( "Filters"),
@@ -53,6 +57,8 @@ public enum SectionName {
             retVal = PERSPECTIVE;
         } else if (op instanceof CropOp) {
             retVal = CROPS;
+        } else if (op instanceof NormalizeLighting) {
+            retVal = PRE_FILTERS;
         } else if (op instanceof ColorOp) {
             retVal = FILTERS;
         } else if (op instanceof RemovePages) {
@@ -63,5 +69,10 @@ public enum SectionName {
             retVal = OUTPUT;
         }
         return retVal;
+    }
+    
+    public static SectionName getPreviousSection(SectionName name) {
+        int pos = Arrays.asList(values()).indexOf(name) -1;
+        return values()[pos];
     }
 }
