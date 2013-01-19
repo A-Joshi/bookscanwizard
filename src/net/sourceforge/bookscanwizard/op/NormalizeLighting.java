@@ -23,9 +23,13 @@ import net.sourceforge.bookscanwizard.util.Utils;
  */
 public class NormalizeLighting extends Operation implements ColorOp {
     private static final Logger logger =Logger.getLogger(NormalizeLighting.class.getName());
-    private volatile RenderedImage mapImage;
-    private String pageName;
+    private volatile RenderedImage leftImage;
+    private volatile RenderedImage rightImage;
+    
+    private String leftPageName;
+    private String rightPageName;
     private double[] median;
+
     static ThreadLocal<Boolean> processing = new ThreadLocal<Boolean>() {
         @Override
         protected Boolean initialValue() {
@@ -35,25 +39,43 @@ public class NormalizeLighting extends Operation implements ColorOp {
     
     @Override
     protected List<Operation> setup(List<Operation> operationList) throws Exception {
-        pageName = getTextArgs()[0];
-        mapImage = null;
+        leftPageName = getTextArgs()[0];
+        if (getTextArgs().length > 1) {
+            rightPageName = getTextArgs()[1];
+        }
+        leftImage = null;
+        rightImage = null;
         return operationList;
     }
 
     @Override
     protected void preprocess(FileHolder holder, RenderedImage img, boolean preview) throws Exception {
-        if (mapImage == null && !processing.get()) {
+        System.out.println("holder: "+holder+" "+processing.get()+" "+(leftImage == null));
+        if (leftImage == null && !processing.get()) {
             for (FileHolder fh : getPageSet().getFileHolders()) {
-                if (fh.getName().equals(pageName)) {
+                if (fh.getName().equals(leftPageName)) {
                     fh.setForceOn(true);
                     processing.set(true);
-                    mapImage = Operation.previewOperations(currentPreviewOps, fh, fh.getImage(), true);
+                    leftImage = Operation.previewOperations(currentPreviewOps, fh, fh.getImage(), true);
                     Histogram histogram =
-                        (Histogram)JAI.create("histogram", mapImage).getProperty("histogram");
-                    median = histogram.getPTileThreshold(0.5);
+                        (Histogram)JAI.create("histogram", leftImage).getProperty("histogram");
+                    addMedian(histogram.getPTileThreshold(0.5));
                     fh.setForceOn(false);
                     processing.set(false);
                 }
+                if (fh.getName().equals(rightPageName)) {
+                    fh.setForceOn(true);
+                    processing.set(true);
+                    rightImage = Operation.previewOperations(currentPreviewOps, fh, fh.getImage(), true);
+                    Histogram histogram =
+                        (Histogram)JAI.create("histogram", rightImage).getProperty("histogram");
+                    addMedian(histogram.getPTileThreshold(0.5));
+                    fh.setForceOn(false);
+                    processing.set(false);
+                }
+            }
+            if (rightImage == null) {
+                rightImage = leftImage;
             }
         }
     }
@@ -63,13 +85,14 @@ public class NormalizeLighting extends Operation implements ColorOp {
         if (processing.get()) {
             return processReferenceImage(img);
         } else {
-            if (mapImage == null) {
+            RenderedImage normalizeImage = holder.getPosition() == FileHolder.LEFT ? leftImage : rightImage;
+            if (normalizeImage == null) {
                 System.out.println("mapImage is null");
             }
             if (img == null) {
                 System.out.println("img is null");
             }
-            return normalizeImage(mapImage, img);
+            return normalizeImage(normalizeImage, img);
         }
     }
 
@@ -136,5 +159,15 @@ public class NormalizeLighting extends Operation implements ColorOp {
         pb.add(DataBuffer.TYPE_BYTE);
         img = JAI.create("format", pb);
         return img;
+    }
+
+    private void addMedian(double[] pTileThreshold) {
+        if (median == null) {
+            median = pTileThreshold;
+        } else {
+            for (int i=0; i < median.length; i++) {
+                median[i] = (median[i] + pTileThreshold[i]) / 2.0;
+            }
+        }
     }
 }

@@ -339,6 +339,9 @@ abstract public class Operation {
     public static RenderedImage performOperations(FileHolder holder, List<Operation> ops) throws Exception {
         verifySaveOperationExists(ops);
         RenderedImage img = null;
+        for (Operation op :ops) {
+            op.preprocess(holder, img, false);
+        }
         for (Operation op : ops) {
             if ((!holder.isDeleted() || op instanceof ProcessDeleted) && op.getPageSet().getFileHolders().contains(holder)) {
                 if (op.matchesPass()) {

@@ -36,6 +36,7 @@ import java.awt.datatransfer.ClipboardOwner;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DragSource;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -51,6 +52,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -76,8 +78,8 @@ import net.sourceforge.bookscanwizard.util.Interpolate;
  */
 public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwner {
 
-    private List<Point2D> scaledPoints = new ArrayList<Point2D>();
-    private List<Point2D> registrationPoints = new ArrayList<Point2D>();
+    private List<Point2D> scaledPoints = new ArrayList<>();
+    private List<Point2D> registrationPoints = new ArrayList<>();
     private Path2D.Float plus;
     private Point lastPoint;
     private Point lastPressPoint;
@@ -281,7 +283,7 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
             }
         });
 
-            // Now bind the Ctrl-C keystroke to a "Copy" command.
+        // Now bind the Ctrl-C keystroke to a "Copy" command.
         InputMap im = new InputMap();
         im.setParent(getInputMap(WHEN_FOCUSED));
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), "cut");
@@ -729,7 +731,7 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
     }
 
     private List<Point> getImagePoints() {
-        ArrayList<Point> imagePoints = new ArrayList<Point>();
+        ArrayList<Point> imagePoints = new ArrayList<>();
         for (Point2D pt : getPoints()) {
             imagePoints.add(getImagePoint(pt));
         }
@@ -745,7 +747,7 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
             String txt = (String) contents.getTransferData(bestFlavor);
             setPointDef(txt);
             return true;
-        } catch (Exception ex) {
+        } catch (UnsupportedFlavorException | IOException ex) {
             // ignore
         }
         return false;
@@ -757,28 +759,34 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
             return;
         }
         double dpi = BSW.instance().getPreviewedImage().getPreviewHolder().getDPI();
-        double width =  (double) source.getWidth() / dpi;
-        double height = (double) source.getHeight() /dpi;
-        String leftStatus = String.format(
-                "%.0f DPI, Image: %s\" x %s\" (%.0fx%.0f mm), pixels: %dx%d", 
-                dpi, 
-                new Fraction(width, 8), new Fraction(height, 8), 
-                width * INCHES_TO_MM, height * INCHES_TO_MM,
-                source.getWidth(), source.getHeight());
-        str.append(leftStatus);
+        str.append(String.format("%.0f DPI, Image: ", dpi));
+        str.append(getImageSize(dpi, source.getWidth(), source.getHeight()));
+
         Dimension d = getCroppedSize();
         if (d != null) {
-            height = (double) d.width / dpi;
-            width = (double) d.height / dpi;
-            leftStatus = String.format("  Crop: %s\" x %s\" (%.0f x %.0f mm)",
-                new Fraction(width, 8), new Fraction(height, 8), 
-                width * INCHES_TO_MM, height * INCHES_TO_MM);
-            str.append(leftStatus);
+            str.append(", crop: ");
+            str.append(getImageSize(dpi, d.width, d.height));
         }
         String rightStatus = String.format("Scale: %.2f", postScale);
         BSW.instance().getMainFrame().setStatusText(str.toString(), rightStatus);
     }
 
+    private String getImageSize(double dpi, int width, int height) {
+        double widthInches = width / dpi;
+        double heightInches = height / dpi;
+        StringBuilder str = new StringBuilder();
+        if (dpi > 0) {
+            String leftStatus = String.format(
+                "%s\" x %s\" (%.0fx%.0f mm), ",
+                new Fraction(widthInches, 8), new Fraction(heightInches, 8), 
+                widthInches * INCHES_TO_MM, heightInches * INCHES_TO_MM
+            );
+            str.append(leftStatus);
+        }
+        str.append(String.format("pixels: %dx%d", width, height));
+        return str.toString();
+    }
+    
     private void markDeleted(Graphics g) {
         Graphics2D g2 = (Graphics2D) g;
         BasicStroke stroke = new BasicStroke(3);
