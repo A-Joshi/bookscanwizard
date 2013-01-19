@@ -33,8 +33,8 @@ public class PageMatch {
     private static String LAST_STRING =
         new String(new char[] {Character.MAX_VALUE, Character.MAX_VALUE});
     
-    ArrayList<String> minValues = new ArrayList<String>();
-    ArrayList<String> maxValues = new ArrayList<String>();
+    ArrayList<String> minValues = new ArrayList<>();
+    ArrayList<String> maxValues = new ArrayList<>();
 
     public PageMatch (String pages) {
         StringTokenizer tokens = new StringTokenizer(pages, ",", false);

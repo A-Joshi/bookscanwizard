@@ -80,7 +80,7 @@ public class PrintCodes implements Printable, Pageable {
     }
 
     public static void keystoneCodes() {
-        ArrayList<String> codes = new ArrayList<String>();
+        ArrayList<String> codes = new ArrayList<>();
         for (String code : CORNER_CODES) {
             codes.add(code+"3.0");
         }

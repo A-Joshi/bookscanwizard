@@ -47,7 +47,7 @@ public class LoadLRImages extends Operation {
         Sequence seq = new Sequence("BSW_####", 0, 1);
         MatchPages matchPages = new MatchPages(file, seq, ignoreTimes);
         pageSet.setSourceFiles(matchPages.getAllPages());
-        ArrayList<Operation> list = new ArrayList<Operation>();
+        ArrayList<Operation> list = new ArrayList<>();
         list.addAll(operationList);
         list.addAll(getOperation("Pages= -", null, pageSet));
         return list;

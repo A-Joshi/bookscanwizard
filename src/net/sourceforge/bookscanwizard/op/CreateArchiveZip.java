@@ -79,7 +79,7 @@ public class CreateArchiveZip extends Operation implements SaveOperation {
                 ZipEntry zipEntry = new ZipEntry(holder.getName()+".jp2");
                 zipOut.putNextEntry(zipEntry);
                 img = Utils.renderedToBuffered(img);
-                SaveImage.writeJpeg2000Image(img, zipOut, PageSet.getDestinationDPI(), getCompression());
+                SaveImages.writeJpeg2000Image(img, zipOut, PageSet.getDestinationDPI(), getCompression());
                 zipOut.closeEntry();
             }
         }

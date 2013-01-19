@@ -19,26 +19,25 @@ public class JpegMetaData {
     private IIOMetadata metaData;
 
     public JpegMetaData(File file) throws IOException {
-        ImageInputStream in = ImageIO.createImageInputStream(file);
-        java.util.Iterator<ImageReader> readers = ImageIO.getImageReaders(in);
-
-        ImageReader reader = null;
-        while (readers.hasNext()) {
-            ImageReader tmp = readers.next();
-            if (JPEGMetaFormat.equals(tmp.getOriginatingProvider().getNativeImageMetadataFormatName())) {
-                reader = tmp;
-                break;
+        byte[] exifRAW;
+        try (ImageInputStream in = ImageIO.createImageInputStream(file)) {
+            java.util.Iterator<ImageReader> readers = ImageIO.getImageReaders(in);
+            ImageReader reader = null;
+            while (readers.hasNext()) {
+                ImageReader tmp = readers.next();
+                if (JPEGMetaFormat.equals(tmp.getOriginatingProvider().getNativeImageMetadataFormatName())) {
+                    reader = tmp;
+                    break;
+                }
             }
+            if (reader == null) {
+                throw new UserException("The selected jpeg file did not contain any metadata.");
+                
+            }
+            reader.setInput(in, true, false);
+            exifRAW = getEXIF(reader.getImageMetadata(0));
+            reader.dispose();
         }
-        if (reader == null) {
-            throw new UserException("The selected jpeg file did not contain any metadata.");
-            
-        }
-        reader.setInput(in, true, false);
-
-        byte[] exifRAW = getEXIF(reader.getImageMetadata(0));
-        reader.dispose();
-        in.close();
 
         if (exifRAW == null) {
             throw new UserException("The selected jpeg file did not contain any exif data.");

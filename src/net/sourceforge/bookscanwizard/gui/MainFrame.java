@@ -38,7 +38,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
@@ -72,6 +74,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
@@ -405,7 +408,7 @@ public final class MainFrame extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 try {
                     Desktop.getDesktop().browse(new URI("http://sourceforge.net/apps/mediawiki/bookscanwizard"));
-                } catch (Exception ex) {
+                } catch (URISyntaxException | IOException ex) {
                     Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
@@ -585,6 +588,7 @@ public final class MainFrame extends JFrame {
         slider.setValue(getViewerPanel().getSliderValue());
         slider.setMinimumSize(new Dimension(150, 1));
         slider.addChangeListener(new ChangeListener(){
+            @Override
             public void stateChanged(ChangeEvent e) {
                 JSlider source = (JSlider)e.getSource();
                 viewerPanel.setSliderValue(source.getValue());
@@ -684,7 +688,7 @@ public final class MainFrame extends JFrame {
     static {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
             UserFeedbackHelper.displayException(null, ex);
         }
     }
@@ -709,10 +713,10 @@ public final class MainFrame extends JFrame {
         }
     }
 
-    private Vector<FileHolder> currentFiles = new Vector<FileHolder>();
+    private Vector<FileHolder> currentFiles = new Vector<>();
     
     public void setPageList(List<FileHolder> fileHolders) {
-        Vector<FileHolder> files = new Vector<FileHolder>();
+        Vector<FileHolder> files = new Vector<>();
         files.addAll(fileHolders);
         Collections.sort(files);
         if (currentFiles.equals(files)) {
@@ -846,6 +850,7 @@ public final class MainFrame extends JFrame {
         super.setVisible(visible);
         SwingUtilities.invokeLater(new Runnable(){
 
+            @Override
             public void run() {
                 if (tipsDialog.getShowOnStartup().isSelected()) {
                     showTipsDialog();

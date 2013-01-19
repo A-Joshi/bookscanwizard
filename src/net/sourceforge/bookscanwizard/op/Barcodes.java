@@ -68,12 +68,12 @@ public class Barcodes extends Operation {
                 }
                 BSW.instance().getMainFrame().setBusy(true);
             }
-            ArrayList<File> files = new ArrayList<File>();
+            ArrayList<File> files = new ArrayList<>();
             for (FileHolder holder : PageSet.getSourceFiles()) {
                 files.add(holder.getFile());
             }
             ReadCodes readCodes = new ReadCodes(files);
-            LazyHashMap<String,List<QRData>> saveMap = new LazyHashMap<String,List<QRData>>(ArrayList.class);
+            LazyHashMap<String,List<QRData>> saveMap = new LazyHashMap<>(ArrayList.class);
             for (FileHolder holder : pageSet.getSourceFiles()) {
                 holder.setQrData(readCodes.getCodes(holder.getFile()));
                 if (holder.getQRData() != null) {
@@ -88,12 +88,12 @@ public class Barcodes extends Operation {
                 BSW.instance().getMainFrame().setBusy(false);
             }
         }
-        deleted = new TreeSet<FileHolder>();
+        deleted = new TreeSet<>();
 
-        TreeSet<FileHolder> flag = new TreeSet<FileHolder>();
-        TreeMap<FileHolder, String> colors = new TreeMap<FileHolder, String>();
-        ArrayList<FileHolder> transformOps = new ArrayList<FileHolder>();
-        ArrayList<FileHolder>  dpiHolders = new ArrayList<FileHolder>();
+        TreeSet<FileHolder> flag = new TreeSet<>();
+        TreeMap<FileHolder, String> colors = new TreeMap<>();
+        ArrayList<FileHolder> transformOps = new ArrayList<>();
+        ArrayList<FileHolder>  dpiHolders = new ArrayList<>();
         holders = pageSet.getSourceFiles();
         for (int i = 0; i < holders.size(); i++) {
             FileHolder holder =  holders.get(i);
@@ -217,8 +217,8 @@ public class Barcodes extends Operation {
             config.append("\n");
         }
         if (!transformOps.isEmpty()) {
-            HashMap<Integer,String> oldPages = new HashMap<Integer,String>();
-            HashMap<Integer,String> oldAllBounds = new HashMap<Integer,String>();
+            HashMap<Integer,String> oldPages = new HashMap<>();
+            HashMap<Integer,String> oldAllBounds = new HashMap<>();
             for (FileHolder h : transformOps) {
                 String oldPage = oldPages.get(h.getPosition());
                 String oldBounds = oldAllBounds.get(h.getPosition());
@@ -268,7 +268,7 @@ public class Barcodes extends Operation {
         configuration = config.toString();
         String[] lines = configuration.split("\n");
         PageSet tempPageSet = pageSet;
-        ArrayList<Operation> ops = new ArrayList<Operation>();
+        ArrayList<Operation> ops = new ArrayList<>();
         for (String line : lines) {
             List<Operation> newOperations = getOperation(line, null, tempPageSet);
             if (newOperations != null) {
@@ -290,8 +290,8 @@ public class Barcodes extends Operation {
     private String getPerspective(FileHolder h) {
         StringBuilder str = new StringBuilder();
         str.append("BarcodePerspective = ");
-        ArrayList<Point2D> pts = new ArrayList<Point2D>();
-        ArrayList<String> found = new ArrayList<String>();
+        ArrayList<Point2D> pts = new ArrayList<>();
+        ArrayList<String> found = new ArrayList<>();
         String dpiCode = null;
         for (String code : PrintCodes.CORNER_CODES) {
             for (QRData data : h.getQRData()) {

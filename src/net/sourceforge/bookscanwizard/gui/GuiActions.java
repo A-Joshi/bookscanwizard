@@ -55,6 +55,7 @@ import net.sourceforge.bookscanwizard.op.StartPage;
 import net.sourceforge.bookscanwizard.op.WhiteBalance;
 import net.sourceforge.bookscanwizard.qr.PrintCodes;
 import net.sourceforge.bookscanwizard.qr.PrintCodesDialog;
+import net.sourceforge.bookscanwizard.start.NewBook;
 import net.sourceforge.bookscanwizard.start.PreferenceWizard;
 import net.sourceforge.bookscanwizard.unwarp.FilterWizard;
 import net.sourceforge.bookscanwizard.util.ProcessHelper;
@@ -85,7 +86,7 @@ public class GuiActions extends UserFeedbackHelper {
             throw new UserException("A process is running.  Either cancel the process or wait for it to complete before continuing.");
         }
         if ("new".equals(cmd)) {
-            bsw.newBatch();
+            newBatch();
         } else if ("preferences".equals(cmd)) {
             PreferenceWizard wizard = new PreferenceWizard();
             wizard.getConfig();
@@ -427,29 +428,40 @@ public class GuiActions extends UserFeedbackHelper {
             return;
         }
         File scriptFile = fc.getSelectedFile();
-        PrintWriter out = new PrintWriter(new FileWriter(scriptFile));
-        if (ProcessHelper.isWindows()) {
-            out.println("@echo off");
-        } else {
-            out.println("#/bin/sh");
+        try (PrintWriter out = new PrintWriter(new FileWriter(scriptFile))) {
+            if (ProcessHelper.isWindows()) {
+                out.println("@echo off");
+            } else {
+                out.println("#/bin/sh");
+            }
+            out.print("java -classpath \"");
+            out.print(ProcessHelper.getRealClasspath());
+            out.print("\" -Xmx");
+            out.print(""+Runtime.getRuntime().maxMemory());
+            out.print(" ");
+            out.print(BSW.class.getName());
+            out.print(" ");
+            if (ProcessHelper.isWindows()) {
+                out.append("%*");
+            } else {
+                out.append("@$");
+            }
+            out.println();
         }
-        out.print("java -classpath \"");
-        out.print(ProcessHelper.getRealClasspath());
-        out.print("\" -Xmx");
-        out.print(""+Runtime.getRuntime().maxMemory());
-        out.print(" ");
-        out.print(BSW.class.getName());
-        out.print(" ");
-        if (ProcessHelper.isWindows()) {
-            out.append("%*");
-        } else {
-            out.append("@$");
-        }
-        out.println();
-        out.close();
         scriptFile.setExecutable(true);
     }
-    
+
+    public void newBatch() throws Exception {
+        bsw.clearViewer();
+        NewBook newBook = new NewBook();
+        String result = newBook.getConfig();
+        if (result != null) {
+            mainFrame.getConfigEntry().setText(result);
+            mainFrame.getConfigEntry().getCaret().setDot(result.length());
+            bsw.getConfig(result);
+        }
+    }
+
     private static class UploadImages implements Batch {
         private UploadFile uploadFile;
 
@@ -457,10 +469,12 @@ public class GuiActions extends UserFeedbackHelper {
             this.uploadFile = uploadFile;
         }
 
+        @Override
         public List<Future<Void>> getFutures(List<Operation> operations) {
-            return new ArrayList<Future<Void>>();
+            return new ArrayList<>();
         }
 
+        @Override
         public void postOperation() throws Exception {
             uploadFile.performUpload();
         }

@@ -308,6 +308,7 @@ public class FilterWizard extends javax.swing.JFrame {
     */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 FilterWizard filterWizard = new FilterWizard();
                 RenderedImage img;

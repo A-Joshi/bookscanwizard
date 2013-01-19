@@ -53,7 +53,7 @@ public class LoadImages extends Operation {
             throw new UserException("Could not find any files in "+sourceDir);
         }
         Arrays.sort(files);
-        ArrayList<FileHolder> holders = new ArrayList<FileHolder>(files.length);
+        ArrayList<FileHolder> holders = new ArrayList<>(files.length);
         boolean odd = true;
         for (File f : files) {
             if (f.getPath().toLowerCase().endsWith(".pdf")) {
@@ -75,7 +75,7 @@ public class LoadImages extends Operation {
             }
         }
         pageSet.setSourceFiles(holders);
-        ArrayList<Operation> list = new ArrayList<Operation>();
+        ArrayList<Operation> list = new ArrayList<>();
         list.addAll(operationList);
         list.addAll(getOperation("Pages= -", null, pageSet));
         return list;

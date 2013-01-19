@@ -166,7 +166,7 @@ public class CreatePDF extends Operation implements SaveOperation, ProcessDelete
                 if (quality < 0) {
                     quality = .8f;
                 }
-                SaveImage.writeJpeg2000Image(img, baos, PageSet.getDestinationDPI(), quality);
+                SaveImages.writeJpeg2000Image(img, baos, PageSet.getDestinationDPI(), quality);
             }
             return baos.toByteArray();
         }
@@ -217,18 +217,24 @@ public class CreatePDF extends Operation implements SaveOperation, ProcessDelete
             }
             // convert from the archive.org standard to the pdf standard.
             String key = meta.getKey();
-            if (key.equals("subject")) {
-                document.addSubject(meta.getValue());
-            } else if (key.equals("title")) {
-                document.addTitle(meta.getValue());
-            } else if (key.equals("creator")) {
-                document.addAuthor(meta.getValue());
-            } else if (key.equals("keywords")){
-                document.addKeywords(meta.getValue());
-            } else if (key.equals("identifier")) {
-                // ignore
-            } else {
-                document.addHeader(key, meta.getValue());
+            switch (key) {
+                case "subject":
+                    document.addSubject(meta.getValue());
+                    break;
+                case "title":
+                    document.addTitle(meta.getValue());
+                    break;
+                case "creator":
+                    document.addAuthor(meta.getValue());
+                    break;
+                case "keywords":
+                    document.addKeywords(meta.getValue());
+                    break;
+                case "identifier":
+                    break;
+                default:
+                    document.addHeader(key, meta.getValue());
+                    break;
             }
         }
     }

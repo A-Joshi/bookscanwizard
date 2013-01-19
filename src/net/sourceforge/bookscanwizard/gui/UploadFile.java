@@ -21,8 +21,9 @@ package net.sourceforge.bookscanwizard.gui;
 import java.awt.Desktop;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
@@ -52,6 +53,7 @@ public class UploadFile extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         jFile.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 UploadFile.this.dispose();
                 if (JFileChooser.APPROVE_SELECTION.equals(e.getActionCommand())) {
@@ -204,7 +206,7 @@ public class UploadFile extends javax.swing.JDialog {
     private void jLabel5MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel5MouseClicked
         try {
             Desktop.getDesktop().browse(new URI("http://www.archive.org"));
-        } catch (Exception ex) {
+        } catch (URISyntaxException | IOException ex) {
             UserFeedbackHelper.displayException(this, ex);
         }
     }//GEN-LAST:event_jLabel5MouseClicked
@@ -214,6 +216,7 @@ public class UploadFile extends javax.swing.JDialog {
     */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 try {
                     UploadFile dialog = new UploadFile(new javax.swing.JFrame(), true, null);

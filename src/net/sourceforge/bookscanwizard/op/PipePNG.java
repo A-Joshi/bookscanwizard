@@ -44,9 +44,9 @@ public class PipePNG extends Operation implements ColorOp {
             .directory(BSW.getCurrentDirectory())
             .redirectErrorStream(true);
         Process proc = processBuilder.start();
-        OutputStream os = new BufferedOutputStream(proc.getOutputStream());
-        ImageIO.write(img, "PNG", os);
-        os.close();
+        try (OutputStream os = new BufferedOutputStream(proc.getOutputStream())) {
+            ImageIO.write(img, "PNG", os);
+        }
         InputStream is = new BufferedInputStream(proc.getInputStream());
         Exception imageException = null;
         try {

@@ -28,6 +28,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -43,12 +44,14 @@ import net.sourceforge.bookscanwizard.gui.ImportImages;
 import net.sourceforge.bookscanwizard.util.Sequence;
 
 /**
- * Monitors a directory for new scans.
+ * Monitors a directory for new scans.  It will work with either a single
+ * camera, or seperate left/right directories.  It is designed to work with
+ * Eye-fi, and will handle images received out of order.  It looks for QRCodes
+ * indicating end of book, and then automatically creates a new book.
  */
 public class ImportMonitor implements Runnable {
-
     private WatchService watcher;
-    private HashMap<WatchKey, Info> keyMap = new HashMap<WatchKey, Info>();
+    private HashMap<WatchKey, Info> keyMap = new HashMap<>();
     private final Set<File> toProcess =
             Collections.synchronizedSet(new HashSet<File>());
     private final Map<File, Collection<QRData>> processed =
@@ -101,6 +104,7 @@ public class ImportMonitor implements Runnable {
         }
     }
 
+    @Override
     public void run() {
         try {
             processEvents();
@@ -115,7 +119,7 @@ public class ImportMonitor implements Runnable {
     }
 
     public synchronized void importBook(boolean force) throws IOException {
-        TreeSet<File> files = new TreeSet<File>(toProcess);
+        TreeSet<File> files = new TreeSet<>(toProcess);
         ReadCodes readCodes = new ReadCodes(files);
         for (File f : files) {
             try {
@@ -145,10 +149,12 @@ public class ImportMonitor implements Runnable {
                 for (File f : left) {
                     Files.move(f.toPath(), p.resolve(f.getName()));
                 }
+                saveQRCodes(p.toFile(), left);
                 p = p.resolveSibling("r");
                 for (File f : right) {
                     Files.move(f.toPath(), p.resolve(f.getName()));
                 }
+                saveQRCodes(p.toFile(), right);
             } else {
                 TreeSet<File> book = getNextBookPages(destination, false, force);
                 if (book == null) {
@@ -159,6 +165,7 @@ public class ImportMonitor implements Runnable {
                 for (File f : book) {
                     Files.move(f.toPath(), dest.resolve(f.getName()));
                 }
+                saveQRCodes(dest.toFile(), book);
             }
         }
     }
@@ -189,7 +196,7 @@ public class ImportMonitor implements Runnable {
         //in the next book.
         boolean foundEnd = false;
         boolean normalPagesFound = false;
-        TreeSet<File> newList = new TreeSet<File>();
+        TreeSet<File> newList = new TreeSet<>();
         String dir = directory.getAbsolutePath();
         int ct = 0;
         for (Map.Entry<File, Collection<QRData>> entry : processed.entrySet()) {
@@ -310,12 +317,22 @@ public class ImportMonitor implements Runnable {
         }
     }
 
+    private void saveQRCodes(File destination, TreeSet<File> files) throws IOException {
+        TreeMap<File, Collection<QRData>> tempMap = new TreeMap<>(processed);
+        tempMap.keySet().retainAll(files);
+        ArrayList<QRData> data = new ArrayList<>();
+        for (Collection<QRData> cd : tempMap.values()) {
+            data.addAll(cd);
+        }
+        QRData.write(new File(source, "barcodes.csv"), data);
+    }
+
     private class Info {
         private Path path;
         private String nextName;
         private String prefix;
         private String suffix;
-        private TreeMap<String, File> files = new TreeMap<String, File>();
+        private TreeMap<String, File> files = new TreeMap<>();
 
         public Info(Path path) {
             this.path = path;
@@ -355,8 +372,7 @@ public class ImportMonitor implements Runnable {
                         break;
                     }
                 }
-                // calculate the next filename.
-                String seq = (Integer.toString(10001 + getImageNumber(nextName))).substring(1);
+                String seq = String.format("%04d", getImageNumber(nextName));
                 nextName = prefix + seq + suffix;
             }
             if (found) {

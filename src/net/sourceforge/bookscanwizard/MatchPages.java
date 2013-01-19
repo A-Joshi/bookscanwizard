@@ -57,7 +57,7 @@ public class MatchPages {
     private List<FileHolder> pages;
 
     public MatchPages(File inputPath, Sequence sequence, boolean ignoreTime) throws IOException {
-        ArrayList<FileHolder> retVal = new ArrayList<FileHolder>();
+        ArrayList<FileHolder> retVal = new ArrayList<>();
         Sequence problemSeq = new Sequence("_###");
         File leftPath = new File(inputPath, "l");
         File rightPath = new File(inputPath, "r");
@@ -75,11 +75,11 @@ public class MatchPages {
             leftFiles = leftPath.listFiles(Utils.imageFilter());
             rightFiles = rightPath.listFiles(Utils.imageFilter());
         }
-        if (leftFiles == null || leftFiles.length == 0) {
-            throw new UserException("Could not find folder "+leftPath);
+        if (leftFiles.length == 0) {
+            throw new UserException("Could not find any images in "+leftPath);
         }
-        if (rightFiles == null|| rightFiles.length == 0) {
-            throw new UserException("Could not find folder "+rightPath);
+        if (rightFiles.length == 0) {
+            throw new UserException("Could not find any images in "+rightPath);
         }
         Map<String,List<QRData>> leftBarcodes = QRData.read(new File(leftPath, "barcodes.csv"));
         Map<String,List<QRData>> rightBarcodes = QRData.read(new File(rightPath, "barcodes.csv"));

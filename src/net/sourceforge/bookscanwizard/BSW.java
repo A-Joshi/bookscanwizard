@@ -65,7 +65,6 @@ import net.sourceforge.bookscanwizard.gui.UserFeedbackHelper;
 import net.sourceforge.bookscanwizard.op.SaveToArchive;
 import net.sourceforge.bookscanwizard.qr.ReadCodes;
 import net.sourceforge.bookscanwizard.qr.SplitBooks;
-import net.sourceforge.bookscanwizard.start.NewBook;
 
 /**
  * The main program
@@ -101,7 +100,7 @@ public class BSW {
     private static ExecutorService threadPool;
     /** Set to true if it is in the middle of an abort */
     private volatile boolean abort;
-    private static final List<NewConfigListener> newConfigListeners = new ArrayList<NewConfigListener>();
+    private static final List<NewConfigListener> newConfigListeners = new ArrayList<>();
     private boolean inPreview;
     private List<Operation> previewOperations;
     
@@ -110,7 +109,6 @@ public class BSW {
     }
 
     static {
-        System.out.println("cur: "+currentDirectory);
         tileCache = JAI.getDefaultInstance().getTileCache();
         ImageIO.scanForPlugins();
         LogManager.getLogManager().reset();
@@ -199,7 +197,7 @@ public class BSW {
                     if (file.isFile()) {
                         wizard.loadConfig(file);
                     } else {
-                       wizard.newBatch();
+                       BSW.instance.getMenuHandler().newBatch();
                     }
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
@@ -233,7 +231,7 @@ public class BSW {
         }
     }
 
-    private void clearViewer() {
+    public void clearViewer() {
         if (!isBatchMode()) {
             mainFrame.getConfigEntry().setText("");
             mainFrame.setPageList(Collections.EMPTY_LIST);
@@ -299,9 +297,9 @@ public class BSW {
         if (configFile == null) {
             saveConfigAs();
         } else {
-            PrintStream ps = new PrintStream(configFile);
-            ps.print(mainFrame.getConfigEntry().getText());
-            ps.close();
+            try (PrintStream ps = new PrintStream(configFile)) {
+                ps.print(mainFrame.getConfigEntry().getText());
+            }
         }
     }
 
@@ -353,16 +351,18 @@ public class BSW {
     public class ProcessImages implements Batch {
         private List<Operation> operations;
 
+        @Override
         public void postOperation() throws Exception {
             for (Operation op : operations) {
                 op.postOperation();
             }
         }
 
+        @Override
         public List<Future<Void>> getFutures(final List<Operation> operations) {
             this.operations = operations;
             override = false;
-            final ArrayList<Future<Void>> futures = new ArrayList<Future<Void>>();
+            final ArrayList<Future<Void>> futures = new ArrayList<>();
             PageSet ps = operations.get(operations.size() -1).getPageSet();
             File destinationDir = ps.getDestinationDir();
             if (destinationDir == null) {
@@ -512,25 +512,6 @@ public class BSW {
                     getMainFrame().getProgressBar().setValue(completedCount.incrementAndGet());
                 }
             });
-        }
-    }
-
-    public void newBatch() throws Exception {
-        int n = JOptionPane.showConfirmDialog(getMainFrame(),
-                "There is no config file in this directory.\nDo you want to use the Wizard to create one?",
-                "Book Scan Wizard",
-                JOptionPane.YES_NO_CANCEL_OPTION);
-        if (n != JOptionPane.CANCEL_OPTION) {
-            clearViewer();
-            if (n == JOptionPane.YES_OPTION) {
-                NewBook newBook = new NewBook();
-                String result = newBook.getConfig();
-                if (result != null) {
-                    mainFrame.getConfigEntry().setText(result);
-                    mainFrame.getConfigEntry().getCaret().setDot(result.length());
-                    getConfig(result);
-                }
-            }
         }
     }
 

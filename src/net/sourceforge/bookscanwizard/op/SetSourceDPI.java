@@ -39,6 +39,7 @@ public class SetSourceDPI extends Operation implements DpiSetter {
         return img;
     }
 
+    @Override
     public float getDPI() {
         return dpi;
     }

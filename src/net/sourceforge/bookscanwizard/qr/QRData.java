@@ -152,7 +152,7 @@ public class QRData {
      * @throws IOException
      */
     public static Map<String,List<QRData>> read(File f) throws IOException {
-        LazyHashMap<String, List<QRData>> map = new LazyHashMap<String, List<QRData>>(ArrayList.class);
+        LazyHashMap<String, List<QRData>> map = new LazyHashMap<>(ArrayList.class);
         foundBarcodeFile = f.isFile();
         if (foundBarcodeFile) {
             ICsvBeanReader reader = new CsvBeanReader(new FileReader(f), CsvPreference.EXCEL_PREFERENCE);

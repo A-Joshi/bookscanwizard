@@ -36,8 +36,6 @@ public class Page2 extends AbstractPage {
         return "Enter addtional content information";
     }
 
-    private static Dimension LABEL_SIZE = new Dimension(200,1);
-
     @Override
     protected void renderingPage() {
         boolean hide = (EstimateDPI.getConfig().isEmpty());

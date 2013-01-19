@@ -69,25 +69,25 @@ abstract public class Operation {
     public static List<Operation> getOperations(String config) throws  Exception {
         BSW.instance().fireNewConfigListeners();
         PageSet pageSet = new PageSet();
-        ArrayList<Operation> operations = new ArrayList<Operation>();
-        BufferedReader reader = new BufferedReader(new StringReader(config));
-        while (true) {
-            String line = reader.readLine();
-            if (line == null) {
-                break;
-            }
-            List<Operation> ops = Operation.getOperation(line, reader, pageSet);
-            if (ops != null) {
-                for (Operation o : ops) {
-                    pageSet = o.getPageSet();
+        ArrayList<Operation> operations = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new StringReader(config))) {
+            while (true) {
+                String line = reader.readLine();
+                if (line == null) {
+                    break;
                 }
-
+                List<Operation> ops = Operation.getOperation(line, reader, pageSet);
                 if (ops != null) {
-                    operations.addAll(ops);
+                    for (Operation o : ops) {
+                        pageSet = o.getPageSet();
+                    }
+
+                    if (ops != null) {
+                        operations.addAll(ops);
+                    }
                 }
             }
         }
-        reader.close();
         minPass = Integer.MAX_VALUE;
         maxPass = Integer.MIN_VALUE;
         for (Operation op : operations) {
@@ -321,9 +321,7 @@ abstract public class Operation {
         Class cls;
         try {
             cls = Class.forName(className);
-        } catch (ClassNotFoundException ex) {
-            throw new UserException("Could not find operation "+name);
-        } catch (NoClassDefFoundError ex) {
+        } catch (ClassNotFoundException | NoClassDefFoundError ex) {
             throw new UserException("Could not find operation "+name);
         }
         Operation operation;
@@ -434,7 +432,7 @@ abstract public class Operation {
     }
 
     public static String[] getArgs(Matcher matcher) {
-        ArrayList<String> list = new ArrayList<String>();
+        ArrayList<String> list = new ArrayList<>();
         while (matcher.find()) {
             String value = matcher.group();
             if (value.startsWith("#")) {  //xyzzy

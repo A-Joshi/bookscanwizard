@@ -24,7 +24,7 @@ public class OpDefinition {
     private String name;
     private String helper;
     private String example;
-    private ArrayList<Argument> arguments = new ArrayList<Argument>();
+    private ArrayList<Argument> arguments = new ArrayList<>();
 
     public ArrayList<Argument> getArguments() {
         return arguments;

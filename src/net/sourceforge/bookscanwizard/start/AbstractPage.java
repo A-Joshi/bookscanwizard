@@ -46,7 +46,7 @@ import org.netbeans.spi.wizard.WizardPage.CustomComponentListener;
 public class AbstractPage extends WizardPage {
     protected static final Dimension LABEL_SIZE = new Dimension(200,1);
 
-    protected static final Map<String,Serializable> defaults = new HashMap<String,Serializable>();
+    protected static final Map<String,Serializable> defaults = new HashMap<>();
 
     static {
         defaults.put(NewBook.COMPRESSION, "NONE");

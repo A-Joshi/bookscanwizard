@@ -120,6 +120,7 @@ public class Page1 extends AbstractPage {
         comboBox.setName(NewBook.FILE_FORMAT);
         comboBox.addItemListener(new ItemListener(){
 
+            @Override
             public void itemStateChanged(ItemEvent e) {
                 JComboBox source = (JComboBox) e.getSource();
                 compressionPane.setVisible(source.getSelectedItem().equals("TIFF"));

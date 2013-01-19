@@ -31,7 +31,7 @@ import java.util.TreeMap;
 public class DropDowns {
     // This is really a subset of ISO 639-2, but I'm assuming that for anything common
     // it will match the marc code (I couldn't find a lookup from the 639-2 code to marc).
-    private final static TreeMap<String,String> lookupMarc = new TreeMap<String,String>();
+    private final static TreeMap<String,String> lookupMarc = new TreeMap<>();
     
     private DropDowns(){}
     

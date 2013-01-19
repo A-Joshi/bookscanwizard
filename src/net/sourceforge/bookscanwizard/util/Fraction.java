@@ -184,6 +184,7 @@ public final class Fraction implements Comparable<Fraction> {
         return new Fraction(an * bd, ad * bn);
     }
 
+    @Override
     public int compareTo(Fraction b) {
         long an = numerator;
         long ad = denominator;

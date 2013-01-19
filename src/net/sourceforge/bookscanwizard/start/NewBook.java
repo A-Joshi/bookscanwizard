@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import net.sourceforge.bookscanwizard.BSW;
 import net.sourceforge.bookscanwizard.gui.UserFeedbackHelper;
 import net.sourceforge.bookscanwizard.op.EstimateDPI;
@@ -159,7 +160,7 @@ public class NewBook {
     static {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
             UserFeedbackHelper.displayException(null, ex);
         }
     }

@@ -43,16 +43,21 @@ public class SetTiffOptions extends Operation {
      */
     public static int getTiffCompressionType(String type) {
         int compressionType;
-        if (type.equals("NONE")) {
-            compressionType = TIFFEncodeParam.COMPRESSION_NONE;
-         } else if (type.equals("DEFLATE")) {
-            compressionType = TIFFEncodeParam.COMPRESSION_DEFLATE;
-         } else if (type.equals("GROUP4")) {
-            compressionType = TIFFEncodeParam.COMPRESSION_GROUP4;
-         } else if (type.equals("JPEG")) {
-            compressionType = TIFFEncodeParam.COMPRESSION_JPEG_TTN2;
-        } else {
-            throw new UserException("Could not find compression type "+type);
+        switch (type) {
+            case "NONE":
+                compressionType = TIFFEncodeParam.COMPRESSION_NONE;
+                break;
+            case "DEFLATE":
+                compressionType = TIFFEncodeParam.COMPRESSION_DEFLATE;
+                break;
+            case "GROUP4":
+                compressionType = TIFFEncodeParam.COMPRESSION_GROUP4;
+                break;
+            case "JPEG":
+                compressionType = TIFFEncodeParam.COMPRESSION_JPEG_TTN2;
+                break;
+            default:
+                throw new UserException("Could not find compression type "+type);
         }
         return compressionType;
     }

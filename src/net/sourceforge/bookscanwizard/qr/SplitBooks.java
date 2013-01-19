@@ -31,18 +31,22 @@ public class SplitBooks {
     private static final SimpleDateFormat df = new SimpleDateFormat("yyMMddHHmmss");
 
     public static void main(String[] args) throws Exception {
-        ArrayList<String> mainArgs = new ArrayList<String>();
+        ArrayList<String> mainArgs = new ArrayList<>();
         float scale = 1;
 
         for (int i=0; i < args.length; i++) {
-            if ("-scale".equals(args[i])) {
-                i++;
-                scale = Float.parseFloat(args[i]);
-            } else if ("-threshold".equals(args[i])) {
-                i++;
-                ReadCodes.setThreshold(Double.parseDouble(args[i]));
-            } else {
-                mainArgs.add(args[i]);
+            switch (args[i]) {
+                case "-scale":
+                    i++;
+                    scale = Float.parseFloat(args[i]);
+                    break;
+                case "-threshold":
+                    i++;
+                    ReadCodes.setThreshold(Double.parseDouble(args[i]));
+                    break;
+                default:
+                    mainArgs.add(args[i]);
+                    break;
             }
         }
         if (mainArgs.size() < 2) {
@@ -60,10 +64,8 @@ public class SplitBooks {
     public SplitBooks(String source, File destination, String subdir, float scale) throws Exception {
         ReadCodes readCodes = new ReadCodes(source, scale);
         Collection<File> files = readCodes.getFiles();
-        LazyHashMap<String, List<File>> books =
-            new LazyHashMap<String, List<File>>(ArrayList.class);
-        LazyHashMap<String, List<QRData>> bookCodes =
-            new LazyHashMap<String, List<QRData>>(ArrayList.class);
+        LazyHashMap<String, List<File>> books = new LazyHashMap<>(ArrayList.class);
+        LazyHashMap<String, List<QRData>> bookCodes = new LazyHashMap<>(ArrayList.class);
 
         String title = null;
         String newTitle = null;

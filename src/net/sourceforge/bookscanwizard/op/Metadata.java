@@ -40,7 +40,7 @@ import org.w3c.dom.Element;
  * Defines additonal metadata to save.
  */
 public class Metadata extends Operation{
-    private static ArrayList<KeyValue> metaData = new ArrayList<KeyValue>();
+    private static ArrayList<KeyValue> metaData = new ArrayList<>();
     private static boolean init;
     private static final Pattern idPattern = Pattern.compile("[A-Za-z0-9\\-\\.\\_]");
 
@@ -57,7 +57,7 @@ public class Metadata extends Operation{
     }
 
     public static ArrayList<KeyValue> getMetaData() {
-        ArrayList<KeyValue> newMeta = new ArrayList<KeyValue>();
+        ArrayList<KeyValue> newMeta = new ArrayList<>();
         boolean found = false;
         String title = null;
         for (KeyValue k : metaData) {
@@ -113,6 +113,7 @@ public class Metadata extends Operation{
         if (!init) {
             init = true;
             BSW.instance().addNewConfigListener(new NewConfigListener(){
+                @Override
                 public void newConfig() {
                     metaData.clear();
                 }
@@ -142,6 +143,7 @@ public class Metadata extends Operation{
             return value;
         }
 
+        @Override
         public int compareTo(KeyValue that) {
             return this.key.compareTo(that.key);
         }

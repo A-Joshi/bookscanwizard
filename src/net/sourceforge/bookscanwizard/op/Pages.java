@@ -41,7 +41,7 @@ public class Pages extends Operation {
     @Override
     protected List<Operation> setup(List<Operation> operationList) throws Exception {
         pageSet = new PageSet(pageSet);
-        List<FileHolder> selectedPages = new ArrayList<FileHolder>();
+        List<FileHolder> selectedPages = new ArrayList<>();
         int pos=0;
 
         String[] textArguments = getTextArgs();

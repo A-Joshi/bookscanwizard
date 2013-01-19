@@ -46,7 +46,7 @@ public class PrefsHelper {
     private static final Logger logger = Logger.getLogger(PrefsHelper.class.getName());
     private static final Preferences prefs =
             Preferences.userRoot().node(PrefsHelper.class.getPackage().getName());
-    private static HashMap<String,Object> miscPrefs = new HashMap<String,Object>();
+    private static HashMap<String,Object> miscPrefs = new HashMap<>();
 
     public static void loadPreferences() {
         Thread savePrefs = new Thread(new Runnable() {

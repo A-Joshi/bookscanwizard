@@ -147,7 +147,7 @@ public class BatchList extends javax.swing.JDialog {
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         batchList.clear();
-        batchModel.fireTableDataChanged();;
+        batchModel.fireTableDataChanged();
         setVisible(false);
     }//GEN-LAST:event_cancelButtonActionPerformed
 
@@ -171,19 +171,14 @@ public class BatchList extends javax.swing.JDialog {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(BatchList.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(BatchList.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(BatchList.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(BatchList.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 BatchList dialog = new BatchList(new javax.swing.JFrame(), true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -197,17 +192,20 @@ public class BatchList extends javax.swing.JDialog {
         });
     }
     
-    ArrayList<File> batchList = new ArrayList<File>();
+    ArrayList<File> batchList = new ArrayList<>();
     private AbstractTableModel batchModel = new AbstractTableModel() {
 
+        @Override
         public int getRowCount() {
             return batchList.size();
         }
 
+        @Override
         public int getColumnCount() {
             return 1;
         }
 
+        @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             return batchList.get(rowIndex);
         }

@@ -46,7 +46,7 @@ public class PageSet {
         destinationDir = null;
         destinationDPI = 0;
         compressionType = TIFFEncodeParam.COMPRESSION_NONE;
-        fileHolders = new ArrayList<FileHolder>();
+        fileHolders = new ArrayList<>();
     }
 
     public PageSet(PageSet parent) {
@@ -84,7 +84,7 @@ public class PageSet {
         if (retVal == null) {
             return null;
         }
-        ArrayList<FileHolder> newList = new ArrayList<FileHolder>(retVal.size());
+        ArrayList<FileHolder> newList = new ArrayList<>(retVal.size());
         for (FileHolder fh : retVal) {
             if ((getMinFile() == null || fh.getName().compareTo(getMinFile()) >= 0) &&
                 (getMaxFile() == null || fh.getName().compareTo(getMaxFile()) < 0)) 

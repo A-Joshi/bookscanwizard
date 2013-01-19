@@ -20,7 +20,9 @@ package net.sourceforge.bookscanwizard.gui;
 
 import java.awt.Desktop;
 import java.awt.KeyboardFocusManager;
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,7 +39,7 @@ import net.sourceforge.bookscanwizard.util.DropDowns;
 
 public class MetadataGui extends javax.swing.JDialog {
     private static final String[] columnNames = {"Name", "Value"};
-    private ArrayList<String[]> rows = new ArrayList<String[]>();
+    private ArrayList<String[]> rows = new ArrayList<>();
 
     public MetadataGui(java.awt.Frame parent, boolean modal) throws Exception {
         super(parent, modal);
@@ -409,7 +411,7 @@ public class MetadataGui extends javax.swing.JDialog {
     private void jLabel15MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel15MouseClicked
         try {
             Desktop.getDesktop().browse(new URI("http://www.archive.org"));
-        } catch (Exception ex) {
+        } catch (URISyntaxException | IOException ex) {
             UserFeedbackHelper.displayException(this, ex);
         }
     }//GEN-LAST:event_jLabel15MouseClicked
@@ -425,7 +427,7 @@ public class MetadataGui extends javax.swing.JDialog {
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         try {
             Desktop.getDesktop().browse(new URI("http://www.archive.org/account/s3.php"));
-        } catch (Exception ex) {
+        } catch (URISyntaxException | IOException ex) {
             UserFeedbackHelper.displayException(this, ex);
         }
     }//GEN-LAST:event_jButton2ActionPerformed
@@ -444,10 +446,13 @@ public class MetadataGui extends javax.swing.JDialog {
             public String getColumnName(int col) {
                 return columnNames[col];
             }
+            @Override
             public int getRowCount() { return rows.size() +1; }
 
+            @Override
             public int getColumnCount() { return columnNames.length; }
 
+            @Override
             public Object getValueAt(int row, int col) {
                 if (row >= rows.size()) {
                     return "";
@@ -476,6 +481,7 @@ public class MetadataGui extends javax.swing.JDialog {
     */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 MetadataGui dialog;
                 try {
@@ -536,7 +542,7 @@ public class MetadataGui extends javax.swing.JDialog {
      */
     private void updateGui() throws Exception {
         List<Metadata.KeyValue> data = Metadata.getMetaData();
-        ArrayList<Metadata.KeyValue> customData = new ArrayList<Metadata.KeyValue>(data);
+        ArrayList<Metadata.KeyValue> customData = new ArrayList<>(data);
         Collections.sort(customData);
         String user = (String) PrefsHelper.getPref("archive_user");
         if (user != null) {
@@ -577,7 +583,7 @@ public class MetadataGui extends javax.swing.JDialog {
     private void saveToConfig() throws Exception {
         try {
             ArchiveTransfer.validateId(jIdentifier.getText());
-            ArrayList<String[]> data = new ArrayList<String[]>();
+            ArrayList<String[]> data = new ArrayList<>();
             data.add(new String[]{"identifier", jIdentifier.getText()});
             data.add(new String[]{"title", jTitle.getText()});
             data.add(new String[]{"creator", jAuthor.getText()});

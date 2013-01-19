@@ -117,6 +117,7 @@ public class Rotate extends Operation implements ProcessDeleted {
         if (!init) {
             init = true;
             BSW.instance().addNewConfigListener(new NewConfigListener(){
+                @Override
                 public void newConfig() {
                     leftTranspose = null;
                     rightTranspose = null;

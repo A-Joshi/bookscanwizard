@@ -24,6 +24,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,9 +41,9 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import net.sourceforge.bookscanwizard.gui.AboutDialog;
 import net.sourceforge.bookscanwizard.PageSet;
 import net.sourceforge.bookscanwizard.UserException;
+import net.sourceforge.bookscanwizard.gui.AboutDialog;
 import net.sourceforge.bookscanwizard.op.Metadata;
 import net.sourceforge.bookscanwizard.op.Metadata.KeyValue;
 import net.sourceforge.bookscanwizard.util.LazyHashMap;
@@ -75,7 +78,7 @@ public class ArchiveTransfer {
     private static final boolean SKIP_DERIVE = false;
     private static final Pattern idPattern = Pattern.compile("[A-Za-z0-9\\-\\.\\_]*");
 
-    private LazyHashMap<String,List<String>> metadata = new LazyHashMap<String,List<String>>(ArrayList.class);
+    private LazyHashMap<String,List<String>> metadata = new LazyHashMap<>(ArrayList.class);
     private String awsAccessKey;
     private String awsSecretKey;
     private ProgressListener progressListener;
@@ -239,7 +242,7 @@ public class ArchiveTransfer {
             .append(contentType == null ? "" : contentType.getValue()).append("\n")
             .append(request.getFirstHeader("Date").getValue()).append("\n");
 
-        TreeMap<String, String> headers = new TreeMap<String,String>();
+        TreeMap<String, String> headers = new TreeMap<>();
         for (Header h : request.getAllHeaders()) {
             String key = h.getName().toLowerCase();
             if (h.getName().toLowerCase().startsWith(PREFIX)) {
@@ -265,7 +268,7 @@ public class ArchiveTransfer {
             base64 = base64.substring(0, base64.length()-2);
             Header h = new BasicHeader("Authorization", "AWS "+awsAccessKey+":"+base64);
             return h;
-        } catch (Exception e) {
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException | InvalidKeyException | IllegalStateException e) {
             throw new RuntimeException(e);
         }
     }

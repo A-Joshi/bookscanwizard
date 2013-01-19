@@ -26,7 +26,15 @@ import java.util.concurrent.Future;
  * @author Steve
  */
 public interface Batch {
+    /**
+     * The list of operations to be performed
+     * 
+     * @param operations
+     * @return 
+     */
     List<Future<Void>> getFutures(final List<Operation> operations);
-
+    /**
+     * An operation that is called after the images have been processed.
+     */
     void postOperation() throws Exception;
 }

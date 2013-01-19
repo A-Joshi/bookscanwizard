@@ -71,7 +71,7 @@ public class ReadCodes {
     private static final Hashtable hints = new Hashtable();
 
     private Collection<File> files;
-    private LazyHashMap<String, List<QRData>> codes = new LazyHashMap<String, List<QRData>>(ArrayList.class);
+    private LazyHashMap<String, List<QRData>> codes = new LazyHashMap<>(ArrayList.class);
 
     public ReadCodes(Collection<File> files) {
         this.files = files;
@@ -90,7 +90,7 @@ public class ReadCodes {
     public List<QRData> getCodes() throws IOException, InterruptedException, ExecutionException {
         ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), 
                 new BSWThreadFactory(BSWThreadFactory.LOW_PRIORITY));
-        final ArrayList<Future<List<QRData>>> futures = new ArrayList<Future<List<QRData>>>();
+        final ArrayList<Future<List<QRData>>> futures = new ArrayList<>();
 
         for (final File f : files) {
             Callable<List<QRData>> task = new Callable<List<QRData>>() {
@@ -101,7 +101,7 @@ public class ReadCodes {
             };
             futures.add(threadPool.submit(task));
         }
-        List<QRData> fileList = new ArrayList<QRData>();
+        List<QRData> fileList = new ArrayList<>();
         for (Future<List<QRData>> f : futures) {
             fileList.addAll(f.get());
         }
@@ -128,7 +128,7 @@ public class ReadCodes {
     /**
      * Returns the size of the barcode from one anchor to the next.
      */
-    private static HashMap<Integer,Double> dimensions = new HashMap<Integer,Double>();
+    private static HashMap<Integer,Double> dimensions = new HashMap<>();
     public static double getBarcodeDimensions(String code, int size) {
         Double retVal = dimensions.get(size);
         if (retVal == null) {
@@ -150,7 +150,7 @@ public class ReadCodes {
     }
 
     public static List<QRData> findCodes(RenderedImage img, String fileName) {
-        ArrayList<QRData> list = new ArrayList<QRData>();
+        ArrayList<QRData> list = new ArrayList<>();
         BufferedImageLuminanceSource luminanceSource;
         synchronized(ReadCodes.class) {
             img = preprocessImage(img);
@@ -180,7 +180,7 @@ public class ReadCodes {
     }
 
     static List<File> getFiles(Collection<String> args, FilenameFilter defaultFilter) throws FileNotFoundException {
-        ArrayList<File> allData = new ArrayList<File>();
+        ArrayList<File> allData = new ArrayList<>();
         for (String name : args) {
             File source = new File(name);
             if (source.isFile()) {
@@ -238,14 +238,18 @@ public class ReadCodes {
     public static void main(String[] args) throws Exception {
         String directory = null;
         for (int i=0; i < args.length; i++) {
-            if ("-scale".equals(args[i])) {
-                i++;
-                scale = Float.parseFloat(args[i]);
-            } else if ("-threshold".equals(args[i])) {
-                i++;
-                setThreshold(Double.parseDouble(args[i]));
-            } else {
-                directory = args[i];
+            switch (args[i]) {
+                case "-scale":
+                    i++;
+                    scale = Float.parseFloat(args[i]);
+                    break;
+                case "-threshold":
+                    i++;
+                    setThreshold(Double.parseDouble(args[i]));
+                    break;
+                default:
+                    directory = args[i];
+                    break;
             }
         }
         if (directory == null) {

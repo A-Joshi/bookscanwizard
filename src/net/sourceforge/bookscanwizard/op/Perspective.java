@@ -115,6 +115,7 @@ public class Perspective extends Operation implements PerspectiveOp, DpiSetter {
         return img;
     }
 
+    @Override
     public float getDPI() {
         return dpi;
     }

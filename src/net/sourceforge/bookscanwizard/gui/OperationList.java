@@ -84,7 +84,7 @@ public class OperationList extends JFrame {
         Rename.class,
         Rotate.class,
         Saturation.class,
-        SaveImage.class,
+        SaveImages.class,
         SaveToArchive.class,
         Scale.class,
         ScaleToDPI.class,
@@ -260,14 +260,12 @@ public class OperationList extends JFrame {
     }
     
     static {
-        defs = new ArrayList<OpDefinition>();
+        defs = new ArrayList<>();
         for (Class cls : operations) {
             try {
                 Operation op = (Operation) cls.newInstance();
                 defs.add(op.getDefinition());
-            } catch (InstantiationException ex) {
-                Logger.getLogger(OperationList.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IllegalAccessException ex) {
+            } catch (InstantiationException | IllegalAccessException ex) {
                 Logger.getLogger(OperationList.class.getName()).log(Level.SEVERE, null, ex);
             }
         }

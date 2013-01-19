@@ -73,10 +73,10 @@ import net.sourceforge.bookscanwizard.util.Utils;
 public class ThumbTable extends JTable {
 
     public static final int IMAGE_WIDTH = 100;
-    private static List<FileHolder> holders = new ArrayList<FileHolder>();
+    private static List<FileHolder> holders = new ArrayList<>();
     private static Map<FileHolder, RenderedImage> images =
             Collections.synchronizedMap(new HashMap<FileHolder, RenderedImage>());
-    private static final BlockingLifoQueue<Runnable> lifoQueue = new BlockingLifoQueue<Runnable>();
+    private static final BlockingLifoQueue<Runnable> lifoQueue = new BlockingLifoQueue<>();
     private static final int threadCt = Math.max(1, Runtime.getRuntime().availableProcessors() - 1);
     private static final Executor executor = 
         new ThreadPoolExecutor(threadCt, threadCt, 0L, TimeUnit.MILLISECONDS, lifoQueue,
@@ -97,6 +97,7 @@ public class ThumbTable extends JTable {
             public void mouseClicked(MouseEvent e) {
                 if (e.getButton() == 1 &&  e.getClickCount() == 2) {
                     UserFeedbackHelper.doAction(e, new Runnable() {
+                        @Override
                         public void run() {
                             FileHolder holder = holders.get(getSelectedRow());
                             BSW.instance().getPreviewedImage().setFileHolder(holder);
@@ -231,6 +232,7 @@ public class ThumbTable extends JTable {
 
     public void update(final FileHolder h) {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 int pos = holders.indexOf(h);
                 ((HolderDataModel) getModel()).fireTableRowsUpdated(pos, pos);
@@ -258,14 +260,17 @@ public class ThumbTable extends JTable {
 
     static class HolderDataModel extends AbstractTableModel {
 
+        @Override
         public int getRowCount() {
             return holders.size();
         }
 
+        @Override
         public int getColumnCount() {
             return 1;
         }
 
+        @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             return holders.get(rowIndex);
         }
@@ -304,6 +309,7 @@ public class ThumbTable extends JTable {
             add(thumb, BorderLayout.NORTH);
         }
 
+        @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             FileHolder holder = (FileHolder) value;
             RenderedImage img = images.get(holder);
@@ -364,6 +370,7 @@ public class ThumbTable extends JTable {
             return holder;
         }
 
+        @Override
         public void run() {
             try {
                 RenderedImage img = holder.getThumbnail();

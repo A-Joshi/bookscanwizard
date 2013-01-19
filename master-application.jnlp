@@ -16,7 +16,7 @@
 <update check="always" policy="prompt-update"/>
 <!--${JNLP.SECURITY}-->
 <resources>
-    <j2se java-vm-args="-Xmx1024M" version="1.6+"/>
+    <j2se java-vm-args="-Xmx1024M" version="1.7+"/>
     <jar href="BookScanWizard.jar" main="true" download="eager"/>
     <jar href="lib/core.jar" download="eager"/>
     <jar href="lib/javase.jar" download="eager"/>

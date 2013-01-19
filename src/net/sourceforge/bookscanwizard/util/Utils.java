@@ -39,7 +39,7 @@ public class Utils {
         }
         ColorModel cm = img.getColorModel();
         WritableRaster raster = cm.createCompatibleWritableRaster(img.getWidth(), img.getHeight());
-        Hashtable<String, Object> props = new Hashtable<String, Object>();
+        Hashtable<String, Object> props = new Hashtable<>();
         String[] keys = img.getPropertyNames();
 
         if (keys != null) {

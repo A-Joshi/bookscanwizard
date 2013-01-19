@@ -44,7 +44,7 @@ public class Unwarp extends Operation {
             float brightness = (float) args[3];
             int calibrationImages = (int) args[4];
 
-            ArrayList<File> calibration = new ArrayList<File>();
+            ArrayList<File> calibration = new ArrayList<>();
             List<FileHolder> holders = getPageSet().getFileHolders();
             for (int i=0; i < calibrationImages; i++) {
                 FileHolder h = holders.get(i);

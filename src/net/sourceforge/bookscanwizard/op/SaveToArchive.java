@@ -86,6 +86,7 @@ public class SaveToArchive extends Operation implements SaveOperation {
         }
         final ArchiveTransfer transfer = new ArchiveTransfer(access, secret);
         final ProgressListener progressListener = new ProgressListener() {
+            @Override
             public void updateProgress(double pctComplete) {
                 if (abortRequested) {
                     throw new UserException("Aborted");
@@ -95,6 +96,7 @@ public class SaveToArchive extends Operation implements SaveOperation {
         };
         if (!BSW.isBatchMode()) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     progressBar = BSW.instance().getMainFrame().getProgressBar();
                     progressBar.setMaximum(100);

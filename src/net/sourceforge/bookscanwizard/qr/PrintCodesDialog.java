@@ -192,8 +192,8 @@ public class PrintCodesDialog extends javax.swing.JDialog {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         try {
             int[] selected = codeJList.getSelectedIndices();
-            List<String> codeList = new ArrayList<String>();
-            List<String> descList = new ArrayList<String>();
+            List<String> codeList = new ArrayList<>();
+            List<String> descList = new ArrayList<>();
             for (int sel : selected) {
                 QRCodeControls qrc = QRCodeControls.values()[sel];
                 if (qrc == QRCodeControls.PERSPECTIVE) {
@@ -235,6 +235,7 @@ public class PrintCodesDialog extends javax.swing.JDialog {
     */
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 PrintCodesDialog dialog = new PrintCodesDialog(new javax.swing.JFrame(), true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {

@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import net.sourceforge.bookscanwizard.gui.UserFeedbackHelper;
 import org.netbeans.api.wizard.WizardDisplayer;
 import org.netbeans.spi.wizard.Wizard;
@@ -50,7 +51,7 @@ public class PreferenceWizard {
     static {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
             UserFeedbackHelper.displayException(null, ex);
         }
     }

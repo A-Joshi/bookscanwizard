@@ -123,9 +123,9 @@ public class EstimateDPI extends Operation {
     }
 
     public static void saveFocalLength() throws IOException {
-        TreeMap<Float,Float> left = new TreeMap<Float,Float>();
-        TreeMap<Float,Float> right = new TreeMap<Float,Float>();
-        HashMap<Integer,Float> currentDPI = new HashMap<Integer,Float>();
+        TreeMap<Float,Float> left = new TreeMap<>();
+        TreeMap<Float,Float> right = new TreeMap<>();
+        HashMap<Integer,Float> currentDPI = new HashMap<>();
         for (Operation op : getAllOperations()) {
             if (op instanceof DpiSetter) {
                 float dpi = ((DpiSetter) op).getDPI();
@@ -150,7 +150,7 @@ public class EstimateDPI extends Operation {
         if (left.size() < 2 || right.size() < 2) {
             throw new UserException(INVALID);
         }
-        ArrayList<Float> info = new ArrayList<Float>();
+        ArrayList<Float> info = new ArrayList<>();
         info.add(left.firstEntry().getValue());
         info.add(left.firstEntry().getKey());
         info.add(left.lastEntry().getValue());

@@ -32,8 +32,8 @@ import net.sourceforge.bookscanwizard.util.Sequence;
  * Renames the pages according to a pattern.
  */
 public class Rename extends Operation {
-    private final ArrayList<Sequence> sequences = new ArrayList<Sequence>();
-    private final ArrayList<Boolean> romanNumerals = new ArrayList<Boolean>();
+    private final ArrayList<Sequence> sequences = new ArrayList<>();
+    private final ArrayList<Boolean> romanNumerals = new ArrayList<>();
     private int sequencePos = 0;
     
     @Override
@@ -75,7 +75,7 @@ public class Rename extends Operation {
             }
         }
         // verify there are no duplicates
-        HashSet<String> pageNames = new HashSet<String>();
+        HashSet<String> pageNames = new HashSet<>();
         for (FileHolder h : pageSet.getSourceFiles()) {
             if (!pageNames.add(h.getName())) {
                 throw new UserException("Duplicate page:  There are muliple pages named: "+h.getName());
