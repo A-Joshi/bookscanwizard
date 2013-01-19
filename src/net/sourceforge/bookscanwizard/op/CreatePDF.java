@@ -70,10 +70,6 @@ public class CreatePDF extends Operation implements SaveOperation, ProcessDelete
         if (getTextArgs().length > 1) {
             format = getTextArgs()[1];
         }
-        File parent = new File(getTextArgs()[0]).getParentFile();
-        if (parent.equals(PageSet.getSourceDir())) {
-            throw new UserException("The output file must be saved to a differnet directory from the source files");
-        }
         List<FileHolder> holders = getPageSet().getFileHolders();
         semaphores = new Semaphore[holders.size()+1];
         Semaphore s = new Semaphore(1);
@@ -89,7 +85,7 @@ public class CreatePDF extends Operation implements SaveOperation, ProcessDelete
     protected RenderedImage previewOperation(FileHolder holder, RenderedImage img) throws Exception {
         return img;
     }
-    
+
     @Override
     protected RenderedImage performOperation(FileHolder holder, RenderedImage img) throws Exception {
         int pos = getPageSet().getFileHolders().indexOf(holder);
@@ -107,7 +103,9 @@ public class CreatePDF extends Operation implements SaveOperation, ProcessDelete
                 }
                 document = new Document();
                 document.setMargins(0, 0, 0, 0);
-                File f = BSW.getFileFromCurrentDir(getTextArgs()[0]);
+
+                File f = pageSet.getDestinationDir().toPath().resolve(getTextArgs()[0]).toFile();
+                f.getParentFile().mkdirs();
                 logger.log(Level.INFO, "Creating {0}", f.getAbsolutePath());
                 PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(f));
                 pdfWriter.setFullCompression();
@@ -115,8 +113,8 @@ public class CreatePDF extends Operation implements SaveOperation, ProcessDelete
                 addMetaData(document);
             }
             document.setPageSize(new Rectangle(
-                    72 * bi.getWidth()/holder.getDPI(),
-                    72 * bi.getHeight()/holder.getDPI()));
+                    72 * bi.getWidth()/PageSet.getDestinationDPI(),
+                    72 * bi.getHeight()/PageSet.getDestinationDPI()));
             if (document.isOpen()) {
                 document.newPage();
             } else {
@@ -145,7 +143,7 @@ public class CreatePDF extends Operation implements SaveOperation, ProcessDelete
             if (pos > 0) {
                 compression = Float.parseFloat(arg.substring(pos + 1)) / Float.parseFloat(arg.substring(0, pos));
             } else {
-                compression = Float.parseFloat(args[1]);
+                compression = Float.parseFloat(arg);
             }
         }
         return compression;
@@ -158,17 +156,18 @@ public class CreatePDF extends Operation implements SaveOperation, ProcessDelete
     }
     
     private byte[] getImageAsBytes(RenderedImage img, String format, int dpi, float quality) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
         synchronized (CreatePDF.class) {
-            if ("jpg".equalsIgnoreCase(format) || "jpeg".equalsIgnoreCase(format)) {
-                saveJpeg(baos, img, dpi, quality);
-            } else {
-                if (quality < 0) {
-                    quality = .8f;
+            try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+                if ("jpg".equalsIgnoreCase(format) || "jpeg".equalsIgnoreCase(format)) {
+                    saveJpeg(baos, img, dpi, quality);
+                } else {
+                    if (quality < 0) {
+                        quality = .8f;
+                    }
+                    SaveImages.writeJpeg2000Image(img, baos, PageSet.getDestinationDPI(), quality);
                 }
-                SaveImages.writeJpeg2000Image(img, baos, PageSet.getDestinationDPI(), quality);
+                return baos.toByteArray();
             }
-            return baos.toByteArray();
         }
     }
     

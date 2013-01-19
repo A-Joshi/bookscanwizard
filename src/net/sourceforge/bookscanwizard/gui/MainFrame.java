@@ -527,7 +527,7 @@ public final class MainFrame extends JFrame {
         showPerspective.setText("Perspective");
         showPerspective.setToolTipText("<html><body>If checked it will preview the perspective.<br>Otherwise it will display the perspective marks.</body></html>");
 //        showPerspective.setSelected(true);
-        showPerspective.setActionCommand("preview");
+        showPerspective.setActionCommand("preview_if_not_shift");
         showPerspective.addActionListener(menuHandler);
         buttonPanel.add(showPerspective);
         buttonPanel.add(Box.createHorizontalStrut(2));
@@ -546,7 +546,7 @@ public final class MainFrame extends JFrame {
         showCrops.setText("Crops");
         showCrops.setToolTipText("<html><body>If checked it will preview the corp.<br>Otherwise it will display the crop marks.</body></html>");
 //        showCrops.setSelected(true);
-        showCrops.setActionCommand("preview");
+        showCrops.setActionCommand("preview_if_not_shift");
         showCrops.addActionListener(menuHandler);
         buttonPanel.add(showCrops);
         buttonPanel.add(Box.createHorizontalStrut(2));
@@ -565,14 +565,14 @@ public final class MainFrame extends JFrame {
         showColors.setText("Filters");
         showColors.setToolTipText("If checked it will show color changes and adjustments.");
         showColors.setSelected(true);
-        showColors.setActionCommand("preview");
+        showColors.setActionCommand("preview_if_not_shift");
         showColors.addActionListener(menuHandler);
         buttonPanel.add(showColors);
         buttonPanel.add(Box.createHorizontalStrut(2));
 
         showScale.setText("Scale");
         showScale.setToolTipText("If checked it will perform scaling operations during the preview");
-        showScale.setActionCommand("preview");
+        showScale.setActionCommand("preview_if_not_shift");
         showScale.addActionListener(menuHandler);
         buttonPanel.add(showScale);
         buttonPanel.add(Box.createHorizontalStrut(2));

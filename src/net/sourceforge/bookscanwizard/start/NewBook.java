@@ -152,7 +152,7 @@ public class NewBook {
         if (imagetype.equals("PDF")) {
             str.append("CreatePDF = output/processed.pdf\n");
         } else {
-            str.append("SaveImage = ").append(imagetype).append(" ").append(compression).append("\n\n");
+            str.append("SaveImages = ").append(imagetype).append(" ").append(compression).append("\n\n");
         }
         return str.toString();
     }

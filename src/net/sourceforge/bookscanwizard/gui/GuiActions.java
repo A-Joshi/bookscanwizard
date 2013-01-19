@@ -24,6 +24,7 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -100,6 +101,11 @@ public class GuiActions extends UserFeedbackHelper {
             System.exit(0);
         } else if ("preview".equals(cmd)) {
             bsw.preview();
+        } else if ("preview_if_not_shift".equals(cmd)) {
+            boolean shift = (e.getModifiers() & InputEvent.SHIFT_MASK) != 0;
+            if (!shift) {
+                bsw.preview();
+            }
         } else if ("run".equals(cmd)) {
             bsw.runBatch(mainFrame.getConfigEntry().getText(), null);
         } else if ("run_batch_list".equals(cmd)) {

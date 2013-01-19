@@ -70,8 +70,8 @@ public class Scale extends Operation implements ScaleOp {
             // There seems to be a problem where sometimes black lines appear
             // across the image.  so we get around that by ensuring the entire
             // operation is done as a single tile.
-            int tileWidth = (int) (img.getWidth() * xScale + 1);
-            int tileHeight = (int) (img.getHeight() * xScale + 1);
+            int tileWidth = Math.max(img.getWidth(), (int) (img.getWidth() * xScale + 1));
+            int tileHeight = Math.max(img.getHeight(), (int) (img.getHeight() * xScale + 1));
             ImageLayout tileLayout = new ImageLayout(img);
             tileLayout.setTileWidth(tileWidth);
             tileLayout.setTileHeight(tileHeight);

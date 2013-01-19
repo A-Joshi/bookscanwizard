@@ -133,7 +133,7 @@ abstract public class Operation {
             Operation lastOp = ops.get(ops.size()-1);
             List<Operation> op = Operation.getOperation("Pages = all", null, lastOp.getPageSet());
             ops.addAll(op);
-            ops = Operation.getOperation("SaveImage = ", null, lastOp.getPageSet());
+            ops = Operation.getOperation("SaveImages = ", null, lastOp.getPageSet());
             ops.addAll(op);
         }
     }
