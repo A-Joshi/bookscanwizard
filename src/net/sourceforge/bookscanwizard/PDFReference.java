@@ -67,7 +67,7 @@ public class PDFReference {
             listener = new BSWImageRenderListener();
         }
         lastImage = null;
-        parser.processContent(page+1, listener);
+        parser.processContent(page, listener);
         return lastImage;
     }
 
