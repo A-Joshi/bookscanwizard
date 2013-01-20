@@ -167,7 +167,7 @@ public class BSW {
             }
         }
         try {
-            JAI.getDefaultInstance().getTileCache().setMemoryCapacity(500000000);
+            JAI.getDefaultInstance().getTileCache().setMemoryCapacity(500_000_000);
         } catch (NoClassDefFoundError e) {
             UserFeedbackHelper.displayException(null, e);
         }

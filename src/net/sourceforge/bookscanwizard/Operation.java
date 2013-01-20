@@ -232,7 +232,11 @@ abstract public class Operation {
         String[] textArgs = getTextArgs();
         double[] retVal = new double[textArgs.length];
         for (int i=0; i < textArgs.length; i++) {
-            retVal[i] = Double.parseDouble(textArgs[i]);
+            try {
+                retVal[i] = Double.parseDouble(textArgs[i]);
+            } catch (NumberFormatException e) {
+                // ignore
+            }
         }
         return retVal;
     }

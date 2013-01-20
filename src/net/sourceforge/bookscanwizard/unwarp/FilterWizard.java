@@ -345,7 +345,7 @@ public class FilterWizard extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
         static {
-        JAI.getDefaultInstance().getTileCache().setMemoryCapacity(300000000);
+        JAI.getDefaultInstance().getTileCache().setMemoryCapacity(300_000_000);
     }
 
 }

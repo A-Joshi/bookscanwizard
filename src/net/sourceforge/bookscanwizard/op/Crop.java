@@ -68,7 +68,7 @@ public class Crop extends Operation implements CropOp {
     @Override
     public RenderedImage performOperation(FileHolder holder, RenderedImage img) throws Exception {
         double[] args = getScaledArgs();
-        if (args.length != 4) {
+        if (args.length < 4) {
             throw new UserException("Invalid arguments: "+arguments);
         }
         try {

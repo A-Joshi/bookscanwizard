@@ -79,6 +79,7 @@ public class GuiActions extends UserFeedbackHelper {
     @Override
     public void cursorActionPerformed(ActionEvent e) throws Exception {
         String cmd = e.getActionCommand();
+        String key = cmd.split(" ")[0];
         if ("abort".equals(cmd)) {
             bsw.abort();
             return;
@@ -86,148 +87,204 @@ public class GuiActions extends UserFeedbackHelper {
         if (bsw.isRunning()) {
             throw new UserException("A process is running.  Either cancel the process or wait for it to complete before continuing.");
         }
-        if ("new".equals(cmd)) {
-            newBatch();
-        } else if ("preferences".equals(cmd)) {
-            PreferenceWizard wizard = new PreferenceWizard();
-            wizard.getConfig();
-        } else if ("open".equals(cmd)) {
-            bsw.openConfig();
-        } else if ("save".equals(cmd)) {
-            bsw.saveConfig();
-        } else if ("save_as".equals(cmd)) {
-            bsw.saveConfigAs();
-        } else if ("exit".equals(cmd)) {
-            System.exit(0);
-        } else if ("preview".equals(cmd)) {
-            bsw.preview();
-        } else if ("preview_if_not_shift".equals(cmd)) {
-            boolean shift = (e.getModifiers() & InputEvent.SHIFT_MASK) != 0;
-            if (!shift) {
+        
+        String config;
+        int inc;
+        switch (key) {
+            case "about":
+                mainFrame.getAboutDialog().setVisible(true);
+                break;
+            case "add_to_batch":
+                BatchList.getInstance(mainFrame).addItem(bsw.getConfigFile());
+                BatchList.getInstance(mainFrame);
+                break;
+            case "auto_levels":
+                autoLevels(false);
+                break;
+            case "auto_rgb_levels":
+                autoLevels(true);
+                break;
+            case "balanced_normalize_lighting":
+                config = new ConfigBalancedAutoLevels().getConfig(bsw.getConfigImage());
+                insertConfig(config, false, true);
+                break;
+            case "create_script":
+                createScript();
+                break;
+            case "command_helper":
+                mainFrame.getOperationList().setVisible(true);
+                break;
+            case "copy_points_to_viewer":
+                mainFrame.getViewerPanel().setPointDef(bsw.getConfigEntry().getCurrentLineOrSelection());
+                break;
+            case "crop":
+                insertCoordinates("Crop =");
+                break;
+            case "crop_and_scale":
+                cropAndScale();
+                break;
+            case "display_batch_list":
+                BatchList.getInstance(mainFrame);
+                break;
+            case "do_upload":
+                UploadFile uploadFile = ((UploadFile) ((JComponent) e.getSource()).getTopLevelAncestor());
+                bsw.runBatch(mainFrame.getConfigEntry().getText(), new UploadImages(uploadFile));
+                break;
+            case "expand_barcode_operations":
                 bsw.preview();
-            }
-        } else if ("run".equals(cmd)) {
-            bsw.runBatch(mainFrame.getConfigEntry().getText(), null);
-        } else if ("run_batch_list".equals(cmd)) {
-            bsw.runBatchList(BatchList.getInstance(mainFrame).getBatchList());
-        } else if ("previousPage".equals(cmd)) {
-            int inc = ((e.getModifiers() & Event.SHIFT_MASK) != 0) ? 2 : 1;
-            if (mainFrame.getPageListBox().getSelectedIndex() - inc < 0) {
-                throw new UserException("You are at the first image");
-            }
-            mainFrame.getPageListBox().setSelectedIndex(mainFrame.getPageListBox().getSelectedIndex() - inc);
-        } else if ("nextPage".equals(cmd)) {
-            int inc = ((e.getModifiers() & Event.SHIFT_MASK) != 0) ? 2 : 1;
-            if (mainFrame.getPageListBox().getSelectedIndex() + inc >= mainFrame.getPageListBox().getItemCount()) {
-                throw new UserException("You are at the last image");
-            }
-            mainFrame.getPageListBox().setSelectedIndex(mainFrame.getPageListBox().getSelectedIndex() + inc);
-        } else if ("zoomIn".equals(cmd)) {
-            mainFrame.getViewerPanel().multScale(1.5f);
-        } else if ("zoomOut".equals(cmd)) {
-            mainFrame.getViewerPanel().multScale(1f / 1.5F);
-        } else if ("zoom".equals(cmd)) {
-            throw new RuntimeException("not implemented");
-        } else if ("about".equals(cmd)) {
-            mainFrame.getAboutDialog().setVisible(true);
-        } else if ("command_helper".equals(cmd)) {
-            mainFrame.getOperationList().setVisible(true);
-        } else if ("tip_of_the_day".equals(cmd)) {
-            mainFrame.showTipsDialog();
-        } else if ("perspective_and_crop".equals(cmd)) {
-           insertCoordinates("PerspectiveAndCrop =");
-        } else if ("perspective".equals(cmd)){
-            insertCoordinates("Perspective =");
-        } else if ("rotate".equals(cmd)) {
-            insertCoordinates("Rotate =");
-        } else if ("crop".equals(cmd)) {
-            insertCoordinates("Crop =");
-        } else if ("crop_and_scale".equals(cmd)) {
-            cropAndScale();
-        } else if ("whiteout".equals(cmd)) {
-            insertCoordinates("Whiteout =");
-        } else if ("copy_points_to_viewer".equals(cmd)) {
-            mainFrame.getViewerPanel().setPointDef(bsw.getConfigEntry().getCurrentLineOrSelection());
-        } else if ("create_script".equals(cmd)) {
-            createScript();
-        } else if ("auto_levels".equals(cmd)) {
-            autoLevels(false);
-        } else if ("auto_rgb_levels".equals(cmd)) {
-            autoLevels(true);
-        } else if ("gray_card".equals(cmd)) {
-            String config = new ConfigGrayCard().getConfig(bsw.getConfigImage());
-            insertConfig(config, false, true);
-        } else if ("remove_page".equals(cmd)) {
-            removePage();
-        } else if ("white_balance".equals(cmd)) {
-            String config = WhiteBalance.getConfig(bsw.getConfigImage());
-            insertConfig(config, false, true);
-        } else if ("balanced_normalize_lighting".equals(cmd)) {
-            String config = new ConfigBalancedAutoLevels().getConfig(bsw.getConfigImage());
-            insertConfig(config, false, true);
-        } else if ("normalize_lighting".equals(cmd)) {
-            normalizeLighting();
-        } else if ("laser_filter".equals(cmd)) {
-            FilterWizard filterWizard = new FilterWizard();
-            filterWizard.setImage(bsw.getPreviewedImage().getPreviewImage());
-            filterWizard.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-            filterWizard.setVisible(true);
-
-        } else if ("keystone_barcodes".equals(cmd)) {
-            PrintCodes.keystoneCodes();
-        } else if ("print_qr_codes".equals(cmd)) {
-            JDialog dialog = new PrintCodesDialog(mainFrame, false);
-            dialog.setVisible(true);
-        } else if ("metadata".equals(cmd)) {
-            bsw.prepareMetadata();
-        } else if ("upload".equals(cmd)) {
-            UploadFile.upload(this);
-        } else if ("do_upload".equals(cmd)) {
-            UploadFile uploadFile = ((UploadFile)((JComponent) e.getSource()).getTopLevelAncestor());
-            bsw.runBatch(mainFrame.getConfigEntry().getText(), new UploadImages(uploadFile));
-        } else if ("expand_barcode_operations".equals(cmd)) {
-            bsw.preview();
-            insertConfigNoPreview(Barcodes.getConfiguration(), true, false);
-        } else if ("preview_to_cursor".equals(cmd)) {
-            bsw.preview();
-        } else if ("save_dpi".equals(cmd)) {
-            bsw.preview();
-            EstimateDPI.saveFocalLength();
-        } else if ("op EstimateDPI".equals(cmd)) {
-            String dpiInfo = EstimateDPI.getConfig();
-            if (dpiInfo == null) {
-                throw new UserException("No DPI information is saved");
-            }
-            insertConfigNoPreview(dpiInfo, false, false);
-        } else if (cmd.startsWith("op ")) {
-            insertConfigNoPreview(cmd.substring(3)+" = ", false, true);
-        } else if (cmd.equals("thumb_checkbox")) {
-            mainFrame.getThumbTable().update();
-        } else if (cmd.equals("thumb_select")) {
-            FileHolder h = mainFrame.getThumbTable().getSelectedHolder();
-            System.out.println("sel: "+h+" "+h.isDeleted());
-            bsw.getPreviewedImage().setFileHolder(h);
-        } else if (cmd.equals("thumb_insert")) {
-            String text = "Pages = " + mainFrame.getThumbTable().calcPageConfig();
-           insertConfigNoPreview(text, false, false);
-        } else if (cmd.equals("thumb_copy")) {
-            String page = "Pages = " + mainFrame.getThumbTable().calcPageConfig();
-            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-            StringSelection data = new StringSelection(page);
-            clipboard.setContents(data, data);
-        } else if (cmd.equals("thumb_remove_pages")) {
-            String text ="RemovePages = "+bsw.getMainFrame().getThumbTable().calcPageConfig(); 
-             insertConfigNoPreview(text, false, true);
-        } else if (cmd.equals("import_monitor")) {
-            ImportImages.getInstance().setVisible(true);
-            ImportImages.getInstance().requestFocus();
-        } else if (cmd.equals("add_to_batch")) {
-            BatchList.getInstance(mainFrame).addItem(bsw.getConfigFile());
-            BatchList.getInstance(mainFrame);
-        } else if (cmd.equals("display_batch_list")) {
-            BatchList.getInstance(mainFrame);
-        } else {
-            throw new UserException("Unknown action type: " + cmd);
+                insertConfigNoPreview(Barcodes.getConfiguration(), true, false);
+                break;
+            case "exit":
+                System.exit(0);
+                break;
+            case "gray_card":
+                config = new ConfigGrayCard().getConfig(bsw.getConfigImage());
+                insertConfig(config, false, true);
+                break;
+            case "insert_config":
+                String insertText = cmd.substring(cmd.indexOf(" ")+1);
+                insertConfigNoPreview(insertText, false, true);
+                break;
+            case "import_monitor":
+                ImportImages.getInstance().setVisible(true);
+                ImportImages.getInstance().requestFocus();
+                break;
+            case "keystone_barcodes":
+                PrintCodes.keystoneCodes();
+                break;
+            case "laser_filter":
+                FilterWizard filterWizard = new FilterWizard();
+                filterWizard.setImage(bsw.getPreviewedImage().getPreviewImage());
+                filterWizard.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+                filterWizard.setVisible(true);
+                break;
+            case "metadata":
+                bsw.prepareMetadata();
+                break;
+            case "new":
+                newBatch();
+                break;
+            case "nextPage":
+                inc = ((e.getModifiers() & Event.SHIFT_MASK) != 0) ? 2 : 1;
+                if (mainFrame.getPageListBox().getSelectedIndex() + inc >= mainFrame.getPageListBox().getItemCount()) {
+                    throw new UserException("You are at the last image");
+                }
+                mainFrame.getPageListBox().setSelectedIndex(mainFrame.getPageListBox().getSelectedIndex() + inc);
+                break;
+            case "normalize_lighting":
+                normalizeLighting();
+            case "op":
+                if (cmd.equals("op EstimateDPI")) {
+                    String dpiInfo = EstimateDPI.getConfig();
+                    if (dpiInfo == null) {
+                        throw new UserException("No DPI information is saved");
+                    }
+                    insertConfigNoPreview(dpiInfo, false, false);
+                } else {
+                    insertConfigNoPreview(cmd.substring(3) + " = ", false, true);
+                }
+                break;
+            case "open":
+                bsw.openConfig();
+                break;
+            case "perspective":
+                insertCoordinates("Perspective =");
+                break;
+            case "perspective_and_crop":
+                insertCoordinates("PerspectiveAndCrop =");
+                break;
+            case "preferences":
+                PreferenceWizard wizard = new PreferenceWizard();
+                wizard.getConfig();
+                break;
+            case "preview":
+                bsw.preview();
+                break;
+            case "preview_if_not_shift":
+                boolean shift = (e.getModifiers() & InputEvent.SHIFT_MASK) != 0;
+                if (!shift) {
+                    bsw.preview();
+                }
+                break;
+            case "preview_to_cursor":
+                bsw.preview();
+                break;
+            case "previousPage":
+                inc = ((e.getModifiers() & Event.SHIFT_MASK) != 0) ? 2 : 1;
+                if (mainFrame.getPageListBox().getSelectedIndex() - inc < 0) {
+                    throw new UserException("You are at the first image");
+                }
+                mainFrame.getPageListBox().setSelectedIndex(mainFrame.getPageListBox().getSelectedIndex() - inc);
+                break;
+            case "print_qr_codes":
+                JDialog dialog = new PrintCodesDialog(mainFrame, false);
+                dialog.setVisible(true);
+                break;
+            case "remove_page":
+                removePage();
+                break;
+            case "rotate":
+                insertCoordinates("Rotate =");
+                break;
+            case "run":
+                bsw.runBatch(mainFrame.getConfigEntry().getText(), null);
+                break;
+            case "run_batch_list":
+                bsw.runBatchList(BatchList.getInstance(mainFrame).getBatchList());
+                break;
+            case "save":
+                bsw.saveConfig();
+                break;
+            case "save_as":
+                bsw.saveConfigAs();
+                break;
+            case "save_dpi":
+                bsw.preview();
+                EstimateDPI.saveFocalLength();
+                break;
+            case "thumb_checkbox":
+                mainFrame.getThumbTable().update();
+                break;
+            case "thumb_copy":
+                String page = "Pages = " + mainFrame.getThumbTable().calcPageConfig();
+                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                StringSelection data = new StringSelection(page);
+                clipboard.setContents(data, data);
+                break;
+            case "thumb_insert":
+                String text = "Pages = " + mainFrame.getThumbTable().calcPageConfig();
+                insertConfigNoPreview(text, false, false);
+                break;
+            case "thumb_remove_pages":
+                text ="RemovePages = "+bsw.getMainFrame().getThumbTable().calcPageConfig(); 
+                insertConfigNoPreview(text, false, true);
+                break;
+             case "thumb_select":
+                FileHolder h = mainFrame.getThumbTable().getSelectedHolder();
+                System.out.println("sel: " + h + " " + h.isDeleted());
+                bsw.getPreviewedImage().setFileHolder(h);
+                break;
+            case "tip_of_the_day":
+                mainFrame.showTipsDialog();
+                break;
+            case "upload":
+                UploadFile.upload(this);
+                break;
+            case "zoomIn":
+                mainFrame.getViewerPanel().multScale(1.5f);
+                break;
+            case "zoomOut":
+                mainFrame.getViewerPanel().multScale(1f / 1.5F);
+                break;
+            case "white_balance":
+                config = WhiteBalance.getConfig(bsw.getConfigImage());
+                insertConfig(config, false, true);
+                break;
+            case "whiteout":
+                insertCoordinates("Whiteout =");
+                break;
+            default:
+                throw new UserException("Unknown action type: " + cmd);
         }
     }
 

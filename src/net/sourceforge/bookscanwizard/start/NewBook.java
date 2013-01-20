@@ -133,6 +133,7 @@ public class NewBook {
                        "Color=bw 60\n\n");
         }
         str.append("# *** Scaling ***\n");
+        str.append("Pages = all\n");
         String dpi = (String) settings.get(DESTINATION_DPI);
         dpi = dpi.replace("Keep Source DPI", "0");
         if (!dpi.equals("0")) {
@@ -150,7 +151,7 @@ public class NewBook {
             compression = "";
         }
         if (imagetype.equals("PDF")) {
-            str.append("CreatePDF = output/processed.pdf\n");
+            str.append("CreatePDF = ").append(BSW.getCurrentDirectory().getName()).append(".pdf\n");
         } else {
             str.append("SaveImages = ").append(imagetype).append(" ").append(compression).append("\n\n");
         }

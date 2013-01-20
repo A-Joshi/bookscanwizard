@@ -19,6 +19,7 @@ package net.sourceforge.bookscanwizard.gui;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
@@ -160,12 +161,13 @@ public class OperationList extends JFrame {
                 if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2){
                     if (table.getSelectedRow() >=0) {
                         OpDefinition def = defs.get(table.getSelectedRow());
-                        ConfigEntry entry = BSW.instance().getConfigEntry();
-                        int start = entry.getSelectionStart();
-                        BSW.instance().getConfigEntry().insertCommand(def);
-                        entry.setSelectionStart(start);
-                        entry.setSelectionEnd(start + def.toString().length());
-                        entry.requestFocus();
+                        String command = "insert_config "+def.getExample().trim()+"\n";
+                        ActionEvent event = new ActionEvent(e.getSource(), e.getID(), command);
+                        try {
+                            BSW.instance().getMenuHandler().cursorActionPerformed(event);
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
                     }
                 }
             }

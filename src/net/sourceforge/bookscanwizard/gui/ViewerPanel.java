@@ -621,11 +621,17 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
         Matcher matcher = Operation.ARG_PATTERN.matcher(currentLine);
         String[] points = Operation.getArgs(matcher);
         scaledPoints.clear();
+        registrationPoints.clear();
+        List<Point2D> currentPoints = scaledPoints;
         for (int i=0; i < points.length; i++) {
+            if (points[i].equals("reg:")) {
+                currentPoints = registrationPoints;
+                continue;
+            }
             try {
                 double x = Double.parseDouble(points[i]);
                 double y = Double.parseDouble(points[++i]);
-                scaledPoints.add(new Point2D.Double(x, y));
+                currentPoints.add(new Point2D.Double(x, y));
             } catch (Exception e) {
                 continue;
             }
@@ -673,9 +679,16 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
             str.append(Math.round(pt.getX())).append(",").append(Math.round(pt.getY())).append(", ");
         }
         str.setLength(str.length() - 2);
+        if (registrationPoints.size()> 0) {
+            str.append(" reg: ");
+            for (Point2D pt :registrationPoints) {
+                str.append(Math.round(pt.getX())).append(",").append(Math.round(pt.getY())).append(", ");
+            }
+            str.setLength(str.length() - 2);
+        }
         return str.toString();
     }
-    
+
     private boolean isPointInside(Point2D scaledPoint) {
         if (scaledPoints.size() == 2) {
             Rectangle2D r = new Rectangle2D.Double(scaledPoints.get(0).getX(), scaledPoints.get(0).getY(),0,0);

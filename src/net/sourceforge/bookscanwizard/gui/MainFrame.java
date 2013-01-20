@@ -263,36 +263,37 @@ public final class MainFrame extends JFrame {
 
         JMenu batchMenu = new JMenu("Batch");
         batchMenu.setMnemonic(KeyEvent.VK_B);
-        menuBar.add(batchMenu);
 
+        menuBar.add(batchMenu);
         menuItem = new JMenuItem("Import Monitor");
         menuItem.setMnemonic(KeyEvent.VK_I);
         menuItem.setToolTipText("This will monitor a directory for new books.");
         menuItem.setActionCommand("import_monitor");
         menuItem.addActionListener(menuHandler);
         batchMenu.add(menuItem);
-        
-        menuItem = new JMenuItem("Add to Batch");
-        menuItem.setMnemonic(KeyEvent.VK_A);
-        menuItem.setToolTipText("This will add the current book to the list to be converted");
-        menuItem.setActionCommand("add_to_batch");
-        menuItem.addActionListener(menuHandler);
-        batchMenu.add(menuItem);
-        
-        menuItem = new JMenuItem("Display batch list");
-        menuItem.setMnemonic(KeyEvent.VK_D);
-        menuItem.setToolTipText("This will display the books to be converted");
-        menuItem.setActionCommand("display_batch_list");
-        menuItem.addActionListener(menuHandler);
-        batchMenu.add(menuItem);
-        
-        menuItem = new JMenuItem("Start batch processing");
-        menuItem.setMnemonic(KeyEvent.VK_S);
-        menuItem.setToolTipText("This will start the queued batch requests");
-        menuItem.setActionCommand("start_batch_processing");
-        menuItem.addActionListener(menuHandler);
-        batchMenu.add(menuItem);
-        
+
+        if (BSW.EXPERIMENTAL) {
+            menuItem = new JMenuItem("Add to Batch");
+            menuItem.setMnemonic(KeyEvent.VK_A);
+            menuItem.setToolTipText("This will add the current book to the list to be converted");
+            menuItem.setActionCommand("add_to_batch");
+            menuItem.addActionListener(menuHandler);
+            batchMenu.add(menuItem);
+
+            menuItem = new JMenuItem("Display batch list");
+            menuItem.setMnemonic(KeyEvent.VK_D);
+            menuItem.setToolTipText("This will display the books to be converted");
+            menuItem.setActionCommand("display_batch_list");
+            menuItem.addActionListener(menuHandler);
+            batchMenu.add(menuItem);
+
+            menuItem = new JMenuItem("Start batch processing");
+            menuItem.setMnemonic(KeyEvent.VK_S);
+            menuItem.setToolTipText("This will start the queued batch requests");
+            menuItem.setActionCommand("start_batch_processing");
+            menuItem.addActionListener(menuHandler);
+            batchMenu.add(menuItem);
+        }
         
         JMenu toolsMenu = new JMenu("Tools");
         toolsMenu.setMnemonic(KeyEvent.VK_T);
