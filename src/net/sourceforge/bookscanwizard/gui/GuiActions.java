@@ -67,6 +67,7 @@ import net.sourceforge.bookscanwizard.util.ProcessHelper;
 public class GuiActions extends UserFeedbackHelper {
     private final BSW bsw;
     MainFrame mainFrame;
+    private FilterToolkit filterToolkit;
 
     public GuiActions(BSW bsw) {
         this.bsw = bsw;
@@ -137,6 +138,13 @@ public class GuiActions extends UserFeedbackHelper {
             case "exit":
                 System.exit(0);
                 break;
+            case "filter_toolkit":
+                if (filterToolkit == null) {
+                    filterToolkit = new FilterToolkit(mainFrame);
+                }
+                filterToolkit.setVisible(true);
+                filterToolkit.requestFocus();
+                break;
             case "gray_card":
                 config = new ConfigGrayCard().getConfig(bsw.getConfigImage());
                 insertConfig(config, false, true);
@@ -173,6 +181,7 @@ public class GuiActions extends UserFeedbackHelper {
                 break;
             case "normalize_lighting":
                 normalizeLighting();
+                break;
             case "op":
                 if (cmd.equals("op EstimateDPI")) {
                     String dpiInfo = EstimateDPI.getConfig();

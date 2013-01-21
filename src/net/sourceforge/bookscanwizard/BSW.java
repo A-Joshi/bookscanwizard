@@ -77,9 +77,9 @@ public class BSW {
     public static final RenderingHints QUALITY_HINTS = new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
     public static final RenderingHints SPEED_HINTS = new RenderingHints(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
     private static BSW instance;
-    private static Path currentDirectory = new File(".").getAbsoluteFile().getParentFile().toPath();
+    private static Path currentDirectory = new File(".").getAbsoluteFile().toPath();
     private static TileCache tileCache;
-
+ 
     public static double getPreviewScale() {
         return 1;
     }

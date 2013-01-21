@@ -872,4 +872,7 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
         } catch( OutOfMemoryError e ) {
         }
     }
+    
+    
+    
 }

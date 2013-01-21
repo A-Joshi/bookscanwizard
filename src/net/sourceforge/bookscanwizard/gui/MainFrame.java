@@ -361,8 +361,8 @@ public final class MainFrame extends JFrame {
             }
         });
         toolsMenu.add(horizontalLayout);
-// TODO:  get preferences worcking.
         if (BSW.EXPERIMENTAL) {
+            // TODO:  get preferences worcking.
             menuItem = new JMenuItem("Preferences");
             menuItem.setMnemonic(KeyEvent.VK_P);
             menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
@@ -376,7 +376,13 @@ public final class MainFrame extends JFrame {
             menuItem.setActionCommand("laser_filter");
             menuItem.addActionListener(menuHandler);
             toolsMenu.add(menuItem);
-            toolsMenu.add(new JSeparator());
+
+            menuItem = new JMenuItem("Filter Toolkit");
+            menuItem.setMnemonic(KeyEvent.VK_F);
+            menuItem.setToolTipText("A dialog for interactively changing filter settings");
+            menuItem.setActionCommand("filter_toolkit");
+            menuItem.addActionListener(menuHandler);
+            toolsMenu.add(menuItem);
         }
 
         toolsMenu.add(new JSeparator());
