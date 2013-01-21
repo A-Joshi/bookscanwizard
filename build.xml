@@ -10,6 +10,9 @@
 <project name="Book_Scan_Wizard" default="default" basedir=".">
     <description>Builds, tests, and runs the project Book Scan Wizard.</description>
     <import file="nbproject/build-impl.xml"/>
+
+    <target name="all" depends = "default"/>
+
     <!--
 
     There exist several targets which are by default empty and which can be 
@@ -72,7 +75,7 @@
 
     -->
     <target name="genkey">
-        <genkey alias="bsw" storepass="secret" >
+        <genkey alias="bsw" storepass="secret" validity="730" >
           <dname>
             <param name="CN" value="bookscanwizard.sourceforge.net"/>
             <param name="O"  value="Steve Devore"/>
@@ -84,8 +87,8 @@
     <target name="package">
         <mkdir dir="package/bin"/>
         <zip destfile="package/bin/BookScanWizard.jar" duplicate="preserve">
-            <zipgroupfileset dir="dist" includes="*.jar"/>
-            <zipgroupfileset dir="dist/lib" includes="*.jar"/>
+            <zipgroupfileset dir="dist" includes="*.jar" excludes="jai*.jar,clib*.jar,mlib*.jar" />
+            <zipgroupfileset dir="dist/lib" includes="*.jar" excludes="jai*.jar,clib*.jar,mlib*.jar"/>
         </zip>
         <signjar jar="package/bin/BookScanWizard.jar" alias="bsw" storepass="secret"/>
         <copy todir="package/bin">
@@ -99,8 +102,15 @@
         <copy todir="package/example/">
             <fileset dir="examples/basic"/>
         </copy>
-        <zip destfile="BookScanWizard_1.0_RC1.zip">
+        <zip destfile="BookScanWizard_2.0beta1.zip">
             <fileset dir="package"/>
         </zip>
+    </target>
+   <target name="jaijars">
+        <signjar alias="bsw" storepass="secret" force="true" lazy="false">
+            <path>
+                <fileset dir="X:\wwwroot\webstart\release" includes="**/*.jar"/>
+            </path>
+        </signjar>
     </target>
 </project>

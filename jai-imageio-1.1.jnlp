@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<jnlp spec="1.0+" codebase="http://bookscanwizard.sourceforge.net/webstart/release/" >
+  <information>
+     <title>Java Advanced Imaging Image I/O Tools 1.1</title>
+     <vendor>Sun Microsystems Inc.</vendor>
+     <homepage href="http://jai-imageio.dev.java.net"/>
+     <description>Java Advanced Imaging Image I/O Tools</description>
+     <offline-allowed/>
+  </information>
+
+  <security>
+    <all-permissions/>
+  </security>
+
+  <resources os="Windows">
+    <jar href="1.1/windows-i586/jai_imageio.jar" download="eager"/>
+    <jar href="1.1/windows-i586/clibwrapper_jiio.jar" download="eager"/>
+
+    <nativelib href="1.1/windows-i586/clib_jiio.dll.jar" download="eager"/>
+    <nativelib href="1.1/windows-i586/clib_jiio_sse2.dll.jar" download="eager"/>
+    <nativelib href="1.1/windows-i586/clib_jiio_util.dll.jar" download="eager"/>
+  </resources>
+
+  <resources os="Linux" arch="i386">
+    <jar href="1.1/linux-i586/jai_imageio.jar" download="eager"/>
+    <jar href="1.1/linux-i586/clibwrapper_jiio.jar" download="eager"/>
+
+    <nativelib href="1.1/linux-i586/libclib_jiio.so.jar" download="eager"/>
+  </resources>
+
+  <resources os="SunOS" arch="sparc">
+    <jar href="1.1/solaris-sparc/jai_imageio.jar" download="eager"/>
+    <jar href="1.1/solaris-sparc/clibwrapper_jiio.jar" download="eager"/>
+
+    <nativelib href="1.1/solaris-sparc/libclib_jiio.so.jar" download="eager"/>
+    <nativelib href="1.1/solaris-sparc/libclib_jiio_vis.so.jar" download="eager"/>
+    <nativelib href="1.1/solaris-sparc/libclib_jiio_vis2.so.jar" download="eager"/>
+  </resources>
+
+  <resources os="SunOS" arch="x86">
+    <jar href="1.1/solaris-i586/jai_imageio.jar" download="eager"/>
+    <jar href="1.1/solaris-i586/clibwrapper_jiio.jar" download="eager"/>
+
+    <nativelib href="1.1/solaris-i586/libclib_jiio.so.jar" download="eager"/>
+  </resources>
+
+  <resources>
+    <jar href="1.1/solaris-sparc/jai_imageio.jar" download="eager"/>
+  </resources>
+
+  <component-desc />
+</jnlp>

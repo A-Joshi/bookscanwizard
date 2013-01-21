@@ -67,7 +67,6 @@ import net.sourceforge.bookscanwizard.util.ProcessHelper;
 public class GuiActions extends UserFeedbackHelper {
     private final BSW bsw;
     MainFrame mainFrame;
-    private FilterToolkit filterToolkit;
 
     public GuiActions(BSW bsw) {
         this.bsw = bsw;
@@ -139,11 +138,7 @@ public class GuiActions extends UserFeedbackHelper {
                 System.exit(0);
                 break;
             case "filter_toolkit":
-                if (filterToolkit == null) {
-                    filterToolkit = new FilterToolkit(mainFrame);
-                }
-                filterToolkit.setVisible(true);
-                filterToolkit.requestFocus();
+                mainFrame.showFilterDialog();
                 break;
             case "gray_card":
                 config = new ConfigGrayCard().getConfig(bsw.getConfigImage());
@@ -250,6 +245,9 @@ public class GuiActions extends UserFeedbackHelper {
             case "save_dpi":
                 bsw.preview();
                 EstimateDPI.saveFocalLength();
+                break;
+            case "save_filter":
+                insertConfig(mainFrame.getFilterDialog().getConfig(), false, true);
                 break;
             case "thumb_checkbox":
                 mainFrame.getThumbTable().update();

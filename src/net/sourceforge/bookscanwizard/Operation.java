@@ -42,7 +42,7 @@ import net.sourceforge.bookscanwizard.util.ImageUtilities;
  * The master Operation type
  */
 abstract public class Operation {
-    public static int GRAY_STANDARD = 100;
+    public static final int GRAY_STANDARD = 100;
 
     /**
      * The operation should be followed by an =, but a : or a space are also valid.

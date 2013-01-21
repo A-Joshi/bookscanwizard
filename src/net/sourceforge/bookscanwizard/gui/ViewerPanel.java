@@ -30,6 +30,7 @@ import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.ClipboardOwner;
@@ -52,11 +53,17 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
+import java.awt.image.RenderedImage;
+import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
+import javax.media.jai.JAI;
 import javax.media.jai.PerspectiveTransform;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
@@ -69,8 +76,11 @@ import javax.swing.KeyStroke;
 import javax.swing.TransferHandler;
 import net.sourceforge.bookscanwizard.BSW;
 import net.sourceforge.bookscanwizard.Operation;
+import net.sourceforge.bookscanwizard.op.Gamma;
+import net.sourceforge.bookscanwizard.op.Saturation;
 import net.sourceforge.bookscanwizard.util.Fraction;
 import net.sourceforge.bookscanwizard.util.Interpolate;
+import net.sourceforge.bookscanwizard.util.Utils;
 
 /**
  * A panel to display the current image, as well as code to select the
@@ -93,9 +103,15 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
     private Interpolate sliderInterpolate = new Interpolate(-1000, Math.log(.05), 1000, Math.log(2));
     private Point lastViewportPoint;
     private boolean suppressClick;
-
+    private double lastRenderedZoom = -1;
+    private RenderedImage lastRenderedImage;
+    private AtomicBoolean dirty = new AtomicBoolean();
+    private AtomicBoolean processing = new AtomicBoolean();
+    
+    
     private boolean isInDrag;
     private static final double INCHES_TO_MM = 25.4;
+    private RenderedImage postRenderedImage;
     
 
     public ViewerPanel(final ActionListener menuHandler) {
@@ -352,6 +368,7 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
     public void setPostScale(double postScale) {
         if (postScale != this.postScale) {
             this.postScale = postScale;
+            dirty.set(true);
             repaint();
             BSW.instance().getMainFrame().getSlider().setValue(getSliderValue());
         }
@@ -369,6 +386,12 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
     void setSliderValue(int value) {
         double scale = Math.exp(sliderInterpolate.interpolate(value));
         setPostScale(scale);
+    }
+
+    void updateImage() {
+        lastRenderedZoom = -1;
+        dirty.set(true);
+        repaint();
     }
     
     private static class PopupItem extends JMenuItem {
@@ -731,15 +754,15 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
 
     private Point2D getScaledPoint(Point pt) {
         double scale = postScale;
-        double x = (pt.x - getOrigin().x) / scale;
-        double y = (pt.y - getOrigin().y) / scale;
+        double x = pt.x / scale - getOrigin().x;
+        double y = pt.y / scale - getOrigin().y;
         return new Point2D.Double(x, y);
     }
 
     private Point getImagePoint(Point2D pt) {
         double scale = postScale;
-        int x = (int) Math.round((pt.getX() * scale + getOrigin().x));
-        int y = (int) Math.round((pt.getY() * scale + getOrigin().y));
+        int x = (int) Math.round((pt.getX() +getOrigin().x) * scale);
+        int y = (int) Math.round((pt.getY() +getOrigin().y) * scale);
         return new Point(x, y);
     }
 
@@ -863,16 +886,104 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
         Insets insets = getInsets();
         int tx = insets.left + originX;
         int ty = insets.top  + originY;
+        if (BSW.instance().getMainFrame().getFilterDialog() == null) {
+            dirty.set(false);
+            // Translation moves the entire image within the container
+            try {
+                AffineTransform tr = AffineTransform.getScaleInstance(postScale, postScale);
+                tr.translate(tx, ty);
+                g2d.drawRenderedImage(source, tr);
+            } catch( OutOfMemoryError e ) {
+            }
+        } else {
+            g2d.drawRenderedImage(postRenderedImage,
+                                  AffineTransform.getTranslateInstance(tx, ty));
+            updatePostImage();
+        }
+    }
 
-        // Translation moves the entire image within the container
-        try {
-            AffineTransform tr = AffineTransform.getScaleInstance(postScale, postScale);
-            tr.translate(tx, ty);
-            g2d.drawRenderedImage(source, tr);
-        } catch( OutOfMemoryError e ) {
+    @Override
+    public void set(RenderedImage im) {
+        lastRenderedZoom = -1;
+        dirty.set(true);
+//        setOrigin(0,0);
+        super.set(im);
+    }
+    
+    private void updatePostImage() {
+        if (dirty.get()) {
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    if (processing.compareAndSet(false, true)) {
+                        dirty.set(false);
+                        if (postScale != lastRenderedZoom) {
+                            int width = (int) (postScale * source.getWidth());
+                            int height = (int) (postScale * source.getHeight());
+                            RenderedImage img = Utils.getScaledInstance(source, width, height, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+//                            lastRenderedImage = Utils.renderedToBuffered(img);
+                            lastRenderedImage = img;
+                        }
+                        RenderedImage img = lastRenderedImage;
+                        postRenderedImage = rescale(img);
+                        processing.set(false);
+                        dirty.set(false);
+                        ViewerPanel.this.repaint();
+                    }
+                }
+            });
+            thread.start();
         }
     }
     
+    private RenderedImage rescale(RenderedImage img) {
+        FilterDialog filterDialog = BSW.instance().getMainFrame().getFilterDialog();
+        if (filterDialog == null) {
+            return img;
+        }
+        double[][] levels = filterDialog.getLevels();
+        double[] whiteLevel = levels[0];
+        double[] blackLevel = levels[1];
+        double[] gamma = levels[2];
+        double saturation = levels[3][0];
+        if (whiteLevel[0] < 100 || whiteLevel[1] < 100 || whiteLevel[2] < 100 || blackLevel[0] > 0 || blackLevel[1] > 0 || blackLevel[2] > 0) {
+            adjust(whiteLevel);
+            adjust(blackLevel);
+            double[] scale = new double[3];
+            double[] offset = new double[3];
+            for (int i=0; i < 3; i++) {
+                scale[i] = 255D / (whiteLevel[i] - blackLevel[i]);
+                offset[i] = 255D * blackLevel[i] / (blackLevel[i] - whiteLevel[i]);
+            }
+            ParameterBlock pb = new ParameterBlock();
+            pb.addSource(img);
+            pb.add(scale);
+            pb.add(offset);
+            img = JAI.create("rescale", pb);
+        }
+        if (Math.abs(gamma[0] - 50) > .1 || Math.abs(gamma[1] - 50) > .1 || Math.abs(gamma[2] - 50) > .1) {
+            for (int i=0; i < 3; i++) {
+                gamma[i] = 255D - gamma[i]*255D/100D;
+            }
+            img = Gamma.performGamma(img, gamma);
+        }
+        if (saturation != 100) {
+            ParameterBlock pb = new ParameterBlock();
+            pb.addSource(img);
+            pb.add(DataBuffer.TYPE_BYTE);
+            img = JAI.create("format",pb);             
+            try {
+                img = Saturation.changeSaturation(img, saturation / 100);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return img;
+    }
     
-    
+    private static void adjust(double[] values) {
+        for (int i=0; i < values.length; i++) {
+            values[i] = values[i] * 255D / 100D;
+        }
+    }
 }

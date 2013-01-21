@@ -32,6 +32,12 @@ import net.sourceforge.bookscanwizard.Operation;
 public class Gamma extends Operation implements ColorOp {
     private static final Logger logger = Logger.getLogger(Gamma.class.getName());
 
+    private static final int MID_POINT = 127;
+    /**
+     *  The maximum gamma value that this will calculate
+     */
+    private static final double MAX_GUESS = 10;
+
     private byte[][] gammaTable = null;
     
     @Override
@@ -39,14 +45,9 @@ public class Gamma extends Operation implements ColorOp {
         if (gammaTable == null) {
             int bands = getArgs().length;
             gammaTable = new byte[bands][];
-            double avg =0;
-            for (int i=0; i < bands; i++) {
-                avg+= getArgs()[i];
-            }
-            avg /= bands;
             for (int i = 0; i < bands; i++) {
                 double original = getArgs()[i] * 255 / 100;
-                double gamma = calcAdjustment(original, GRAY_STANDARD);
+                double gamma = calcAdjustment(original, MID_POINT);
                 logger.log(Level.INFO, "gamma: {0} {1} {2}", new Object[]{original, gamma, adjust(original, gamma)});
                 byte[] gammaRow = new byte[256];
                 for (int j = 0; j <= 255; j++) {
@@ -60,12 +61,28 @@ public class Gamma extends Operation implements ColorOp {
         return img;
     }
 
-    public int adjust(double value, double gamma) {
+    public static int adjust(double value, double gamma) {
         return (int) Math.round(Math.pow(value / 255.0D, 1.0D / gamma) * 255.0D);
     }
+    
+    public static RenderedImage performGamma(RenderedImage img, double[] targetValues) {
+        byte[][] localGammaTable = new byte[targetValues.length][];
+        for (int i = 0; i < targetValues.length; i++) {
+            double original = targetValues[i];
+            double gamma = calcAdjustment(original, MID_POINT);
+            byte[] gammaRow = new byte[256];
+            for (int j = 0; j <= 255; j++) {
+                gammaRow[j] = (byte) Math.round(adjust(j, gamma));
+            }
+            localGammaTable[i] = gammaRow;
+        }
+        LookupTableJAI table = new LookupTableJAI(localGammaTable);
+        img = JAI.create("lookup", img, table);
+        return img;
+    }
 
-    public double calcAdjustment(double originalValue, int targetValue) {
-        double guess = 5.0D;
+    public static double calcAdjustment(double originalValue, int targetValue) {
+        double guess = MAX_GUESS;
         double mult = guess;
         while (mult > 0.000001D) {
             int test = adjust(originalValue, guess);
@@ -78,6 +95,6 @@ public class Gamma extends Operation implements ColorOp {
             }
             mult /= 2.0D;
         }
-        return guess > 5.0D ? 10.0D : 0.0D;
+        return guess > MAX_GUESS ? MAX_GUESS : 0.0D;
     }
 }

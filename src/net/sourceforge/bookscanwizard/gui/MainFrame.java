@@ -131,6 +131,7 @@ public final class MainFrame extends JFrame {
 
     private final JSlider slider;
     private final TipsDialog tipsDialog;
+    private FilterDialog filterDialog;
 
     public MainFrame(final ActionListener menuHandler) {
         super("Book Scan Wizard");
@@ -377,7 +378,7 @@ public final class MainFrame extends JFrame {
             menuItem.addActionListener(menuHandler);
             toolsMenu.add(menuItem);
 
-            menuItem = new JMenuItem("Filter Toolkit");
+            menuItem = new JMenuItem("Filter Dialog");
             menuItem.setMnemonic(KeyEvent.VK_F);
             menuItem.setToolTipText("A dialog for interactively changing filter settings");
             menuItem.setActionCommand("filter_toolkit");
@@ -873,5 +874,22 @@ public final class MainFrame extends JFrame {
     
     public TipsDialog getTipsDialog() {
         return tipsDialog;
+    }
+    
+    public void showFilterDialog() {
+        if (filterDialog == null) {
+            filterDialog = new FilterDialog(this);
+        }
+        filterDialog.setVisible(true);
+        filterDialog.requestFocus();
+        
+    }
+
+    public FilterDialog getFilterDialog() {
+        return filterDialog;
+    }
+    
+    public void removeFilterDialog() {
+        filterDialog = null;
     }
 }

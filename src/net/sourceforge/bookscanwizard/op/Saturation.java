@@ -30,7 +30,6 @@ import net.sourceforge.bookscanwizard.ColorOp;
 import net.sourceforge.bookscanwizard.FileHolder;
 import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.util.FixedIHSColorSpace;
-import net.sourceforge.bookscanwizard.util.Utils;
 
 /**
  * Increase or decrease the saturation of the images.
@@ -45,7 +44,6 @@ public class Saturation extends Operation implements ColorOp {
 
     public static RenderedImage changeSaturation(RenderedImage img, double saturation) {
         ColorModel oldModel = img.getColorModel();
-        img = Utils.renderedToBuffered(img);
         FixedIHSColorSpace ihs = FixedIHSColorSpace.getInstance();
         ColorModel ihsColorModel = new ComponentColorModel(ihs, new int[]{8, 8, 8}, false, false, Transparency.OPAQUE, DataBuffer.TYPE_BYTE);
         ParameterBlock pb = new ParameterBlock();
