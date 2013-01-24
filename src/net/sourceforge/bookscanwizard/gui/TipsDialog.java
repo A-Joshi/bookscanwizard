@@ -94,7 +94,6 @@ public class TipsDialog extends javax.swing.JDialog {
         jTextArea1 = new javax.swing.JTextPane();
 
         setTitle("Tip of the Day");
-        setAlwaysOnTop(true);
 
         showOnStartup.setText("Show on startup");
 

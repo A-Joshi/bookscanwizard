@@ -86,9 +86,9 @@
 
     <target name="package">
         <mkdir dir="package/bin"/>
-        <zip destfile="package/bin/BookScanWizard.jar" duplicate="preserve">
-            <zipgroupfileset dir="dist" includes="*.jar" excludes="jai*.jar,clib*.jar,mlib*.jar" />
-            <zipgroupfileset dir="dist/lib" includes="*.jar" excludes="jai*.jar,clib*.jar,mlib*.jar"/>
+       <zip destfile="package/bin/BookScanWizard.jar" duplicate="preserve" >
+            <zipfileset src="dist/BookScanWizard.jar" excludes="META-INF/INDEX.LIST"/>
+            <zipgroupfileset dir="dist/lib" includes="*.jar" excludes="jai*.jar,clib*.jar,mlib*.jar"/>  
         </zip>
         <signjar jar="package/bin/BookScanWizard.jar" alias="bsw" storepass="secret"/>
         <copy todir="package/bin">
@@ -109,7 +109,7 @@
    <target name="jaijars">
         <signjar alias="bsw" storepass="secret" force="true" lazy="false">
             <path>
-                <fileset dir="X:\wwwroot\webstart\release" includes="**/*.jar"/>
+                <fileset dir="Y:\wwwroot\webstart\release" includes="**/*.jar"/>
             </path>
         </signjar>
     </target>

@@ -53,7 +53,6 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
@@ -124,6 +123,7 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
         plus.lineTo(0, 5);
         setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
         MouseAdapter mouseListener = new MouseAdapter() {
+            private Boolean pan;
 
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -169,6 +169,7 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
                 lastPoint = e.getPoint();
                 lastPressPoint = e.getPoint();
                 lastViewportPoint = e.getPoint();
+                pan = null;
             }
             
             @Override
@@ -183,7 +184,6 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
                 isInDrag = true;
                 boolean suppressDragImage = false;
                 if (scaledPoints.size() > 1) {
-                    boolean pan = false;
                     Point sPoint = new Point(e.getX(), e.getY());
                     Point2D scaledPoint = getScaledPoint(sPoint);
                     Point2D nearest = getNearest(scaledPoint);
@@ -215,10 +215,12 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
                             nearest.setLocation(scaledPoint);
                             suppressDragImage = true;
                         } else {
-                            pan = isPointInside(scaledPoint);
+                            if (pan == null) {
+                                pan = isPointInside(scaledPoint);
+                            }
                         }
                     }
-                    if (pan) {
+                    if (Boolean.TRUE.equals(pan)) {
                         int xOffset = e.getX() - lastPoint.x;
                         int yOffset = e.getY() - lastPoint.y;
                         for (Point2D sp : scaledPoints) {

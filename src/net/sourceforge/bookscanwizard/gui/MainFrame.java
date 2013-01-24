@@ -378,13 +378,14 @@ public final class MainFrame extends JFrame {
             menuItem.addActionListener(menuHandler);
             toolsMenu.add(menuItem);
 
-            menuItem = new JMenuItem("Filter Dialog");
-            menuItem.setMnemonic(KeyEvent.VK_F);
-            menuItem.setToolTipText("A dialog for interactively changing filter settings");
-            menuItem.setActionCommand("filter_toolkit");
-            menuItem.addActionListener(menuHandler);
-            toolsMenu.add(menuItem);
         }
+
+        menuItem = new JMenuItem("Filter Dialog");
+        menuItem.setMnemonic(KeyEvent.VK_F);
+        menuItem.setToolTipText("A dialog for interactively changing filter settings");
+        menuItem.setActionCommand("filter_toolkit");
+        menuItem.addActionListener(menuHandler);
+        toolsMenu.add(menuItem);
 
         toolsMenu.add(new JSeparator());
 
