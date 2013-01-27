@@ -389,6 +389,7 @@ public class GuiActions extends UserFeedbackHelper {
         replace = false;
         SectionName sectionName = null;
         boolean addCurrentPage = false;
+        boolean pageOpFound = false;
         if (ensurePosition && !replace) {
             System.out.println("found: "+newText);
             Operation op = null;
@@ -428,6 +429,7 @@ public class GuiActions extends UserFeedbackHelper {
                         Operation testOp = Operation.getStandaloneOp(line);
                         if (testOp instanceof Pages) {
                             Pages pages = (Pages) testOp;
+                            pageOpFound = true;
                             int previewPos = bsw.getPreviewedImage().getPreviewHolder().getPosition();
                             int pagePos = pages.getPosition();
                             if ((pagePos == FileHolder.ALL || previewPos == pagePos) && 
@@ -471,8 +473,13 @@ public class GuiActions extends UserFeedbackHelper {
                             text = "StartPage = "+currentName+"\n"+text;
                         }
                     } else if (!(op instanceof RemovePages)) {
-                       String posText = (bsw.getPreviewedImage().getPreviewHolder().getPosition()
-                                  == FileHolder.LEFT ? "left" : "right");
+                        String posText;
+                        if (sectionName.isLRSeperate() || pageOpFound) {
+                            posText= (bsw.getPreviewedImage().getPreviewHolder().getPosition()
+                                == FileHolder.LEFT ? "left" : "right");
+                        } else {
+                            posText = "all";
+                        }
                         text = "Pages = "+posText+"\n"+text;
                     }
                     if (originalName != sectionName) {

@@ -26,21 +26,23 @@ import net.sourceforge.bookscanwizard.op.RemovePages;
  * The list of config sections. 
  */
 public enum SectionName {
-    BEGIN_MARKER("Begin Marker"),
-    LOAD_FILES ("Load Files"),
-    REMOVE_PAGES("Remove Pages"),
-    ROTATIONS ("Page Rotations"),
-    PRE_FILTERS("Prefilters"),
-    PERSPECTIVE ("Perspective"),
-    CROPS ("Crops"),
-    FILTERS ( "Filters"),
-    SCALING ("Scaling"),
-    OUTPUT ("Output");
+    BEGIN_MARKER("Begin Marker", false), 
+    LOAD_FILES ("Load Files", false),
+    REMOVE_PAGES("Remove Pages", false),
+    ROTATIONS ("Page Rotations", true),
+    PRE_FILTERS("Prefilters", true),
+    PERSPECTIVE ("Perspective", true),
+    CROPS ("Crops", true),
+    FILTERS ( "Filters", false),
+    SCALING ("Scaling", false),
+    OUTPUT ("Output", false);
     
     private String text;
+    private boolean separateLR;
     
-    SectionName(String text) {
+    SectionName(String text, boolean separateLR) {
         this.text = text;
+        this.separateLR = separateLR;
     }
     
     public String getDescription() {
@@ -49,6 +51,10 @@ public enum SectionName {
     
     public String getMatchString() {
         return "*** "+text+" ***";
+    }
+    
+    public boolean isLRSeperate() {
+        return separateLR;
     }
 
     public static SectionName getSectionFromOp(Operation op) {

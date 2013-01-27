@@ -5,8 +5,12 @@
 package net.sourceforge.bookscanwizard.gui;
 
 import java.util.Arrays;
+import java.util.Enumeration;
+import javax.swing.JLabel;
+import javax.swing.JSlider;
 import javax.swing.JTextField;
 import net.sourceforge.bookscanwizard.BSW;
+import org.jdesktop.beansbinding.Converter;
 
 /**
  *
@@ -26,6 +30,7 @@ public class FilterDialog extends javax.swing.JDialog {
     double[] display = new double[4];
     
     int color = -1;
+    private PercentageConverter percentageConverter = new PercentageConverter();
 
     /**
      * Creates new form FilterDialog
@@ -84,22 +89,29 @@ public class FilterDialog extends javax.swing.JDialog {
         jSeparator5 = new javax.swing.JSeparator();
         jButton1 = new javax.swing.JButton();
 
-        whiteSlider.setMajorTickSpacing(50);
-        whiteSlider.setMinorTickSpacing(10);
+        whiteSlider.setMajorTickSpacing(127);
+        whiteSlider.setMaximum(255);
+        whiteSlider.setMinimum(1);
+        whiteSlider.setMinorTickSpacing(32);
         whiteSlider.setPaintLabels(true);
         whiteSlider.setPaintTicks(true);
-        whiteSlider.setValue(100);
+        whiteSlider.setToolTipText("");
+        whiteSlider.setValue(255);
         whiteSlider.setName(""); // NOI18N
+        updateKeys(whiteSlider, "50", "100", "0");
         whiteSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 whiteSliderStateChanged(evt);
             }
         });
 
-        gammaSlider.setMajorTickSpacing(50);
-        gammaSlider.setMinorTickSpacing(10);
+        gammaSlider.setMajorTickSpacing(127);
+        gammaSlider.setMaximum(255);
+        gammaSlider.setMinorTickSpacing(32);
         gammaSlider.setPaintLabels(true);
         gammaSlider.setPaintTicks(true);
+        gammaSlider.setValue(128);
+        updateKeys(gammaSlider, "50", "100", "0");
         gammaSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 gammaSliderStateChanged(evt);
@@ -107,6 +119,7 @@ public class FilterDialog extends javax.swing.JDialog {
         });
 
         org.jdesktop.beansbinding.Binding binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, whiteSlider, org.jdesktop.beansbinding.ELProperty.create("${value}"), whiteTF, org.jdesktop.beansbinding.BeanProperty.create("text"), "");
+        binding.setConverter(percentageConverter);
         bindingGroup.addBinding(binding);
 
         whiteTF.addActionListener(new java.awt.event.ActionListener() {
@@ -116,9 +129,11 @@ public class FilterDialog extends javax.swing.JDialog {
         });
 
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, blackSlider, org.jdesktop.beansbinding.ELProperty.create("${value}"), blackTF, org.jdesktop.beansbinding.BeanProperty.create("text"));
+        binding.setConverter(percentageConverter);
         bindingGroup.addBinding(binding);
 
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, gammaSlider, org.jdesktop.beansbinding.ELProperty.create("${value}"), gammaTF, org.jdesktop.beansbinding.BeanProperty.create("text"));
+        binding.setConverter(percentageConverter);
         bindingGroup.addBinding(binding);
 
         gammaTF.addActionListener(new java.awt.event.ActionListener() {
@@ -133,11 +148,13 @@ public class FilterDialog extends javax.swing.JDialog {
 
         jLabel3.setText("Midpoint");
 
-        blackSlider.setMajorTickSpacing(50);
-        blackSlider.setMinorTickSpacing(10);
+        blackSlider.setMajorTickSpacing(127);
+        blackSlider.setMaximum(255);
+        blackSlider.setMinorTickSpacing(32);
         blackSlider.setPaintLabels(true);
         blackSlider.setPaintTicks(true);
         blackSlider.setValue(0);
+        updateKeys(blackSlider, "50", "100", "0");
         blackSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 blackSliderStateChanged(evt);
@@ -146,12 +163,14 @@ public class FilterDialog extends javax.swing.JDialog {
 
         jLabel4.setText("Saturation");
 
-        saturationSlider.setMajorTickSpacing(100);
-        saturationSlider.setMaximum(200);
-        saturationSlider.setMinorTickSpacing(20);
+        saturationSlider.setMajorTickSpacing(255);
+        saturationSlider.setMaximum(510);
+        saturationSlider.setMinorTickSpacing(64);
         saturationSlider.setPaintLabels(true);
         saturationSlider.setPaintTicks(true);
-        saturationSlider.setValue(100);
+        saturationSlider.setToolTipText("");
+        saturationSlider.setValue(255);
+        updateKeys(saturationSlider, "200", "100", "0");
         saturationSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 saturationSliderStateChanged(evt);
@@ -159,6 +178,7 @@ public class FilterDialog extends javax.swing.JDialog {
         });
 
         binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, saturationSlider, org.jdesktop.beansbinding.ELProperty.create("${value}"), saturationTF, org.jdesktop.beansbinding.BeanProperty.create("text"));
+        binding.setConverter(percentageConverter);
         bindingGroup.addBinding(binding);
 
         saturationTF.addActionListener(new java.awt.event.ActionListener() {
@@ -227,6 +247,9 @@ public class FilterDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(jButton1))
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -236,24 +259,18 @@ public class FilterDialog extends javax.swing.JDialog {
                             .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(saturationSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)
+                            .addComponent(saturationSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
                             .addComponent(whiteSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(gammaSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(blackSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(saturationTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(gammaTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(blackTF, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(whiteTF, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jButton1)))
+                            .addComponent(blackTF)
+                            .addComponent(whiteTF, javax.swing.GroupLayout.DEFAULT_SIZE, 34, Short.MAX_VALUE)
+                            .addComponent(gammaTF)
+                            .addComponent(saturationTF))))
                 .addContainerGap())
         );
-
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {blackTF, gammaTF, saturationTF, whiteTF});
-
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -273,8 +290,9 @@ public class FilterDialog extends javax.swing.JDialog {
                 .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 4, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2)
-                    .addComponent(blackSlider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(blackSlider, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel2))
                     .addComponent(blackTF, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(8, 8, 8)
                 .addComponent(jSeparator4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -318,10 +336,16 @@ public class FilterDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_saturationTFActionPerformed
 
     private void whiteSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_whiteSliderStateChanged
+        if (blackSlider.getValue() >= whiteSlider.getValue()) {
+            blackSlider.setValue(whiteSlider.getValue() - 1);
+        }
         update();
     }//GEN-LAST:event_whiteSliderStateChanged
 
     private void blackSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_blackSliderStateChanged
+        if (blackSlider.getValue() >= whiteSlider.getValue()) {
+            whiteSlider.setValue(blackSlider.getValue() + 1);
+        }
         update();
     }//GEN-LAST:event_blackSliderStateChanged
 
@@ -351,9 +375,9 @@ public class FilterDialog extends javax.swing.JDialog {
 
     private void update() {
         setLevels();
-        for (int i=0; i < levels.length; i++) {
+/*        for (int i=0; i < levels.length; i++) {
             System.out.println(Arrays.toString(levels[i]));
-        }
+        }*/
         BSW.instance().getMainFrame().getViewerPanel().updateImage();        
     }
     public void setLevels() {
@@ -483,23 +507,23 @@ public class FilterDialog extends javax.swing.JDialog {
         if (!isEquals(levels[WHITE], 100) || !isEquals(levels[BLACK], 0)) {
             str.append("Levels = ");
             if (isEquals(levels[WHITE]) && isEquals(levels[BLACK])) {
-                str.append(String.format("%.0f, %.0f\n", levels[BLACK][RED], levels[WHITE][RED]));
+                str.append(String.format("%.1f, %.1f\n", levels[BLACK][RED], levels[WHITE][RED]));
             } else {
-                str.append(String.format("%.0f, %.0f, %.0f", levels[BLACK]));
-                str.append(String.format("%.0f, %.0f, %.0f\n", levels[WHITE]));
+                str.append(String.format("%.1f, %.1f, %.1f", levels[BLACK]));
+                str.append(String.format("%.1f, %.1f, %.1f\n", levels[WHITE]));
             }
         }
         if (!isEquals(levels[GAMMA], 50)) {
             str.append("Gamma = ");
             if (isEquals(levels[GAMMA])) {
-                str.append(String.format("%.0f\n", 100 - levels[GAMMA][RED]));
+                str.append(String.format("%.1f\n", 100 - levels[GAMMA][RED]));
             } else {
-                str.append(String.format("%.0f, %.0f, %.0f", 100 - levels[GAMMA][RED], 100 - levels[GAMMA][GREEN], 100 - levels[GAMMA][BLUE] ));
+                str.append(String.format("%.1f, %.1f, %.1f", 100 - levels[GAMMA][RED], 100 - levels[GAMMA][GREEN], 100 - levels[GAMMA][BLUE] ));
             }
             
         }
         if (levels[SATURATION][RED] != 100) {
-            str.append(String.format("Saturation = %.0f\n", levels[SATURATION][RED]));
+            str.append(String.format("Saturation = %.1f\n", levels[SATURATION][RED]));
         }
         setVisible(false);
         return str.toString();
@@ -521,10 +545,37 @@ public class FilterDialog extends javax.swing.JDialog {
     
     private boolean isEquals(double[] ar, double match) {
         for (int i=0; i < ar.length; i++) {
-            if (match != ar[i]) {
+            if (Math.abs(match - ar[i]) >= .03) {
                 return false;
             }
         }
         return true;
     }
+    
+    private class PercentageConverter extends Converter {   
+
+        @Override
+        public Object convertReverse(Object s) {
+            return (int) (Double.parseDouble(s.toString()) * 255.0 / 100.0);
+        }
+
+        @Override
+        public Object convertForward(Object t) {
+            String text = String.format("%.1f", ((Number) t).doubleValue() * 100.0 / 255.0);
+            return text.equals("50.2") ? "50.0" : text;
+        }
+    } 
+    
+    private void updateKeys(JSlider slider, String... labels) {
+        Enumeration e = slider.getLabelTable().elements();
+        try {
+            for (String text : labels) {
+                JLabel label = (JLabel) e.nextElement();
+                label.setText(text);
+            }
+        } catch (java.util.NoSuchElementException ex) {
+            // ignore
+        }
+    }
+
 }
