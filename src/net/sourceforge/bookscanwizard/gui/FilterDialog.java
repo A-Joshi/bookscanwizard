@@ -4,7 +4,6 @@
  */
 package net.sourceforge.bookscanwizard.gui;
 
-import java.util.Arrays;
 import java.util.Enumeration;
 import javax.swing.JLabel;
 import javax.swing.JSlider;
@@ -496,9 +495,7 @@ public class FilterDialog extends javax.swing.JDialog {
 
     private void updateAllTo(int color) {
         for (int i=0; i < levels.length; i++) {
-            for (int j=0; j< levels[i].length; j++) {
-                levels[i][j] = levels[color][j];
-            }
+            System.arraycopy(levels[color], 0, levels[i], 0, levels[i].length);
         }
     }
     

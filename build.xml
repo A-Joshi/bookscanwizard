@@ -85,6 +85,15 @@
     </target>
 
     <target name="package">
+        <copy todir="dist" file="readme.rtf"/>
+        <delete file="dist/readme.txt"/>
+        <zip destfile="BookScanWizard_2.0beta2.zip">
+            <fileset dir="dist" includes="*" excludes="javadoc"/>
+            <fileset dir="dist" includes="lib/*"/>
+        </zip>
+    </target>
+
+    <target name="jws_package">
         <mkdir dir="package/bin"/>
        <zip destfile="package/bin/BookScanWizard.jar" duplicate="preserve" >
             <zipfileset src="dist/BookScanWizard.jar" excludes="META-INF/INDEX.LIST"/>
@@ -106,11 +115,76 @@
             <fileset dir="package"/>
         </zip>
     </target>
-   <target name="jaijars">
-        <signjar alias="bsw" storepass="secret" force="true" lazy="false">
+    <taskdef resource="net/sf/antcontrib/antlib.xml">
+      <classpath>
+        <pathelement location="ant-contrib.jar" />
+      </classpath>
+    </taskdef>
+
+    <macrodef name="unsignjar">
+        <attribute name="jar"/>
+
+        <sequential>
+            <!-- Remove any existing signatures from a JAR file. -->
+            <tempfile prefix="usignjar-" destdir="${java.io.tmpdir}" property="temp.file"/>
+            <echo message="Removing signatures from JAR: @{jar}"/>
+            <mkdir dir="${temp.file}"/>
+
+            <unjar src="@{jar}" dest="${temp.file}">
+                <patternset>
+                    <include name="**"/>
+                    <exclude name="META-INF/*.SF"/>
+                    <exclude name="META-INF/*.DSA"/>
+                    <exclude name="META-INF/*.RSA"/>
+                </patternset>
+            </unjar>
+
+            <delete file="@{jar}" failonerror="true"/>
+
+            <!-- Touch it in case the file didn't have a manifest.
+                 Otherwise the JAR task below will fail if the manifest 
+                 file doesn't exist. -->
+            <mkdir dir="${temp.file}/META-INF"/>
+            <touch file="${temp.file}/META-INF/MANIFEST.MF"/>
+
+            <jar destfile="@{jar}" 
+                basedir="${temp.file}" 
+                includes="**" 
+                manifest="${temp.file}/META-INF/MANIFEST.MF"/>
+
+            <delete dir="${temp.file}" failonerror="true"/>
+        </sequential>
+    </macrodef>
+
+    <!-- signs the jai jars -->
+    <target name="jaijars">
+        <for param="file">
             <path>
                 <fileset dir="Y:\wwwroot\webstart\release" includes="**/*.jar"/>
             </path>
-        </signjar>
+            <sequential>
+                <unsignjar jar="@{file}"/>
+                <signjar
+                    jar="@{file}"
+                    alias="bsw"
+                    storepass="secret"
+                    force="true"
+                    lazy="false"/>
+            </sequential>
+        </for>        
     </target>
+
+    <!-- Allows us to use the IzPack Ant task -->
+<taskdef name="IzPack" classpath="${basedir}/installer/standalone-compiler.jar"
+         classname="com.izforge.izpack.ant.IzPackTask"/>
+
+<target name="installers">
+<!-- We call IzPack -->
+<echo message="Makes the installer using IzPack"/>
+<IzPack input="${basedir}/installer/install.xml"
+        output="dist/IzPack-install.jar"
+        installerType="standard"
+        basedir="dist"
+        IzPackDir="dist/"/>    
+</target>
 </project>

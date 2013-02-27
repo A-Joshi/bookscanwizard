@@ -125,6 +125,11 @@ public class NormalizeLighting extends Operation implements ColorOp {
         pb.addSource(img);
         pb.add((float) source.getMinX());
         pb.add((float) source.getMinY());
+        img = JAI.create("translate", pb);
+        pb = new ParameterBlock();
+        pb.addSource(img);
+        pb.add((float) source.getMinX());
+        pb.add((float) source.getMinY());
         pb.add((float) source.getWidth());
         pb.add((float) source.getHeight());
         img =  JAI.create("crop", pb);
@@ -139,7 +144,7 @@ public class NormalizeLighting extends Operation implements ColorOp {
         ParameterBlock pb = new ParameterBlock();
         pb.addSource(img);
         // need to temporarily change the image to short, so that we don't clip
-        // te result
+        // the result
         pb.add(DataBuffer.TYPE_SHORT);
         img = JAI.create("format", pb);
         

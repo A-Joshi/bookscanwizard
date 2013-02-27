@@ -147,9 +147,16 @@ public class SaveImages extends Operation implements SaveOperation {
         ImageTypeSpecifier spec = ImageTypeSpecifier.createFromRenderedImage(img);
         String args[] = getTextArgs();
         if (args.length > 1 ) {
-            float quality = Float.parseFloat(args[1]);
-            writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-            writeParam.setCompressionQuality(quality);   // an integer between 0 and 1
+            try {
+                float quality = Float.parseFloat(args[1]);
+                if (quality < .1 || quality > 1) {
+                    throw new IllegalArgumentException();
+                }
+                writeParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
+                writeParam.setCompressionQuality(quality);   // an integer between 0 and 1
+            } catch (Exception e) {
+                throw new UserException(args[1]+" is not a valid JPEG quality.  Choose a number between .1 and 1", e);
+            }
         }
         IIOMetadata metadata = writer.getDefaultImageMetadata(spec, writeParam);
         if (dpi > 0) {

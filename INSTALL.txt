@@ -6,37 +6,33 @@ To run the webstart version, just point your browser to:
 http://bookscanwizard.sourceforge.net/run
 
 
-
-If you really do want to do this manually, follow the directions below.
+If you want to do this manually, follow the directions below.
 
 
 --Prerequisites--
 
 You will need to install the following before running the Book Scan Wizard:
 
-Java 1.6
+Java 1.7
 http://www.java.com/en/download/
-
-Java Advanced Imaging  (JAI) 1.1.3
-http://java.sun.com/products/java-media/jai/downloads/download-1_1_3.html
-
-JAI ImageIO 1.1:
-http://download.java.net/media/jai-imageio/builds/release/1.1/
-
 
 -- Running --
 
 To run the application, run either:
 java -Xmx1024 -jar BookScanWizard.jar
 
-Or you can use run of the included scriptss. In the bin directory there are scripts bsw.cmd, bsw, and bsw.sh.
-If you are running windows, you can just run "bsw".  If you are running linux or are on a mac, you can run bsw.sh or bsw.
+Or you can use run of the included scripts. In the bin directory there are scripts 
+bsw.cmd (for Windows) , and bsw (for Linux and Macs)
 
 command arguments:
 
-
-run 
+To get the list of command arguments, run
 
 bsw -?
 
-To get the list of command arguments.
+-- Support --
+
+For support see:
+
+http://www.diybookscanner.org/forum/viewforum.php?f=22
+

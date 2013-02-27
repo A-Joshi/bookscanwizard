@@ -81,6 +81,11 @@ public class Crop extends Operation implements CropOp {
             pb.add((float) (args[3] - args[1]));
             return JAI.create("crop", pb);
         } catch (RuntimeException e) {
+            if (e instanceof IllegalArgumentException && e.getMessage().contains("crop area must not be outside")) {
+                throw new UserException(
+                    "Crop area ("+arguments+" is outside "+ img.getMinX()+","+img.getMinY()+", "+
+                    (img.getWidth()+img.getMinY())+" "+(img.getHeight()+img.getMinY()));
+            }
             throw new UserException(e.toString()+" for "+arguments, e);
         }
     }

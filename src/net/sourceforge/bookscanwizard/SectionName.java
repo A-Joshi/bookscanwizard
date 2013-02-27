@@ -63,8 +63,9 @@ public enum SectionName {
             retVal = PERSPECTIVE;
         } else if (op instanceof CropOp) {
             retVal = CROPS;
-        } else if (op instanceof NormalizeLighting) {
-            retVal = PRE_FILTERS;
+        // Looks like it should be with the other filters
+//        } else if (op instanceof NormalizeLighting) {
+//            retVal = PRE_FILTERS;
         } else if (op instanceof ColorOp) {
             retVal = FILTERS;
         } else if (op instanceof RemovePages) {
