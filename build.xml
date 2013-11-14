@@ -86,8 +86,13 @@
 
     <target name="package">
         <copy todir="dist" file="readme.rtf"/>
+        <copy todir="dist">
+            <fileset dir="bin"/>
+            <fileset dir="." includes="readme.rtf,INSTALL.txt"/>
+        </copy>
         <delete file="dist/readme.txt"/>
-        <zip destfile="BookScanWizard_2.0beta2.zip">
+        <delete dir="dist/javadoc"/>
+        <zip destfile="BookScanWizard_2.0beta4.zip">
             <fileset dir="dist" includes="*" excludes="javadoc"/>
             <fileset dir="dist" includes="lib/*"/>
         </zip>

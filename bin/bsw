@@ -1,2 +1,2 @@
 #/bin/sh
-java -Xmx1024M -jar $0/../BookScanWizard.jar $*
+java -Xmx8192M -jar $0/../BookScanWizard.jar $*

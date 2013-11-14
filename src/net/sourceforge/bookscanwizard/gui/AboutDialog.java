@@ -27,7 +27,7 @@ import javax.swing.JFrame;
 
 public class AboutDialog extends TextMessageDialog {
     private static final String URL = "http://bookscanwizard.sourceforge.net/";
-    public static final String VERSION = "2.0 beta3";
+    public static final String VERSION = "2.0 beta4";
 
     private static final String message =
         "<html><head/>\n"+

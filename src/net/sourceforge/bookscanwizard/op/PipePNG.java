@@ -47,15 +47,17 @@ public class PipePNG extends Operation implements ColorOp {
         try (OutputStream os = new BufferedOutputStream(proc.getOutputStream())) {
             ImageIO.write(img, "PNG", os);
         }
-        InputStream is = new BufferedInputStream(proc.getInputStream());
-        Exception imageException = null;
-        try {
-            img = ImageIO.read(is);
-        } catch (Exception e) {
-            imageException = e;
-        }
-        int retVal = proc.waitFor();
-        is.close();
+            Exception imageException;
+            int retVal;
+            try (InputStream is = new BufferedInputStream(proc.getInputStream())) {
+                imageException = null;
+                try {
+                    img = ImageIO.read(is);
+                } catch (Exception e) {
+                    imageException = e;
+                }
+                retVal = proc.waitFor();
+            }
         if  (retVal != 0) {
             throw new UserException("PipeCommand failed with a return value of "+retVal);
         }

@@ -79,9 +79,14 @@ public class BSW {
     private static BSW instance;
     private static Path currentDirectory = new File(".").getAbsoluteFile().toPath();
     private static TileCache tileCache;
+    private static final int threadLimit;
  
     public static double getPreviewScale() {
         return 1;
+    }
+
+    public static int getThreadCount() {
+        return threadLimit;
     }
 
     private AtomicInteger completedCount = new AtomicInteger();
@@ -127,6 +132,20 @@ public class BSW {
             }
         });
         parentLogger.addHandler(handler);
+        String limit = System.getProperty("bsw.thread_limit");
+        if (limit == null) {
+            limit = System.getenv("bsw.thread_limit");
+        }
+        if (limit != null) {
+            threadLimit = Integer.parseInt(limit);
+        } else {
+            // This is a fairly wild guess on how many threads can be run
+            // for a given amount of hash space.much memory it takes.
+            threadLimit = (int) Math.min(Runtime.getRuntime().availableProcessors(), 
+                    Runtime.getRuntime().maxMemory() / 500_000_000);
+            logger.log(Level.INFO, "There are {0} processor(s), {1}M, {2} threads", 
+                    new Object[]{Runtime.getRuntime().availableProcessors(), Runtime.getRuntime().maxMemory()/1024/1024, threadLimit});
+        }
     }
 
     public static void main(String[] args) throws Exception {
@@ -409,6 +428,7 @@ public class BSW {
         }
     }
 
+    @SuppressWarnings("CallToThreadRun")
     public synchronized void runBatch(String configText, Batch batchOverride) throws Exception {
         final Batch batch;
         if (batchOverride == null) {
@@ -420,7 +440,7 @@ public class BSW {
         logger.fine("running....");
         final List<Operation> operations = getConfig(configText);
         // Create the threadPool with a bit lower than normal priority
-        threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), 
+        threadPool = Executors.newFixedThreadPool(threadLimit, 
                      new BSWThreadFactory(BSWThreadFactory.LOW_PRIORITY));
         if (operations.isEmpty()) {
             throw new UserException("Add the source directory of the book with the LoadImages operation");
@@ -601,10 +621,9 @@ public class BSW {
                     }
                     getMainFrame().getThumbTable().updateSelection();
                 }
-                if (fileHolder == null) {
-                    configEntry = "";
-                    mainFrame.setImage(null, null);
-                }
+            } else {
+                configEntry = "";
+                mainFrame.setImage(null, null);
             }
         }
         

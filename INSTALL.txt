@@ -19,10 +19,19 @@ http://www.java.com/en/download/
 -- Running --
 
 To run the application, run either:
-java -Xmx1024 -jar BookScanWizard.jar
+java -Xmx8192 -jar BookScanWizard.jar
 
 Or you can use run of the included scripts. In the bin directory there are scripts 
 bsw.cmd (for Windows) , and bsw (for Linux and Macs)
+
+Note.. depending on the number of processors you have on your system, you may
+need to change the memory you give java.
+
+If you are running this on a 32 bit OS, you'll need to change to 
+java -Xmx1024 -jar BookScanWizard.jar
+
+If you are dealing with very large images, or systems with many processors, it
+may be needed to increase from the default.
 
 command arguments:
 

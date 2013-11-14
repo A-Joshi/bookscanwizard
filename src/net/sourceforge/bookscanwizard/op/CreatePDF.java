@@ -157,9 +157,17 @@ public class CreatePDF extends Operation implements SaveOperation, ProcessDelete
     
     private byte[] getImageAsBytes(RenderedImage img, String format, int dpi, float quality) throws IOException {
         synchronized (CreatePDF.class) {
+            if (img.getSampleModel().getSampleSize()[0] == 1) {
+                if (format != null && !format.equalsIgnoreCase("png")) {
+                    throw new UserException("Only PNG is supported for saving binary (bw) images to PDF");
+                }
+                format = "png";
+            }
             try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
                 if ("jpg".equalsIgnoreCase(format) || "jpeg".equalsIgnoreCase(format)) {
                     saveJpeg(baos, img, dpi, quality);
+                } else if ("png".equalsIgnoreCase(format)) {
+                    SaveImages.writePng(img, baos, dpi);
                 } else {
                     if (quality < 0) {
                         quality = .8f;

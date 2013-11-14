@@ -183,18 +183,19 @@ public class SaveImages extends Operation implements SaveOperation {
     }
 
     private void savePng(String destFile, RenderedImage img, int dpi) throws IOException {
+        try (FileOutputStream fos = new FileOutputStream(destFile+".png")) {
+            writePng(img, fos, dpi);
+        }
+    }
+        
+    public static void writePng(RenderedImage img, OutputStream out, int dpi) throws IOException {
         ImageWriter writer = ImageIO.getImageWritersByFormatName("png").next();
-        final ImageOutputStream stream = ImageIO.createImageOutputStream(new File(destFile+".png"));
-        writer.setOutput(stream);
+        writer.setOutput(ImageIO.createImageOutputStream(out));
         ImageWriteParam writeParam = writer.getDefaultWriteParam();
         ImageTypeSpecifier spec = ImageTypeSpecifier.createFromRenderedImage(img);
         IIOMetadata metadata = writer.getDefaultImageMetadata(spec, writeParam);
         setDpi(metadata, dpi);
-        try {
-            writer.write(metadata, new IIOImage(img, null, metadata), writeParam);
-        } finally {
-            stream.close();
-        }
+        writer.write(metadata, new IIOImage(img, null, metadata), writeParam);
     }
 
     public static void writeJpeg2000Image(RenderedImage img,
