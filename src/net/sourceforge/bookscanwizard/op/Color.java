@@ -18,8 +18,10 @@
 
 package net.sourceforge.bookscanwizard.op;
 
+import java.awt.Graphics2D;
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
+import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
@@ -86,6 +88,13 @@ public class Color extends Operation implements ColorOp {
             pb.add(matrix);
             img = JAI.create("bandcombine", pb, null);
         } else if (img.getSampleModel().getSampleSize(0) == 1) {
+            BufferedImage newImage = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+            Graphics2D g2d= newImage.createGraphics();
+            g2d.drawImage(newImage, 0, 0, null);
+            g2d.dispose();
+            img = newImage;
+            /*
+             // This doesn't seem to work correctly... 
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(img);
             ColorModel cm =
@@ -96,7 +105,7 @@ public class Color extends Operation implements ColorOp {
                                                                   Transparency.OPAQUE,
                                                                   DataBuffer.TYPE_BYTE);
             pb.add(cm);
-            img = JAI.create("ColorConvert", pb);
+            img = JAI.create("ColorConvert", pb);*/
         }
         return img;
     }
