@@ -24,6 +24,8 @@ import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.media.jai.JAI;
 import net.sourceforge.bookscanwizard.qr.QRData;
@@ -34,6 +36,7 @@ import net.sourceforge.bookscanwizard.util.Utils;
  * It is used to display the list of pages for the preview dropdown list.
  */
 public class FileHolder implements Comparable<FileHolder> {
+   private static final Logger logger = Logger.getLogger(FileHolder.class.getName());
    private File file;
    /* the page number of a multi-page source */
    private int page;
@@ -181,10 +184,15 @@ public class FileHolder implements Comparable<FileHolder> {
         if (source != null) {
             return source.getImage(page);
         } else {
-            JPEGMetaData metadata = new JPEGMetaData(getFile(), true);
-            RenderedImage img = metadata.getThumbnail();
+            RenderedImage img = null;
+            try {
+                JPEGMetaData metadata = new JPEGMetaData(getFile(), true);
+                img = metadata.getThumbnail();
+            } catch (Exception e) {
+                // ignore
+            }
             if (img == null) {
-                System.out.println("thumbnail failed");
+                logger.log(Level.FINEST, "thumbnail failed: {0}", getName());
                 img = getImage();
             }
             return img;

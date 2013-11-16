@@ -27,14 +27,15 @@ import javax.swing.JFrame;
 
 public class AboutDialog extends TextMessageDialog {
     private static final String URL = "http://bookscanwizard.sourceforge.net/";
-    public static final String VERSION = "2.0 beta4";
-
+    public static final String VERSION = "2.0 beta6";
+    public static final String DATE = "November 15, 2013";
     private static final String message =
         "<html><head/>\n"+
         "<body>\n"+
         "<p><center><b>Book Scan Wizard</b> by Steve Devore</center></p>"+
         "<p><a href='"+URL+"'>"+URL+"</a></p>"+
         "<p> Version "+VERSION+"</p>"+
+        "<p> Date "+DATE+"</p>"+
         "</body>"+
         "</html>";
 

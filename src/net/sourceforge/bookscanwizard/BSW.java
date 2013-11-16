@@ -166,7 +166,7 @@ public class BSW {
                 saveToArchive.saveToArchive(Arrays.copyOfRange(args, 1, args.length));
                 return;
             } else if (arg.equals("-version")) {
-                System.out.println("BookScanWizard, by Steve Devore, version "+AboutDialog.VERSION+".");
+                System.out.println("BookScanWizard, by Steve Devore, version "+AboutDialog.VERSION+" "+AboutDialog.DATE+".");
                 return;
             }
             batchMode = false;

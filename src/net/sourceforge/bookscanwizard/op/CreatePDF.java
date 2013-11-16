@@ -109,7 +109,11 @@ public class CreatePDF extends Operation implements SaveOperation, ProcessDelete
                 logger.log(Level.INFO, "Creating {0}", f.getAbsolutePath());
                 PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(f));
                 pdfWriter.setFullCompression();
-                pdfWriter.setViewerPreferences(PdfWriter.PageLayoutTwoPageRight);
+                if (holder.getPosition() == FileHolder.LEFT) {
+                    pdfWriter.setViewerPreferences(PdfWriter.PageLayoutTwoPageLeft);
+                } else {
+                    pdfWriter.setViewerPreferences(PdfWriter.PageLayoutTwoPageRight);
+                }
                 addMetaData(document);
             }
             document.setPageSize(new Rectangle(
