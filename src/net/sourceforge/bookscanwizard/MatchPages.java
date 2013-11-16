@@ -107,12 +107,33 @@ public class MatchPages {
                     File right = rightFiles[i];
                     if (ignoreTime || Math.abs(left.lastModified() - right.lastModified() - offset) <= 2000) {
                         FileHolder holder;
-                        holder = new FileHolder(left, sequence.next(), leftBarcodes.get(left.getName()));
-                        holder.setPosition(FileHolder.LEFT);
-                        retVal.add(holder);
-                        holder = new FileHolder(right, sequence.next(),rightBarcodes.get(right.getName()));
-                        holder.setPosition(FileHolder.RIGHT);
-                        retVal.add(holder);
+                        if (left.getPath().toLowerCase().endsWith(".pdf")) {
+                            if (left.equals(right)) {
+                                PDFReference ref = new PDFReference(left);
+                                Sequence seq = new Sequence(ref.getPageCount());
+                                for (int j=1; j <= ref.getPageCount(); j++) {
+                                    FileHolder h = new FileHolder(left, null, j);
+                                    h.setSource(ref);
+                                    h.setPosition(FileHolder.LEFT);
+                                    h.setName(h.getName()+"_"+seq.next());
+                                    retVal.add(h);
+                                    h = new FileHolder(left, null, j);
+                                    h.setSource(ref);
+                                    h.setPosition(FileHolder.RIGHT);
+                                    h.setName(h.getName()+"_"+seq.next());
+                                    retVal.add(h);
+                                }
+                            } else {
+                                throw new UserException("Seperate left and right pdf files as inputs are not supported");
+                            }
+                        } else {
+                            holder = new FileHolder(left, sequence.next(), leftBarcodes.get(left.getName()));
+                            holder.setPosition(FileHolder.LEFT);
+                            retVal.add(holder);
+                            holder = new FileHolder(right, sequence.next(),rightBarcodes.get(right.getName()));
+                            holder.setPosition(FileHolder.RIGHT);
+                            retVal.add(holder);
+                        }
                         i++;
                         break;
                     } else {

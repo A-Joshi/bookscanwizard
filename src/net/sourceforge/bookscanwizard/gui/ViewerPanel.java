@@ -517,6 +517,13 @@ public class ViewerPanel extends DisplayJAI implements KeyListener, ClipboardOwn
         menuItem.setActionCommand("whiteout");
         menuItem.addActionListener(menuHandler);
         popup.add(menuItem);
+
+        menuItem = new PopupItem("Filter Dialog...", 0,0);
+        menuItem.setToolTipText("A dialog for interactively changing filter settings");
+        menuItem.setActionCommand("filter_toolkit");
+        menuItem.addActionListener(menuHandler);
+        popup.add(menuItem);
+        
         if (BSW.EXPERIMENTAL) {
             menuItem = new PopupItem("Gray Card", 0,2);
             menuItem.setToolTipText("Adjusts white balance and and exposure");

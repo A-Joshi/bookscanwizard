@@ -72,7 +72,7 @@ public final class ConfigEntry extends JTextArea {
 
     private static final String[][] ops = new String[][] {
         new String[] {"Cropping, Perspective", "Crop", "Perspective", "PerspectiveAndCrop", "Rotate", "BarrelCorrection"},
-        new String[] {"Filters", "Autolevels", "Brightness", "Color", "Sharpen", "Levels", "Gamma", "Saturation"},
+        new String[] {"Filters", "AutoLevels", "Brightness", "Color", "Sharpen", "Levels", "Gamma", "Saturation"},
         new String[] {"Scaling", "Scale", "ScaleToDPI", "ScaleToFirst"},
         new String[] {"Saving", "SaveImages", "CreatePDF", "CreateArchiveZip"},
         new String[] {"Other Operatons", "LoadImages", "LoadLRImages", "Rename", "Barcodes", "Pages", "RemovePages", "SetSourceDPI", "SetDestinationDPI", "EstimateDPI"}

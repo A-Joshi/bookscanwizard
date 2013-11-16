@@ -119,7 +119,8 @@ public class Utils {
                        check.endsWith(".tiff") ||
                        check.endsWith(".png") ||
                        check.endsWith(".gif") ||
-                       check.endsWith(".pdf");
+                       check.endsWith(".pdf") ||
+                       check.endsWith(".jp2");
             }
         };
     }
