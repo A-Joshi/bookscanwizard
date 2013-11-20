@@ -132,9 +132,13 @@ public final class MainFrame extends JFrame {
     private final JSlider slider;
     private final TipsDialog tipsDialog;
     private FilterDialog filterDialog;
+    @SuppressWarnings("UseOfObsoleteCollectionType")
+    private Vector<FileHolder> currentFiles;
+    
 
     public MainFrame(final ActionListener menuHandler) {
         super("Book Scan Wizard");
+        this.currentFiles = new Vector<>();
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         if (DragSource.getDragThreshold() < 5) {
             System.setProperty("awt.dnd.drag.threshold", "5");
@@ -722,9 +726,8 @@ public final class MainFrame extends JFrame {
         }
     }
 
-    private Vector<FileHolder> currentFiles = new Vector<>();
-    
     public void setPageList(List<FileHolder> fileHolders) {
+        @SuppressWarnings("UseOfObsoleteCollectionType")
         Vector<FileHolder> files = new Vector<>();
         files.addAll(fileHolders);
         Collections.sort(files);

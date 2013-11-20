@@ -57,7 +57,7 @@ public class LoadImages extends Operation {
         boolean odd = true;
         for (File f : files) {
             if (f.getPath().toLowerCase().endsWith(".pdf")) {
-                PDFReference ref = new PDFReference(f);
+                PDFReference ref = PDFReference.getReference(f);
                 Sequence seq = new Sequence(ref.getPageCount());
                 for (int i=1; i <= ref.getPageCount(); i++) {
                     FileHolder holder = new FileHolder(f, qrData.get(f.getName()), i);

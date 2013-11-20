@@ -5,7 +5,9 @@ import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.media.jai.BorderExtender;
 import javax.media.jai.Histogram;
@@ -50,13 +52,13 @@ public class NormalizeLighting extends Operation implements ColorOp {
 
     @Override
     protected void preprocess(FileHolder holder, RenderedImage img, boolean preview) throws Exception {
-        System.out.println("holder: "+holder+" "+processing.get()+" "+(leftImage == null));
+        logger.log(Level.FINEST, "holder: {0} {1} {2}", new Object[]{holder, processing.get(), leftImage == null});
         if (leftImage == null && !processing.get()) {
             for (FileHolder fh : getPageSet().getFileHolders()) {
                 if (fh.getName().equals(leftPageName)) {
                     fh.setForceOn(true);
                     processing.set(true);
-                    leftImage = Operation.previewOperations(currentPreviewOps, fh, fh.getImage(), true);
+                    leftImage = Operation.previewOperations(getRefOperations(currentPreviewOps), fh, fh.getImage(), true);
                     Histogram histogram =
                         (Histogram)JAI.create("histogram", leftImage).getProperty("histogram");
                     addMedian(histogram.getPTileThreshold(0.5));
@@ -66,7 +68,7 @@ public class NormalizeLighting extends Operation implements ColorOp {
                 if (fh.getName().equals(rightPageName)) {
                     fh.setForceOn(true);
                     processing.set(true);
-                    rightImage = Operation.previewOperations(currentPreviewOps, fh, fh.getImage(), true);
+                    rightImage = Operation.previewOperations(getRefOperations(currentPreviewOps), fh, fh.getImage(), true);
                     Histogram histogram =
                         (Histogram)JAI.create("histogram", rightImage).getProperty("histogram");
                     addMedian(histogram.getPTileThreshold(0.5));
@@ -87,10 +89,10 @@ public class NormalizeLighting extends Operation implements ColorOp {
         } else {
             RenderedImage normalizeImage = holder.getPosition() == FileHolder.LEFT ? leftImage : rightImage;
             if (normalizeImage == null) {
-                System.out.println("mapImage is null");
+                logger.fine("mapImage is null");
             }
             if (img == null) {
-                System.out.println("img is null");
+                logger.fine("img is null");
             }
             return normalizeImage(normalizeImage, img);
         }
@@ -106,7 +108,7 @@ public class NormalizeLighting extends Operation implements ColorOp {
     public RenderedImage processReferenceImage(RenderedImage source) throws IOException {
         final float scale = 10;
         int newWidth = source.getWidth() / (int) scale;
-        int newHeight = source.getHeight() / (int) scale;
+        int newHeight = source.getHeight() / (int) scale;   
         RenderedImage img = Utils.getScaledInstance(source, newWidth, newHeight, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         img = GaussianBlur.blur(img, 2);
         
@@ -174,5 +176,20 @@ public class NormalizeLighting extends Operation implements ColorOp {
                 median[i] = (median[i] + pTileThreshold[i]) / 2.0;
             }
         }
+    }
+
+    /**
+     * Returns the list of operations up to the NormalizeOperations.  It is 
+     * at that point that the processing of the reference images should stop.
+     */
+    private List<Operation> getRefOperations(List<Operation> ops) {
+        ArrayList<Operation> list = new ArrayList<>();
+        for (Operation op: ops) {
+            list.add(op);
+            if (op instanceof NormalizeLighting) {
+                break;
+            }
+        }
+        return list;
     }
 }

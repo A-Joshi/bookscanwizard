@@ -59,7 +59,7 @@ import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.op.CreateArchiveZip;
 
 public final class ConfigEntry extends JTextArea {
-
+    private static final Logger logger = Logger.getLogger(ConfigEntry.class.getName());
     public static final String LINE_BREAK_ATTRIBUTE_NAME = "line_break_attribute";
     private ActionListener menuHandler;
     private JMenuItem popupItemBarcode;
@@ -106,7 +106,7 @@ public final class ConfigEntry extends JTextArea {
                         CreateArchiveZip op = (CreateArchiveZip) Operation.getStandaloneOp(text);
                         estimateZipSize.setText(op.estimateZipSize());
                     } catch (Exception ex) {
-                        ex.printStackTrace();
+                        logger.log(Level.WARNING, ex.getMessage(), ex);
                     }
                 }
                 estimateZipSize.setVisible(found);
@@ -120,7 +120,7 @@ public final class ConfigEntry extends JTextArea {
                         helpItem.setText("Help for "+op.getName());
                     }
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    logger.log(Level.WARNING, ex.getMessage(), ex);
                 }
                 if (op == null) {
                     helpItem.setVisible(false);

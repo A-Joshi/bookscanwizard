@@ -95,6 +95,7 @@ public class MatchPages {
 
         // validate dates.
         int i = 0;
+        PDFReference ref = null;
         for (File left : leftFiles) {
             while (true) {
                 if (i >= rightFiles.length) {
@@ -109,7 +110,9 @@ public class MatchPages {
                         FileHolder holder;
                         if (left.getPath().toLowerCase().endsWith(".pdf")) {
                             if (left.equals(right)) {
-                                PDFReference ref = new PDFReference(left);
+                                if (ref == null) {
+                                    ref = PDFReference.getReference(left);
+                                }
                                 Sequence seq = new Sequence(ref.getPageCount());
                                 for (int j=1; j <= ref.getPageCount(); j++) {
                                     FileHolder h = new FileHolder(left, null, j);

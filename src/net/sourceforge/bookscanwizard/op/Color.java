@@ -19,17 +19,10 @@
 package net.sourceforge.bookscanwizard.op;
 
 import java.awt.Graphics2D;
-import java.awt.Transparency;
-import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
-import java.awt.image.ComponentColorModel;
-import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.awt.image.renderable.ParameterBlock;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.media.jai.Histogram;
 import javax.media.jai.JAI;
 import net.sourceforge.bookscanwizard.ColorOp;
 import net.sourceforge.bookscanwizard.FileHolder;
@@ -55,16 +48,7 @@ public class Color extends Operation implements ColorOp {
                     if (args.length > 1) {
                         threshold = Double.parseDouble(args[1]) / 100 * 255;
                     } else {
-                        // Generate a histogram.
-                        Histogram histogram =
-                            (Histogram)JAI.create("histogram", img).getProperty("histogram");
-
-                        double[] blackLevels = histogram.getPTileThreshold(.01);
-                        double[] whiteLevels = histogram.getPTileThreshold(.99);
-
-                        // Set the threshold halfway between the 1% and 99% levels
-                        threshold = (blackLevels[0] + whiteLevels[0]) /2;
-                        logger.log(Level.INFO, "threshold: {0}", threshold);
+                        threshold = .5 * 255;
                     }
                 }
                 // Binarize the image.
@@ -79,33 +63,22 @@ public class Color extends Operation implements ColorOp {
     public static RenderedImage toGray(RenderedImage img) {
         int numBands = img.getSampleModel().getNumBands();
         if (numBands > 1) {
-            if (img.getSampleModel().getNumBands() != 3) {
+            if (numBands != 3) {
                 throw new IllegalArgumentException("Image # bands <> 3");
             }
+            // RGB image
             double[][] matrix = {{0.114D, 0.587D, 0.299D, 0.0D}};
             ParameterBlock pb = new ParameterBlock();
             pb.addSource(img);
             pb.add(matrix);
             img = JAI.create("bandcombine", pb, null);
-        } else if (img.getSampleModel().getSampleSize(0) == 1) {
+        } else if (img.getSampleModel().getSampleSize(0) != 8) {
+            //black & white:
             BufferedImage newImage = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
             Graphics2D g2d= newImage.createGraphics();
             g2d.drawImage(newImage, 0, 0, null);
             g2d.dispose();
             img = newImage;
-            /*
-             // This doesn't seem to work correctly... 
-            ParameterBlock pb = new ParameterBlock();
-            pb.addSource(img);
-            ColorModel cm =
-                    new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_GRAY),
-                                                                  new int[] {8},
-                                                                  false,
-                                                                  false,
-                                                                  Transparency.OPAQUE,
-                                                                  DataBuffer.TYPE_BYTE);
-            pb.add(cm);
-            img = JAI.create("ColorConvert", pb);*/
         }
         return img;
     }

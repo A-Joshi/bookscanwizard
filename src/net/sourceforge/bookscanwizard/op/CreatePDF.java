@@ -28,6 +28,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
@@ -60,12 +62,50 @@ public class CreatePDF extends Operation implements SaveOperation, ProcessDelete
     // The semaphores are used to ensure that the previous page is rendered
     // before going on to the next.
     private Semaphore[] semaphores;
+    private int pageLayout = 0;
 
     @Override
     protected List<Operation> setup(List<Operation> operationList) throws Exception {
         if (!BSW.instance().isInPreview() && document != null) {
             document.close();
             document = null;
+        }
+        String pageLayoutStr = getOption("Options");
+        if (pageLayoutStr != null) {
+            String[] optionList = pageLayoutStr.toLowerCase().split(",");
+            HashSet<String> options = new HashSet<>(Arrays.asList(optionList));
+            if (options.remove("single")) {
+                if (options.remove("scrolling")) {
+                    pageLayout = PdfWriter.PageLayoutOneColumn;
+                } else {
+                    pageLayout = PdfWriter.PageLayoutSinglePage;
+                }
+            } else if (options.remove("2-up")) {
+                if (options.remove("scrolling")) {
+                    if (options.remove("title")) {
+                        pageLayout = PdfWriter.PageLayoutTwoColumnRight;
+                    } else {
+                        pageLayout = PdfWriter.PageLayoutTwoColumnLeft;
+                    }
+                } else {
+                    if (options.remove("title")) {
+                        pageLayout = PdfWriter.PageLayoutTwoPageRight;
+                    } else {
+                        pageLayout = PdfWriter.PageLayoutTwoPageLeft;
+                    }
+                }
+            } else if (options.remove("default")) {
+                pageLayout = 0;
+            }
+            for (String option : options) {
+                try {
+                    pageLayout |= (Integer) PdfWriter.class.getField(option).get(null);
+                } catch (NoSuchFieldException|SecurityException|IllegalArgumentException|IllegalAccessException ex) {
+                    throw new UserException("Invalid PDF Option: "+option);
+                }
+            }
+        } else {
+            pageLayout = -1;
         }
         if (getTextArgs().length > 1) {
             format = getTextArgs()[1];
@@ -109,11 +149,14 @@ public class CreatePDF extends Operation implements SaveOperation, ProcessDelete
                 logger.log(Level.INFO, "Creating {0}", f.getAbsolutePath());
                 PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(f));
                 pdfWriter.setFullCompression();
-                if (holder.getPosition() == FileHolder.LEFT) {
-                    pdfWriter.setViewerPreferences(PdfWriter.PageLayoutTwoPageLeft);
-                } else {
-                    pdfWriter.setViewerPreferences(PdfWriter.PageLayoutTwoPageRight);
+                if (pageLayout == -1) {
+                    if (holder.getPosition() == FileHolder.LEFT) {
+                        pageLayout = PdfWriter.PageLayoutTwoPageLeft;
+                    } else {
+                        pageLayout = PdfWriter.PageLayoutTwoPageRight;
+                    }
                 }
+                pdfWriter.setViewerPreferences(pageLayout);
                 addMetaData(document);
             }
             document.setPageSize(new Rectangle(

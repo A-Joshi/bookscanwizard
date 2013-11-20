@@ -374,6 +374,9 @@ public class ThumbTable extends JTable {
         public void run() {
             try {
                 RenderedImage img = holder.getThumbnail();
+                if (img == null) {
+                    System.out.println("thumb null: "+getHolder());
+                }
                 TransposeType transpose = holder.getPosition() == FileHolder.LEFT ? Rotate.getLeftTranspose() : Rotate.getRightTranspose();
                 if (transpose != null) {
                     img = JAI.create("transpose", img,transpose);

@@ -74,7 +74,7 @@ public class Barcodes extends Operation {
             }
             ReadCodes readCodes = new ReadCodes(files);
             LazyHashMap<String,List<QRData>> saveMap = new LazyHashMap<>(ArrayList.class);
-            for (FileHolder holder : pageSet.getSourceFiles()) {
+            for (FileHolder holder : PageSet.getSourceFiles()) {
                 holder.setQrData(readCodes.getCodes(holder.getFile()));
                 if (holder.getQRData() != null) {
                     saveMap.getOrCreate(holder.getFile().getParent()).addAll(holder.getQRData());
@@ -94,7 +94,7 @@ public class Barcodes extends Operation {
         TreeMap<FileHolder, String> colors = new TreeMap<>();
         ArrayList<FileHolder> transformOps = new ArrayList<>();
         ArrayList<FileHolder>  dpiHolders = new ArrayList<>();
-        holders = pageSet.getSourceFiles();
+        holders = PageSet.getSourceFiles();
         for (int i = 0; i < holders.size(); i++) {
             FileHolder holder =  holders.get(i);
             if (holder.getQRData() != null && holder.getQRData().size() > 0) {
@@ -236,12 +236,10 @@ public class Barcodes extends Operation {
                 oldAllBounds.put(h.getPosition(), bounds);
                 oldPages.put(h.getPosition(), h.getName());
             }
-            if (oldAllBounds != null) {
-                config.append("Pages = left ").append(oldPages.get(FileHolder.LEFT)).append("-\n");
-                config.append(oldAllBounds.get(FileHolder.LEFT)).append("\n");
-                config.append("Pages = right ").append(oldPages.get(FileHolder.RIGHT)).append("-\n");
-                config.append(oldAllBounds.get(FileHolder.RIGHT)).append("\n\n");
-            }
+            config.append("Pages = left ").append(oldPages.get(FileHolder.LEFT)).append("-\n");
+            config.append(oldAllBounds.get(FileHolder.LEFT)).append("\n");
+            config.append("Pages = right ").append(oldPages.get(FileHolder.RIGHT)).append("-\n");
+            config.append(oldAllBounds.get(FileHolder.RIGHT)).append("\n\n");
         }
         if (!colors.isEmpty()) {
             String oldPage = "";

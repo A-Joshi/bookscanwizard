@@ -19,6 +19,8 @@ package net.sourceforge.bookscanwizard.gui;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JFileChooser;
 import javax.swing.JToggleButton;
 import javax.swing.SpinnerModel;
@@ -31,6 +33,7 @@ import net.sourceforge.bookscanwizard.qr.ImportMonitor;
  * @author Steve
  */
 public class ImportImages extends javax.swing.JFrame {
+    private static final Logger logger = Logger.getLogger(ImportImages.class.getName());
     private static ImportImages instance = new ImportImages();
     ImportMonitor monitor;
 
@@ -370,7 +373,7 @@ public class ImportImages extends javax.swing.JFrame {
             monitor.setDestination(new File(importImagesData1.getDestination()));
             monitor.setSource(new File(importImagesData1.getSource()));
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.log(Level.WARNING, e.getMessage(), e);
         }
         return monitor;
     }

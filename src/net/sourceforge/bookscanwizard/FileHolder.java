@@ -182,7 +182,7 @@ public class FileHolder implements Comparable<FileHolder> {
     
     public RenderedImage getThumbnail() throws IOException {
         if (source != null) {
-            return source.getImage(page);
+            return source.getThumbnail(page);
         } else {
             RenderedImage img = null;
             try {

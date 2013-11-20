@@ -25,7 +25,9 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -65,6 +67,7 @@ abstract public class Operation {
     private static final Properties properties = new Properties();
     private OpDefinition definition;
     protected PageSet pageSet;
+    private Map<String,String> options;
 
     public static List<Operation> getOperations(String config) throws  Exception {
         BSW.instance().fireNewConfigListeners();
@@ -81,10 +84,7 @@ abstract public class Operation {
                     for (Operation o : ops) {
                         pageSet = o.getPageSet();
                     }
-
-                    if (ops != null) {
-                        operations.addAll(ops);
-                    }
+                    operations.addAll(ops);
                 }
             }
         }
@@ -99,6 +99,7 @@ abstract public class Operation {
         setAllOperations(operations);
         return operations;
     }
+    private String[] textArgs;
 
     /**
      * Called when the command is first configured.
@@ -193,11 +194,7 @@ abstract public class Operation {
             } else {
                 value = BSW.getProperty(key);
             }
-            if (key != null) {
-                arguments = arguments.substring(0, start) + value + arguments.substring(end+1);
-            } else {
-                start = end;
-            }
+            arguments = arguments.substring(0, start) + value + arguments.substring(end+1);
         }
     }
     
@@ -223,17 +220,37 @@ abstract public class Operation {
         }
     }
 
+    protected synchronized String getOption(String key) {
+        if (options == null) {
+            options = new HashMap<>();
+            ArrayList<String> newList = new ArrayList<>();
+            for (String a : getTextArgs()) {
+                if (a.contains("=")) {
+                    String[] keyValue = a.split("=");
+                    options.put(keyValue[0], keyValue[1]);
+                } else {
+                    newList.add(a);
+                }
+            }
+            textArgs = newList.toArray(new String[newList.size()]);
+        }
+        return options.get(key);
+    }
+    
     final protected String[] getTextArgs() {
-        Matcher matcher = ARG_PATTERN.matcher(arguments);
-        return getArgs(matcher);
+        if (textArgs == null) {
+            Matcher matcher = ARG_PATTERN.matcher(arguments);
+            textArgs = getArgs(matcher);
+        }
+        return textArgs;
     }
 
     final protected double[] getArgs() {
-        String[] textArgs = getTextArgs();
-        double[] retVal = new double[textArgs.length];
-        for (int i=0; i < textArgs.length; i++) {
+        String[] txtArgs = getTextArgs();
+        double[] retVal = new double[txtArgs.length];
+        for (int i=0; i < txtArgs.length; i++) {
             try {
-                retVal[i] = Double.parseDouble(textArgs[i]);
+                retVal[i] = Double.parseDouble(txtArgs[i]);
             } catch (NumberFormatException e) {
                 // ignore
             }

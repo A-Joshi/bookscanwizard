@@ -23,10 +23,11 @@ import com.itextpdf.text.pdf.parser.ImageRenderInfo;
 import com.itextpdf.text.pdf.parser.PdfReaderContentParser;
 import com.itextpdf.text.pdf.parser.RenderListener;
 import com.itextpdf.text.pdf.parser.TextRenderInfo;
-import java.awt.image.BufferedImage;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,40 +35,67 @@ import java.util.logging.Logger;
  * A reference to a PDF source document.
  */
 public class PDFReference {
+    private static final Logger logger = Logger.getLogger(PDFReference.class.getName());
+    
     private int pageCount;
     private PdfReader reader;
     private PdfReaderContentParser parser;
     private RenderListener listener;
-    private BufferedImage lastImage;
+    private RenderedImage lastImage;
+    private File file;
+    private PDFReference alternate;
     
-    public PDFReference(File f) throws IOException {
-        reader = new PdfReader(f.getPath());
-        pageCount =  reader.getNumberOfPages();
+    protected PDFReference() {}
+    private static final Map<File,PDFReference> references = new WeakHashMap<>();
+    
+    public static PDFReference getReference(File f) throws IOException {
+        synchronized(references) {
+           PDFReference ref = references.get(f);
+           if (ref == null) {
+               ref = new PDFReference(f);
+               references.put(f, ref);
+           }
+           return ref;
+        }
+    }
+    
+    private PDFReference(File f) throws IOException {
+        this.file = f;
+        this.reader = new PdfReader(f.getPath());
+        this.pageCount =  reader.getNumberOfPages();
     }
 
     public int getPageCount() {
         return pageCount;
     }
 
-    public void setPageCount(int pageCount) {
-        this.pageCount = pageCount;
-    }
-
-    public PdfReader getReader() {
-        return reader;
-    }
-
-    public void setReader(PdfReader reader) {
-        this.reader = reader;
+    public RenderedImage getThumbnail(int pg) throws IOException {
+        if (alternate != null) {
+            return alternate.getThumbnail(pg);
+        }
+        return getImage(pg);
     }
     
     public RenderedImage getImage(int page) throws IOException {
+        if (alternate != null) {
+            return alternate.getImage(page);
+        }
         if (parser == null) {
             parser = new PdfReaderContentParser(reader);
             listener = new BSWImageRenderListener();
         }
         lastImage = null;
         parser.processContent(page, listener);
+        if (lastImage == null || lastImage.getHeight() <=1 || lastImage.getHeight() <=1) {
+            synchronized(this) {
+                logger.info("Problem reading "+file+". using alternate renderer");
+                if (alternate == null) {
+                    alternate = new PDFReferenceAlternate(file);
+                }
+                reader.close();
+            }
+            return alternate.getImage(page);
+        }
         return lastImage;
     }
 
