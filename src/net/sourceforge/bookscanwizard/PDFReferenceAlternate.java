@@ -35,29 +35,22 @@ import org.icepdf.core.util.GraphicsRenderingHints;
  * This is a fallback pdf renderer.  For this renderer we assume it is 
  * set to 300 dpi.
  */
-public class PDFReferenceAlternate extends PDFReference {
-    private int pageCount;
+public class PDFReferenceAlternate {
     private Document document;
-    // If a PDF doesn't have any images, then we need some sort of arbritrary size
+    // If a PDF doesn't have any images, we need some sort of arbritrary size
     // this should be configurable.
-    private static float dpi = 300;
+    private static final float dpi = 300;
+    private static final float mult = dpi / 72.0f;
     
     public PDFReferenceAlternate(File f) {
         document = new Document();
         try {
-          document.setFile(f.getPath());
+            document.setFile(f.getPath());
         } catch (PDFException | PDFSecurityException | IOException e) {
-            throw new UserException("Could not read "+f+" as a PDF file");
+            throw new UserException("Could not read " + f + " as a PDF file");
         }
-        pageCount = document.getNumberOfPages();
     }
 
-    @Override
-    public int getPageCount() {
-        return pageCount;
-    }
-
-    @Override
     public RenderedImage getThumbnail(int pg) throws IOException {
         RenderedImage retVal;
         Thumbnail thumbnail = document.getPageTree().getPage(pg-1).getThumbnail();
@@ -69,10 +62,8 @@ public class PDFReferenceAlternate extends PDFReference {
         return retVal;
     }
     
-    @Override
     public RenderedImage getImage(int pg) throws IOException {
         int page = pg - 1;  // pages start with 0 with this toolkit
-        float mult = dpi / 72.0f;
         PDimension pDimension = document.getPageDimension(page, 0f);
         int width = (int) Math.round((pDimension.getWidth() * mult));
         int height = (int) Math.round((pDimension.getHeight() * mult));

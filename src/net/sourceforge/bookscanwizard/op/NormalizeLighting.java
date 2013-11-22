@@ -147,18 +147,18 @@ public class NormalizeLighting extends Operation implements ColorOp {
         pb.addSource(img);
         // need to temporarily change the image to short, so that we don't clip
         // the result
-        pb.add(DataBuffer.TYPE_SHORT);
+        pb.add(DataBuffer.TYPE_USHORT);
         img = JAI.create("format", pb);
         
         pb = new ParameterBlock();
         pb.addSource(img);
         pb.add(median);//new double[]{gray, gray, gray});
-        img = JAI.create("addconst", pb);
+        img = JAI.create("multiplyconst", pb);
 
         pb = new ParameterBlock();
         pb.addSource(img);
         pb.addSource(mapImage);
-        img = JAI.create("subtract", pb);
+        img = JAI.create("divide", pb);
 
         // change it back to bytes
         pb = new ParameterBlock();

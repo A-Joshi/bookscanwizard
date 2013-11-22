@@ -36,18 +36,19 @@ import java.util.logging.Logger;
  */
 public class PDFReference {
     private static final Logger logger = Logger.getLogger(PDFReference.class.getName());
+    private static final Map<File,PDFReference> references = new WeakHashMap<>();
     
-    private int pageCount;
+    protected int pageCount;
+
     private PdfReader reader;
     private PdfReaderContentParser parser;
     private RenderListener listener;
     private RenderedImage lastImage;
     private File file;
-    private PDFReference alternate;
+    private PDFReferenceAlternate alternate;
     
     protected PDFReference() {}
-    private static final Map<File,PDFReference> references = new WeakHashMap<>();
-    
+
     public static PDFReference getReference(File f) throws IOException {
         synchronized(references) {
            PDFReference ref = references.get(f);
@@ -88,7 +89,7 @@ public class PDFReference {
         parser.processContent(page, listener);
         if (lastImage == null || lastImage.getHeight() <=1 || lastImage.getHeight() <=1) {
             synchronized(this) {
-                logger.info("Problem reading "+file+". using alternate renderer");
+                logger.log(Level.INFO, "Problem reading {0}. using alternate renderer", file);
                 if (alternate == null) {
                     alternate = new PDFReferenceAlternate(file);
                 }
