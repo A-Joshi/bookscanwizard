@@ -43,6 +43,7 @@ public class Crop extends Operation implements CropOp {
             new Point2D.Double(args[0], args[1]),
             new Point2D.Double(args[2], args[3])
         };
+        img = expandImageIfNecessary(img, pts);
         if (BSW.instance().getMainFrame().isShowPerspective()) {
             viewer.setScaledPoints(pts);
             viewer.setPreviewCrop(null);
@@ -54,9 +55,6 @@ public class Crop extends Operation implements CropOp {
                 new Point2D.Double(pts[1].getX(), pts[1].getY()),
                 new Point2D.Double(pts[0].getX(), pts[1].getY())
             };
-            if (pts == null) {
-                throw new NullPointerException();
-            }
             if (tr != null) {
                 tr.transform(corners, 0, corners, 0, pts.length);
             }
@@ -71,22 +69,18 @@ public class Crop extends Operation implements CropOp {
         if (args.length < 4) {
             throw new UserException("Invalid arguments: "+arguments);
         }
-        try {
-            // Crop the image.
-            ParameterBlock pb = new ParameterBlock();
-            pb.addSource(img);
-            pb.add((float) args[0]);
-            pb.add((float) args[1]);
-            pb.add((float) (args[2] - args[0]));
-            pb.add((float) (args[3] - args[1]));
-            return JAI.create("crop", pb);
-        } catch (RuntimeException e) {
-            if (e instanceof IllegalArgumentException && e.getMessage().contains("crop area must not be outside")) {
-                throw new UserException(
-                    "Crop area ("+arguments+" is outside "+ img.getMinX()+","+img.getMinY()+", "+
-                    (img.getWidth()+img.getMinY())+" "+(img.getHeight()+img.getMinY()));
-            }
-            throw new UserException(e.toString()+" for "+arguments, e);
-        }
+        Point2D[] pts = new Point2D[] {
+            new Point2D.Double(args[0], args[1]),
+            new Point2D.Double(args[2], args[3])
+        };
+        img = expandImageIfNecessary(img, pts);
+        // Crop the image.
+        ParameterBlock pb = new ParameterBlock();
+        pb.addSource(img);
+        pb.add((float) args[0]);
+        pb.add((float) args[1]);
+        pb.add((float) (args[2] - args[0]));
+        pb.add((float) (args[3] - args[1]));
+        return JAI.create("crop", pb);
     }
 }

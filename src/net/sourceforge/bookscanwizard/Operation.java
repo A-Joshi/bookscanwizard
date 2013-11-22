@@ -19,7 +19,9 @@
 package net.sourceforge.bookscanwizard;
 
 import java.awt.RenderingHints;
+import java.awt.geom.Point2D;
 import java.awt.image.RenderedImage;
+import java.awt.image.renderable.ParameterBlock;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -32,6 +34,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.imageio.spi.ImageWriterSpi;
+import javax.media.jai.BorderExtenderConstant;
 import javax.media.jai.ImageLayout;
 import javax.media.jai.JAI;
 import net.sourceforge.bookscanwizard.OpDefinition.Argument;
@@ -530,5 +533,29 @@ abstract public class Operation {
      * @param img 
      */
     protected void preprocess(FileHolder holder, RenderedImage img, boolean preview) throws Exception {
+    }
+    
+      /**
+     * Expands an image if the crop points are outside of the original image.
+     */
+    protected RenderedImage expandImageIfNecessary(RenderedImage img, Point2D[] pts) {
+        int rightX = img.getMinX() + img.getWidth();
+        int bottomY = img.getMinY() + img.getHeight();
+
+        int left = (int) Math.round(Math.max(0, img.getMinX() - pts[0].getX()));
+        int top = (int)  Math.round(Math.max(0, img.getMinY() - pts[0].getY()));
+        int right = (int) Math.round(Math.max(0, pts[1].getX() - rightX));
+        int bottom = (int) Math.round(Math.max(0, pts[1].getY() - bottomY));
+        
+        if (left + top + right + bottom > 0) {
+            ParameterBlock params = new ParameterBlock();
+            params.addSource(img);
+            params.add(left).add(right).add(top).add(bottom);
+            // calculate the maximum value, and set the color to it
+            int white = (1 << img.getColorModel().getComponentSize()[0]) - 1;
+            params.add(new BorderExtenderConstant(new double[] { white}));
+            img = JAI.create("border", params);
+        }
+        return img;
     }
 }

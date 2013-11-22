@@ -97,6 +97,7 @@ public class Perspective extends Operation implements PerspectiveOp, DpiSetter {
         if (dpi > 0) {
             holder.setDPI(dpi);
         }
+        img = expandImageIfNecessary(img, new Point2D[] {points[0],points[2]});
         ParameterBlock pb = new ParameterBlock();
         pb.addSource(img);
         pb.add(new WarpPerspective(tr));
