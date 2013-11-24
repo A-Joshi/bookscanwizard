@@ -92,34 +92,12 @@
         </copy>
         <delete file="dist/readme.txt"/>
         <delete dir="dist/javadoc"/>
-        <zip destfile="BookScanWizard_2.0beta4.zip">
+        <zip destfile="BookScanWizard_2.0.zip">
             <fileset dir="dist" includes="*" excludes="javadoc"/>
             <fileset dir="dist" includes="lib/*"/>
         </zip>
     </target>
 
-    <target name="jws_package">
-        <mkdir dir="package/bin"/>
-       <zip destfile="package/bin/BookScanWizard.jar" duplicate="preserve" >
-            <zipfileset src="dist/BookScanWizard.jar" excludes="META-INF/INDEX.LIST"/>
-            <zipgroupfileset dir="dist/lib" includes="*.jar" excludes="jai*.jar,clib*.jar,mlib*.jar"/>  
-        </zip>
-        <signjar jar="package/bin/BookScanWizard.jar" alias="bsw" storepass="secret"/>
-        <copy todir="package/bin">
-<!--            <fileset dir="dist" includes="*.jar"/> -->
-            <fileset dir="bin"/>
-        </copy>
-        <copy todir="package">
-            <fileset dir="." includes="*.txt,*.rtf" excludes="BUILD*"/>
-        </copy>
-        <mkdir dir="package/example"/>
-        <copy todir="package/example/">
-            <fileset dir="examples/basic"/>
-        </copy>
-        <zip destfile="BookScanWizard_2.0beta1.zip">
-            <fileset dir="package"/>
-        </zip>
-    </target>
     <taskdef resource="net/sf/antcontrib/antlib.xml">
       <classpath>
         <pathelement location="ant-contrib.jar" />
@@ -152,17 +130,22 @@
             <mkdir dir="${temp.file}/META-INF"/>
             <touch file="${temp.file}/META-INF/MANIFEST.MF"/>
 
+            <manifest file="${temp.file}/META-INF/MANIFEST.MF" mode="update">
+                <attribute name="Permissions" value="all-permissions"/>
+                <attribute name="Codebase" value="${manifest.custom.codebase}" />
+                <attribute name="Application-Name" value="${application.title}"/>
+            </manifest>
             <jar destfile="@{jar}" 
                 basedir="${temp.file}" 
                 includes="**" 
-                manifest="${temp.file}/META-INF/MANIFEST.MF"/>
-
+                manifest="${temp.file}/META-INF/MANIFEST.MF">
+            </jar>
             <delete dir="${temp.file}" failonerror="true"/>
         </sequential>
     </macrodef>
 
     <!-- signs the jai jars -->
-    <target name="jaijars">
+    <target name="jaijars" depends="init">
         <for param="file">
             <path>
                 <fileset dir="Y:\wwwroot\webstart\release" includes="**/*.jar"/>
@@ -170,9 +153,10 @@
             <sequential>
                 <unsignjar jar="@{file}"/>
                 <signjar
+                    keystore="bsw.keystore"
                     jar="@{file}"
-                    alias="bsw"
-                    storepass="secret"
+                    alias="mykey"
+                    storepass="mypass"
                     force="true"
                     lazy="false"/>
             </sequential>
