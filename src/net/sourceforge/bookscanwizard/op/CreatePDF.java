@@ -49,6 +49,7 @@ import net.sourceforge.bookscanwizard.ProcessDeleted;
 import net.sourceforge.bookscanwizard.SaveOperation;
 import net.sourceforge.bookscanwizard.UserException;
 import net.sourceforge.bookscanwizard.op.Metadata.KeyValue;
+import net.sourceforge.bookscanwizard.util.Hocr;
 import net.sourceforge.bookscanwizard.util.Utils;
 import org.w3c.dom.Element;
 
@@ -58,6 +59,7 @@ import org.w3c.dom.Element;
 public class CreatePDF extends Operation implements SaveOperation, ProcessDeleted {
     private static final Logger logger = Logger.getLogger(CreatePDF.class.getName());
     private Document document;
+    private PdfWriter pdfWriter;
     private String format;
     // The semaphores are used to ensure that the previous page is rendered
     // before going on to the next.
@@ -132,6 +134,7 @@ public class CreatePDF extends Operation implements SaveOperation, ProcessDelete
         if (holder.isDeleted()) {
             semaphores[pos].acquire();
         } else {
+            int dpi = PageSet.getDestinationDPI();
             BufferedImage bi = Utils.renderedToBuffered(img);
             // check to make sure the previous page has been released before continuing.
             semaphores[pos].acquire();
@@ -147,7 +150,7 @@ public class CreatePDF extends Operation implements SaveOperation, ProcessDelete
                 File f = pageSet.getDestinationDir().toPath().resolve(getTextArgs()[0]).toFile();
                 f.getParentFile().mkdirs();
                 logger.log(Level.INFO, "Creating {0}", f.getAbsolutePath());
-                PdfWriter pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(f));
+                pdfWriter = PdfWriter.getInstance(document, new FileOutputStream(f));
                 pdfWriter.setFullCompression();
                 if (pageLayout == -1) {
                     if (holder.getPosition() == FileHolder.LEFT) {
@@ -159,20 +162,36 @@ public class CreatePDF extends Operation implements SaveOperation, ProcessDelete
                 pdfWriter.setViewerPreferences(pageLayout);
                 addMetaData(document);
             }
-            document.setPageSize(new Rectangle(
-                    72 * bi.getWidth()/PageSet.getDestinationDPI(),
-                    72 * bi.getHeight()/PageSet.getDestinationDPI()));
+            if (dpi> 0) {
+                document.setPageSize(new Rectangle(
+                        72 * bi.getWidth()/dpi,
+                        72 * bi.getHeight()/dpi));
+            } else {
+                document.setPageSize(new Rectangle(72 * 8, (int) (72 * 10.5)));
+                dpi = img.getWidth() / 8;
+            }
             if (document.isOpen()) {
                 document.newPage();
             } else {
                 document.open();
             }
             Image itextImage = Image.getInstance(imageBytes);
-            itextImage.setDpi((int) holder.getDPI(), (int) holder.getDPI());
+            int pageDPI = (int) holder.getDPI();
+            if (pageDPI == 0) {
+                pageDPI = dpi;
+            }
+            itextImage.setDpi(pageDPI, pageDPI);
             itextImage.setAbsolutePosition(0, 0);
             itextImage.scaleToFit(document.getPageSize().getWidth(), document.getPageSize().getHeight());
             itextImage.setBorder(0);
             document.add(itextImage);
+
+            if (OCR.isUseOCR()) {
+                File hocrFile = new File (pageSet.getDestinationDir(), holder.getName()+".html");
+                if (hocrFile.isFile()) {
+                    Hocr.writeToPDF(hocrFile, pdfWriter, itextImage, dpi);
+                }
+            }
             // release the page so the next page can continue.
         }
         if (pos+1 < semaphores.length) {

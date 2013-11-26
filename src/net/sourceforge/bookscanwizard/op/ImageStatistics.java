@@ -45,6 +45,11 @@ public class ImageStatistics extends Operation implements ColorOp {
         }
         System.out.println("bw: ");
         dumpStats(Color.toGray(img));
+        
+        System.out.println(img.getMinX()+","+img.getMinY()+" "+img.getWidth()+" "+img.getHeight());
+        System.out.println(img.getColorModel().getClass().getName()+" "+ img.getColorModel());
+        System.out.println(img.getColorModel().getClass().getName()+" "+img.getSampleModel());
+        
         return img;
     }
 

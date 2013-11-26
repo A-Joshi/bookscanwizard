@@ -37,7 +37,7 @@ import org.icepdf.core.util.GraphicsRenderingHints;
  */
 public class PDFReferenceAlternate {
     private Document document;
-    // If a PDF doesn't have any images, we need some sort of arbritrary size
+    // If a PDF doesn't have any images, we need some sort of arbritrary size.
     // this should be configurable.
     private static final float dpi = 300;
     private static final float mult = dpi / 72.0f;
@@ -67,9 +67,13 @@ public class PDFReferenceAlternate {
         PDimension pDimension = document.getPageDimension(page, 0f);
         int width = (int) Math.round((pDimension.getWidth() * mult));
         int height = (int) Math.round((pDimension.getHeight() * mult));
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
         Graphics2D imageGraphics = image.createGraphics();
         document.paintPage(page, imageGraphics, GraphicsRenderingHints.PRINT, Page.BOUNDARY_CROPBOX, 0f, mult);
         return (RenderedImage) image;
+    }
+
+    public float getDpi() {
+        return dpi;
     }
 }

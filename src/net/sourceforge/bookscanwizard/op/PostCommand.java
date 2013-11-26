@@ -23,9 +23,9 @@ import java.util.logging.Logger;
 import net.sourceforge.bookscanwizard.BSW;
 import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.PageSet;
+
 /**
- *
- * @author Steve
+ * Runs a script after creating the images, with parameters
  */
 public class PostCommand extends Operation{
     static final Logger logger = Logger.getLogger(BSW.class.getName());

@@ -21,15 +21,26 @@ package net.sourceforge.bookscanwizard;
 import com.bric.image.jpeg.JPEGMetaData;
 import java.awt.RenderingHints;
 import java.awt.image.RenderedImage;
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.metadata.IIOMetadataNode;
+import javax.imageio.stream.ImageInputStream;
 import javax.media.jai.JAI;
 import net.sourceforge.bookscanwizard.qr.QRData;
 import net.sourceforge.bookscanwizard.util.Utils;
+import org.w3c.dom.NodeList;
 
 /**
  * A holder used to contain a source file and a page name.
@@ -37,17 +48,20 @@ import net.sourceforge.bookscanwizard.util.Utils;
  */
 public class FileHolder implements Comparable<FileHolder> {
    private static final Logger logger = Logger.getLogger(FileHolder.class.getName());
-   private File file;
+   private static Method IIOMETADATA = null;
+    
+   private final File file;
    /* the page number of a multi-page source */
    private int page;
 
    private String name;
-   private String oldName;
+   private final String oldName;
    private int position;
    private boolean deleted;
    private boolean forceOn;
 
    private float dpi;
+   private boolean dpiChecked;
 
    private List<QRData> qrData;
 
@@ -137,6 +151,9 @@ public class FileHolder implements Comparable<FileHolder> {
 
     public void setDPI(float dpi) {
         this.dpi = dpi;
+        if (PageSet.getDestinationDPI() <= 0) {
+            PageSet.setDestinationDPI((int) dpi);
+        }
     }
 
     public float getDPI() {
@@ -202,25 +219,59 @@ public class FileHolder implements Comparable<FileHolder> {
     public RenderedImage getImage() {
         try {
             if (source != null) {
-                return source.getImage(page);
+                RenderedImage img = source.getImage(page);
+                setDPI(source.getDpi());
+                return img;
             } else {
                 RenderedImage img;
-                    try {
-                        img = Utils.renderedToBuffered(JAI.create("fileload", file.getPath()));
-                    } catch (Exception e) {
-                        System.out.println("could not read using JAI.. tring ImageIO..");
-                        img = ImageIO.read(file);
-                        img = Utils.getScaledInstance(img, img.getWidth(), img.getHeight(), 
-                                RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
-                    }
+                try {
+                    img = Utils.renderedToBuffered(JAI.create("fileload", file.getPath()));
+                } catch (Exception e) {
+                    System.out.println("could not read using JAI.. tring ImageIO..");
+                    img = ImageIO.read(file);
+                    img = Utils.getScaledInstance(img, img.getWidth(), img.getHeight(), 
+                            RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+                }
+                readDPI(file);
                 return img;
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
-
+    
+    private int readDPI(File f) throws IOException {
+        InputStream in = new BufferedInputStream(new FileInputStream(f));
+        if (getDPI() <=0 && !dpiChecked) {
+            dpiChecked = true;
+            try (ImageInputStream iis = ImageIO.createImageInputStream(in)) {
+                Iterator it = ImageIO.getImageReaders(iis);
+                if (it.hasNext()) {
+                    ImageReader reader = (ImageReader) it.next();
+                    reader.setInput(iis);
+                    IIOMetadata meta = reader.getImageMetadata(0);
+                    IIOMetadataNode dimNode = (IIOMetadataNode) IIOMETADATA.invoke(meta);
+                    NodeList nodes = dimNode.getElementsByTagName("HorizontalPixelSize");
+                    IIOMetadataNode dpcWidth = (IIOMetadataNode)nodes.item(0);
+                    setDPI(Math.round(25.4 / Double.parseDouble(dpcWidth.getAttribute("value"))));
+                }
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                System.out.println(ex);
+            }
+        }
+        return 0;
+    }
+    
     public void setForceOn(boolean forceOn) {
         this.forceOn = forceOn;
+    }
+
+    static {
+       try {
+           IIOMETADATA = IIOMetadata.class.getDeclaredMethod("getStandardDimensionNode");
+           IIOMETADATA.setAccessible(true);
+       } catch (NoSuchMethodException | SecurityException ex) {
+           throw new RuntimeException(ex);
+       }
     }
 }

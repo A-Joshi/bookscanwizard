@@ -42,23 +42,32 @@ public class ProcessHelper {
      */
     public static void fixScript(String[] args) throws Exception {
         if (isWindows()) {
-            String systemPath = System.getenv("Path");
-            if (systemPath == null) {
-                systemPath = System.getenv("PATH");
-            }
-            String script = args[0];
+            args[0] = findPath(args[0]);
+        }
+    }
+    
+    public static String findPath(String script) {
+        String systemPath = System.getenv("Path");
+        if (systemPath == null) {
+            systemPath = System.getenv("PATH");
+        }
+        if (new File(script).exists()) {
+            return script;
+        }
+        if (isWindows()) {
             if (!script.toLowerCase().endsWith(".exe")) {
                 script = script+".exe";
             }
-            StringTokenizer tokens = new StringTokenizer(systemPath, File.pathSeparator);
-            while(tokens.hasMoreTokens()) {
-                File f = new File(tokens.nextToken(), script);
-                if (f.isFile()) {
-                    args[0] = f.getPath();
-                    break;
-                }
+        }
+        StringTokenizer tokens = new StringTokenizer(systemPath, File.pathSeparator);
+        while(tokens.hasMoreTokens()) {
+            File f = new File(tokens.nextToken(), script);
+            if (f.isFile()) {
+                script = f.getPath();
+                break;
             }
         }
+        return script;
     }
 
     public static boolean isWindows() {

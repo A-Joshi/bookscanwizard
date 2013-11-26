@@ -21,6 +21,7 @@ package net.sourceforge.bookscanwizard.op;
 import java.awt.image.RenderedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import javax.imageio.ImageIO;
@@ -53,7 +54,7 @@ public class PipePNG extends Operation implements ColorOp {
                 imageException = null;
                 try {
                     img = ImageIO.read(is);
-                } catch (Exception e) {
+                } catch (IOException e) {
                     imageException = e;
                 }
                 retVal = proc.waitFor();

@@ -27,6 +27,7 @@ import java.util.EventObject;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import net.sourceforge.bookscanwizard.BSW;
+import net.sourceforge.bookscanwizard.UserException;
 
 /**
  * This class contains a wrapper for an action listener that displays the busy
@@ -76,7 +77,11 @@ public void run() {
             Runnable r = new Runnable() {
                 @Override
                 public void run() {
-                    JOptionPane.showMessageDialog(c, ex.toString(), "", JOptionPane.INFORMATION_MESSAGE);
+                    Throwable ue = ex;
+                    while(!(ue instanceof UserException) && ue.getCause() != null) {
+                        ue = ue.getCause();
+                    }
+                    JOptionPane.showMessageDialog(c, ue.toString(), "", JOptionPane.INFORMATION_MESSAGE);
                 }
             };
             SwingUtilities.invokeLater(r);

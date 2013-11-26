@@ -46,6 +46,7 @@ public class PDFReference {
     private RenderedImage lastImage;
     private File file;
     private PDFReferenceAlternate alternate;
+    private float dpi;
     
     protected PDFReference() {}
 
@@ -68,6 +69,14 @@ public class PDFReference {
 
     public int getPageCount() {
         return pageCount;
+    }
+    
+    public float getDpi() {
+        if (alternate != null) {
+            return alternate.getDpi();
+        } else {
+            return 0;
+        }
     }
 
     public RenderedImage getThumbnail(int pg) throws IOException {
@@ -117,6 +126,11 @@ public class PDFReference {
         public void renderImage(ImageRenderInfo renderInfo) {
             try {
                 lastImage = renderInfo.getImage().getBufferedImage();
+                if (lastImage != null) {
+                    double area = renderInfo.getArea();
+                    // calculate dpi given image bounds and rendered area
+                    dpi = (float) Math.round(72 * Math.sqrt(area * lastImage.getWidth() * lastImage.getHeight())/area);
+                }
             } catch (IOException ex) {
                 Logger.getLogger(PDFReference.class.getName()).log(Level.SEVERE, null, ex);
             }

@@ -76,6 +76,7 @@ public class OperationList extends JFrame {
         LoadLRImages.class,
         Metadata.class,
         NormalizeLighting.class,
+        OCR.class,
         Pages.class,
         Perspective.class,
         PerspectiveAndCrop.class,
