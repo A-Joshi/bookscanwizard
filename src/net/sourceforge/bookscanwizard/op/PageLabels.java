@@ -31,7 +31,7 @@ import net.sourceforge.bookscanwizard.util.Roman;
 import net.sourceforge.bookscanwizard.util.Sequence;
 
 /**
- * Renames the pages according to a pattern.
+ * Defines pdf page labels for the pages.
  */
 public class PageLabels extends Operation {
     /** Matches an optional prefix, followed by a cardinal number. */
@@ -51,7 +51,6 @@ public class PageLabels extends Operation {
     private void rename(PageSet pageSet) {
         int realPage = 1;
         for (String range : getTextArgs()) {
-            System.out.println("range: "+range);
             int pos = range.indexOf('-');
             String start, end;
             if (pos < 0) {
