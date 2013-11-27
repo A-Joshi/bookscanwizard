@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.List;
@@ -56,6 +55,8 @@ public class FileHolder implements Comparable<FileHolder> {
 
    private String name;
    private final String oldName;
+   private String pdfName;
+
    private int position;
    private boolean deleted;
    private boolean forceOn;
@@ -128,9 +129,17 @@ public class FileHolder implements Comparable<FileHolder> {
     public String getName() {
         return name;
     }
-
+    
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getPdfName() {
+        return pdfName == null ? name : pdfName;
+    }
+    
+    public void setPdfName(String pdfName) {
+        this.pdfName = pdfName;
     }
 
     public int getPosition() {
@@ -252,10 +261,12 @@ public class FileHolder implements Comparable<FileHolder> {
                     IIOMetadata meta = reader.getImageMetadata(0);
                     IIOMetadataNode dimNode = (IIOMetadataNode) IIOMETADATA.invoke(meta);
                     NodeList nodes = dimNode.getElementsByTagName("HorizontalPixelSize");
-                    IIOMetadataNode dpcWidth = (IIOMetadataNode)nodes.item(0);
-                    setDPI(Math.round(25.4 / Double.parseDouble(dpcWidth.getAttribute("value"))));
+                    if (nodes.getLength() > 0) {
+                        IIOMetadataNode dpcWidth = (IIOMetadataNode)nodes.item(0);
+                        setDPI(Math.round(25.4 / Double.parseDouble(dpcWidth.getAttribute("value"))));
+                    }
                 }
-            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            } catch (Exception ex) {
                 System.out.println(ex);
             }
         }

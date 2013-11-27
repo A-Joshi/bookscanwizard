@@ -617,7 +617,7 @@ public class BSW {
                     try {
                         preview();
                     } catch (Exception ex) {
-                        Logger.getLogger(BSW.class.getName()).log(Level.SEVERE, null, ex);
+                        ex.printStackTrace();
                     }
                     getMainFrame().getThumbTable().updateSelection();
                 }

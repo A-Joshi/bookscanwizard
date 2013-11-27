@@ -38,7 +38,6 @@ import com.itextpdf.text.BadElementException;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.FontFactory;
-import com.itextpdf.text.Image;
 import com.itextpdf.text.pdf.CMYKColor;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfWriter;
@@ -53,9 +52,14 @@ import net.htmlparser.jericho.StartTagType;
  * This saves the OCR information as part of a pdf page
  */
 public class Hocr {
-    public static void writeToPDF(File hocrFile, PdfWriter pdfWriter, Image image, int dpi) throws IOException, BadElementException, DocumentException {
+    /**
+     * If this is set to true, the text will be written on top of the PDF
+     * page instead of the bottom
+     */
+    private static final boolean DEBUG = false;
+    
+    public static void writeToPDF(File hocrFile, PdfWriter pdfWriter, int dpi) throws IOException, BadElementException, DocumentException {
         float dotsPerPoint = dpi / 72.0f;
-        float pageImageHeight = image.getHeight() / dotsPerPoint;
         Font defaultFont = FontFactory.getFont(FontFactory.HELVETICA, 8, Font.BOLD, CMYKColor.BLACK);
 
         // Using the jericho library to parse the HTML file
@@ -64,20 +68,20 @@ public class Hocr {
 
         // Find the tag of class ocr_page in order to load the scanned image
         //System.out.println("div  tag start/end: " + divTag.getBegin() + ":" + divTag.getEnd() );
-        Pattern imagePattern = Pattern.compile("image\\s+([^;]+)");
+        Pattern imagePattern = Pattern.compile("image\\s+([^;]+)\\;([^;]+)");
         Matcher imageMatcher = imagePattern.matcher(divTag.getElement().getAttributeValue("title"));
         if (!imageMatcher.find()) {
             throw new RuntimeException("Could not find a tag of class \"ocr_page\", aborting.");
         }
-
-        // Put the text behind the picture (reverse for debugging)
-        PdfContentByte cb = pdfWriter.getDirectContentUnder();
-        //PdfContentByte cb = pdfWriter.getDirectContent();
-
+        PdfContentByte cb = DEBUG ? pdfWriter.getDirectContent() : pdfWriter.getDirectContentUnder();
         // In order to place text behind the recognised text snippets we are interested in the bbox property		
         Pattern bboxPattern = Pattern.compile("bbox(\\s+\\d+){4}");
         // This pattern separates the coordinates of the bbox property
         Pattern bboxCoordinatePattern = Pattern.compile("(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)");
+        Matcher imageBboxMatcher = bboxCoordinatePattern.matcher(imageMatcher.group(2));
+        imageBboxMatcher.find();
+        float pageImageHeight = Integer.parseInt(imageBboxMatcher.group(4)) / dotsPerPoint;
+
         // Only tags of the ocr_line class are interesting
         StartTag ocrLineTag = source.getNextStartTag(divTag.getEnd(), "class", "ocr_line", false);
         AffineTransform matrix = new AffineTransform();
@@ -95,14 +99,15 @@ public class Hocr {
                 }
                 float bboxWidthPt = coordinates[2] - coordinates[0];
                 float bboxHeightPt = coordinates[3] - coordinates[1];
-                float x =  coordinates[0];
+                float x = coordinates[0];
                 float y = pageImageHeight - coordinates[3];
 
                 String line = lineElement.getContent().getTextExtractor().toString();
                 // Put the text into the PDF
                 cb.beginText();
-                // Comment the next line to debug the PDF output (visible Text)
-                cb.setTextRenderingMode(PdfContentByte.TEXT_RENDER_MODE_INVISIBLE);
+                if (!DEBUG) {
+                    cb.setTextRenderingMode(PdfContentByte.TEXT_RENDER_MODE_INVISIBLE);
+                }
                 // Set the base font height
                 cb.setFontAndSize(defaultFont.getBaseFont(), bboxHeightPt);
                 float width = defaultFont.getBaseFont().getWidthPoint(line, bboxHeightPt);

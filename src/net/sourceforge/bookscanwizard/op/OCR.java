@@ -19,6 +19,7 @@ package net.sourceforge.bookscanwizard.op;
 
 import java.awt.image.RenderedImage;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
@@ -33,14 +34,13 @@ import net.sourceforge.bookscanwizard.util.ProcessHelper;
 import org.apache.commons.io.IOUtils;
 
 /**
- * This will write the image out to stdout as a png, and read in a replacement
- * image from stdin.
+ * This will use Google Tesseract to OCR the pages to hOCR format, which
+ * which can be added to the output PDF
  */
 public class OCR extends Operation {
     private String language;
     private static boolean useOCR = false;
     private static final Charset UTF8 = Charset.forName("UTF8");
-    
     
     @Override
     protected List<Operation> setup(List<Operation> operationList) throws Exception {
@@ -61,7 +61,7 @@ public class OCR extends Operation {
         ProcessHelper.fixScript(args);
         String name = "tesseract";
         if (args.length > 0) {
-            name = new File(args[0], name).getPath();
+             name = new File(args[0], name).getPath();
         }
         name = ProcessHelper.findPath(name);
         File parent = new File(name).getParentFile();
@@ -81,13 +81,15 @@ public class OCR extends Operation {
         ProcessBuilder processBuilder = new ProcessBuilder(cmdList)
                 .directory(pageSet.getDestinationDir())
                 .redirectErrorStream(true);
-        
         Process proc = processBuilder.start();
-        int retVal = proc.waitFor();
-        new File(pngName).delete();
-        if (retVal != 0) {
-            String msg = IOUtils.toString(proc.getInputStream(), UTF8);
-            throw new UserException(msg);
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            IOUtils.copy(proc.getInputStream(), bos);
+            int retVal = proc.waitFor();
+            new File(pngName).delete();
+            if (retVal != 0) {
+                String msg = new String(bos.toByteArray(), UTF8);
+                throw new UserException(msg);
+            }
         }
         useOCR = true;
         return img;

@@ -24,7 +24,6 @@ import net.sourceforge.bookscanwizard.UserException;
  * Returns a sequence of numbers for use in page file names.
  */
 public class Sequence {
-    private static final String ZEROS = "0000000000";
     private static final String HASH  = "##########";
 
     private int lastValue = 1;
@@ -75,6 +74,7 @@ public class Sequence {
 
     /**
      *  The last value returned by this sequence
+     * @return the last value returned.
      */
     public int getLastValue() {
         return lastValue;
@@ -82,14 +82,14 @@ public class Sequence {
 
     /**
      * Sets the maximum value that should be returned by the sequence
+     * @param endingValue
      */
     public void setEndingValue(int endingValue) {
         this.endingValue = endingValue;
     }
 
     public static String zeroFill(int value, int length) {
-        String x = ZEROS + value;
-        return x.substring(x.length() - length);
+        return String.format("%0"+length+"d", value);
     }
 
     public static void main(String[] args) {

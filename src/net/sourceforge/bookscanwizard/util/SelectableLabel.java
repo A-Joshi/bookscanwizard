@@ -15,23 +15,41 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-
 package net.sourceforge.bookscanwizard.util;
 
+import java.awt.Desktop;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import javax.swing.JEditorPane;
 import javax.swing.UIManager;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import net.sourceforge.bookscanwizard.UserException;
 
 /**
  * A component that looks like a label, but is selectable, even when displaying
- * html.
+ * html. Also, any embedded links will launch the default browser.
  */
 public class SelectableLabel extends JEditorPane {
+
     public SelectableLabel() {
-          setEditable(false);
-          setBorder(null);
-          setForeground(UIManager.getColor("Label.foreground"));
-          setBackground(UIManager.getColor("Label.background"));
-          setFont(UIManager.getFont("Label.font"));
-          setContentType("text/html");
+        setEditable(false);
+        setBorder(null);
+        setForeground(UIManager.getColor("Label.foreground"));
+        setBackground(UIManager.getColor("Label.background"));
+        setFont(UIManager.getFont("Label.font"));
+        setContentType("text/html");
+        addHyperlinkListener(new HyperlinkListener() {
+            @Override
+            public void hyperlinkUpdate(HyperlinkEvent hle) {
+                if (HyperlinkEvent.EventType.ACTIVATED.equals(hle.getEventType())) {
+                    try {
+                        Desktop.getDesktop().browse(hle.getURL().toURI());
+                    } catch (IOException | URISyntaxException | RuntimeException ex) {
+                        throw new UserException("Could not load "+hle.getURL());
+                    }
+                }
+            }
+        });
     }
 }

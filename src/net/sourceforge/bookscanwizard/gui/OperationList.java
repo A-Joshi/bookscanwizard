@@ -46,7 +46,7 @@ import net.sourceforge.bookscanwizard.op.*;
 import net.sourceforge.bookscanwizard.util.SelectableLabel;
 
 public class OperationList extends JFrame {
-    private SelectableLabel argNotes;
+    private final SelectableLabel argNotes;
     private JTable table;
     private static final ArrayList<OpDefinition> defs;
     private final BoundsHelper boundsListener;
@@ -74,9 +74,11 @@ public class OperationList extends JFrame {
         Levels.class,
         LoadImages.class,
         LoadLRImages.class,
+        LoadTemp.class,
         Metadata.class,
         NormalizeLighting.class,
         OCR.class,
+        PageLabels.class,
         Pages.class,
         Perspective.class,
         PerspectiveAndCrop.class,
@@ -87,6 +89,7 @@ public class OperationList extends JFrame {
         Rotate.class,
         Saturation.class,
         SaveImages.class,
+        SaveTemp.class,
         SaveToArchive.class,
         Scale.class,
         ScaleToDPI.class,
@@ -133,7 +136,7 @@ public class OperationList extends JFrame {
                 if (col == 0) {
                     return def.getName();
                 } else if (col == 1) {
-                    return def.getHelper();
+                    return def.getShortDescription();
                 } else {
                     return def;
                 }

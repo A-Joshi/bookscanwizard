@@ -160,26 +160,27 @@ public class CreatePDF extends Operation implements SaveOperation, ProcessDelete
                     }
                 }
                 pdfWriter.setViewerPreferences(pageLayout);
+                pdfWriter.setPageLabels(PageLabels.getPageLabels());
                 addMetaData(document);
             }
-            if (dpi> 0) {
-                document.setPageSize(new Rectangle(
-                        72 * bi.getWidth()/dpi,
-                        72 * bi.getHeight()/dpi));
-            } else {
-                document.setPageSize(new Rectangle(72 * 8, (int) (72 * 10.5)));
-                dpi = img.getWidth() / 8;
+            int pageDPI = (int) holder.getDPI();
+            if (pageDPI == 0) {
+                pageDPI = dpi;
             }
+            if (pageDPI == 0) {
+                double xDPI = bi.getWidth() / 8.0;
+                double yDPI = bi.getHeight() / 10.5;
+                pageDPI = (int) Math.min(xDPI, yDPI);
+            }
+            document.setPageSize(new Rectangle(
+                    72 * bi.getWidth()/pageDPI,
+                    72 * bi.getHeight()/pageDPI));
             if (document.isOpen()) {
                 document.newPage();
             } else {
                 document.open();
             }
             Image itextImage = Image.getInstance(imageBytes);
-            int pageDPI = (int) holder.getDPI();
-            if (pageDPI == 0) {
-                pageDPI = dpi;
-            }
             itextImage.setDpi(pageDPI, pageDPI);
             itextImage.setAbsolutePosition(0, 0);
             itextImage.scaleToFit(document.getPageSize().getWidth(), document.getPageSize().getHeight());
@@ -189,7 +190,7 @@ public class CreatePDF extends Operation implements SaveOperation, ProcessDelete
             if (OCR.isUseOCR()) {
                 File hocrFile = new File (pageSet.getDestinationDir(), holder.getName()+".html");
                 if (hocrFile.isFile()) {
-                    Hocr.writeToPDF(hocrFile, pdfWriter, itextImage, dpi);
+                    Hocr.writeToPDF(hocrFile, pdfWriter, pageDPI);
                 }
             }
             // release the page so the next page can continue.

@@ -1,4 +1,4 @@
-/*
+/*cd \
  *
  * Copyright (c) 2013 by Steve Devore
  *                       http://bookscanwizard.sourceforge.net

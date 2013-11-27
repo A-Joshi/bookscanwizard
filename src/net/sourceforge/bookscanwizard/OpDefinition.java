@@ -21,10 +21,10 @@ package net.sourceforge.bookscanwizard;
 import java.util.ArrayList;
 
 public class OpDefinition {
-    private String name;
-    private String helper;
-    private String example;
-    private ArrayList<Argument> arguments = new ArrayList<>();
+    private final String name;
+    private final String helper;
+    private final String example;
+    private final ArrayList<Argument> arguments = new ArrayList<>();
 
     public ArrayList<Argument> getArguments() {
         return arguments;
@@ -36,6 +36,19 @@ public class OpDefinition {
 
     public String getName() {
         return name;
+    }
+
+    public String getShortDescription() {
+        String shortDescription = helper;
+        if (helper == null) {
+            System.out.println("missing desc: "+name);
+            return "";
+        }
+        int pos = shortDescription.indexOf('.');
+        if (pos > 0) {
+            shortDescription = shortDescription.substring(0, pos + 1);
+        }
+        return shortDescription;
     }
 
     public String getExample() {
@@ -67,7 +80,7 @@ public class OpDefinition {
         public String getName() {
             return name;
         }
-
+        
         public boolean isRequired() {
             return required;
         }

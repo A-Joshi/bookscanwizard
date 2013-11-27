@@ -323,7 +323,7 @@ public class ThumbTable extends JTable {
             }
             thumb.set(img);
             setBorder(isSelected ? selectedBorder : normalBorder);
-            label.setText(holder.getName());
+            label.setText(holder.getPdfName());
             int p = (holder.getPosition() == FileHolder.LEFT) ? JLabel.LEFT : JLabel.RIGHT;
             label.setHorizontalAlignment(p);
             deleted = holder.isDeleted();

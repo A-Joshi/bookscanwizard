@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 import net.sourceforge.bookscanwizard.BSW;
 import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.PageSet;
+import net.sourceforge.bookscanwizard.util.ProcessHelper;
 
 /**
  * Runs a script after creating the images, with parameters
@@ -41,8 +42,12 @@ public class PostCommand extends Operation{
         cmd = cmd.replace("%parentAsName%", BSW.getCurrentDirectory().getAbsolutePath());
         logger.log(Level.INFO, "running external script: {0}", cmd);
         long time = System.currentTimeMillis();
-        Process proc = Runtime.getRuntime().exec("cmd /c "+cmd, null, BSW.getCurrentDirectory());
+        if (ProcessHelper.isWindows() && !cmd.startsWith("cmd ")) {
+            cmd = "cmd /c " + cmd;
+        }
+        
+        Process proc = Runtime.getRuntime().exec(cmd, null, BSW.getCurrentDirectory());
         proc.waitFor();
-        logger.log(Level.INFO, "{0} elapsed sec", ((System.currentTimeMillis() - time) / 1000));
+        logger.log(Level.INFO, "{0} elapsed sec", (System.currentTimeMillis() - time) / 1000);
     }
 }
