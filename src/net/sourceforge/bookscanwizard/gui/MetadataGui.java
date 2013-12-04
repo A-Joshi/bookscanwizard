@@ -43,7 +43,7 @@ public class MetadataGui extends javax.swing.JDialog {
 
     public MetadataGui(java.awt.Frame parent, boolean modal) throws Exception {
         super(parent, modal);
-        setTitle("Save Metadata for this book");
+        setTitle("Save user preferences");
         initComponents();
         updateGui();
         jDescription.setFocusTraversalKeys(KeyboardFocusManager.FORWARD_TRAVERSAL_KEYS, null);

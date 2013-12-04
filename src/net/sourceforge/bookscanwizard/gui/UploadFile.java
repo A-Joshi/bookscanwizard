@@ -48,7 +48,12 @@ public class UploadFile extends javax.swing.JDialog {
         SaveToArchive.saveToArchive(jFile.getSelectedFile().getPath(), jAccess.getText(), jSecret.getText());
     }
 
-    /** Creates new form UploadFile */
+    /** Creates new form UploadFile
+     * @param parent
+     * @param modal
+     * @param menuHandler
+     * @throws java.lang.Exception 
+     */
     public UploadFile(java.awt.Frame parent, boolean modal, final ActionListener menuHandler) throws Exception {
         super(parent, modal);
         initComponents();

@@ -67,9 +67,9 @@ public class OpDefinition {
     }
 
     public class Argument {
-        private boolean required;
-        private String name;
-        private String tooltip;
+        private final boolean required;
+        private final String name;
+        private final String tooltip;
 
         public Argument(boolean required, String name, String tooltip) {
             this.required = required;

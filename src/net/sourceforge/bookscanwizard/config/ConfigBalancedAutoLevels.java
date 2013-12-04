@@ -29,7 +29,7 @@ import net.sourceforge.bookscanwizard.Operation;
  * value.  This should be done when the brightness has already been normalized
  */
 public class ConfigBalancedAutoLevels {
-    private DecimalFormat formatter = new DecimalFormat("#.#");
+    private final DecimalFormat formatter = new DecimalFormat("#.#");
 
     public String getConfig(RenderedImage img) {
 //        if (true) return new ConfigGrayCard().getConfig(img);

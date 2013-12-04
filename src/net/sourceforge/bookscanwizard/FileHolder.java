@@ -27,8 +27,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -222,6 +224,14 @@ public class FileHolder implements Comparable<FileHolder> {
                 img = getImage();
             }
             return img;
+        }
+    }
+    
+    public Map<String,String> getMetadata() {
+        if (source != null) {
+            return source.getMetadata();
+        } else {
+            return Collections.emptyMap();
         }
     }
     

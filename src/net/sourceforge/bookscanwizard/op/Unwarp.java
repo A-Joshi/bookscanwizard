@@ -31,7 +31,7 @@ public class Unwarp extends Operation {
 
     @Override
     protected int getOperationMinPass() {
-        return super.getMinPass() - 1;
+        return Operation.getMinPass() - 1;
     }
 
     @Override
@@ -52,7 +52,7 @@ public class Unwarp extends Operation {
                 h.setDeleted(true);
             }
             LaserUnwarp.configure(hue, threshold, saturation, brightness);
-            laserUnwarp.calibrateHeights(calibration);
+            LaserUnwarp.calibrateHeights(calibration);
 
             laserUnwarp = new LaserUnwarp(img);
         }

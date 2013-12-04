@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.TreeMap;
 import net.sourceforge.bookscanwizard.DpiSetter;
 import net.sourceforge.bookscanwizard.FileHolder;
@@ -155,7 +156,7 @@ public class EstimateDPI extends Operation {
         info.add(left.firstEntry().getKey());
         info.add(left.lastEntry().getValue());
         info.add(left.lastEntry().getKey());
-        if (left.firstEntry().getValue() == left.lastEntry().getValue()) {
+        if (Objects.equals(left.firstEntry().getValue(), left.lastEntry().getValue())) {
             throw new UserException(INVALID);
         }
         if (!left.equals(right)) {
@@ -163,7 +164,7 @@ public class EstimateDPI extends Operation {
             info.add(right.firstEntry().getKey());
             info.add(right.lastEntry().getValue());
             info.add(right.lastEntry().getKey());
-            if (right.firstEntry().getValue() == right.lastEntry().getValue()) {
+            if (Objects.equals(right.firstEntry().getValue(), right.lastEntry().getValue())) {
                 throw new UserException(INVALID);
             }
         }

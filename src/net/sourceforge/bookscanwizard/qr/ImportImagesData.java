@@ -27,7 +27,7 @@ import java.io.Serializable;
  * Bean that contains data from the import form.
  */
 public class ImportImagesData implements Serializable {
-    private PropertyChangeSupport propertySupport;
+    private final PropertyChangeSupport propertySupport;
 
     public static final String PROP_SOURCE = "source";
     public static final String PROP_DESTINATION = "destination";

@@ -30,6 +30,9 @@ import javax.media.jai.operator.ConvolveDescriptor;
 public class Kernels {
     /**
      * Make a Gaussian blur kernel.
+     * @param radius
+     * @param sigma
+     * @return 
      */
     public static KernelJAI generateGaussianKernel(float radius, float sigma) {
         // work with doubles for intermediate values
@@ -61,6 +64,10 @@ public class Kernels {
     /**
      * JAI doesn't use the separate vertical & horizontal convolutions for
      * sizes bigger than 7 if native libraries are used (for some reason).
+     * @param img
+     * @param kernel
+     * @param hints
+     * @return 
      */
     public static RenderedOp convolveSymmetric(RenderedImage img, KernelJAI kernel, RenderingHints hints) {
         if (kernel.getHeight() <= 7) {

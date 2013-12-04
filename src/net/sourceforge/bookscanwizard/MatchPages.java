@@ -166,9 +166,7 @@ public class MatchPages {
 
     /**
      * Returns a set of FileHolders which combine the left and right directories
-     * @param inputPath
-     * @param sequence
-     * @return
+     * @return the set of pages.
      */
     public List<FileHolder>getAllPages() {
         return pages;

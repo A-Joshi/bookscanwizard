@@ -44,7 +44,7 @@ import net.sourceforge.bookscanwizard.util.LazyHashMap;
 public class Barcodes extends Operation {
     private static final Logger logger = Logger.getLogger(Barcodes.class.getName());
     private static String configuration;
-    private static DecimalFormat whole = new DecimalFormat("#");
+    private static final DecimalFormat whole = new DecimalFormat("#");
 
     private TreeSet<FileHolder> deleted;
     private List<FileHolder> holders;

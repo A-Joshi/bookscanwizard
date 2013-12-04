@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.imageio.spi.ImageReaderSpi;
 import javax.imageio.spi.ImageWriterSpi;
 import javax.media.jai.BorderExtenderConstant;
 import javax.media.jai.ImageLayout;
@@ -523,6 +524,8 @@ abstract public class Operation {
         // the native version has problems with compression.
         ImageUtilities.allowNativeCodec("jpeg2000", ImageWriterSpi.class, false);
         // the native version doesn't want to return metadata.
+        ImageUtilities.allowNativeCodec("jpeg", ImageWriterSpi.class, false);
+        ImageUtilities.allowNativeCodec("jpeg", ImageReaderSpi.class, false);
         ImageUtilities.allowNativeCodec("jpeg", ImageWriterSpi.class, false);
     }
 

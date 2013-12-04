@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.Future;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -60,6 +61,7 @@ import net.sourceforge.bookscanwizard.start.NewBook;
 import net.sourceforge.bookscanwizard.start.PreferenceWizard;
 import net.sourceforge.bookscanwizard.unwarp.FilterWizard;
 import net.sourceforge.bookscanwizard.util.ProcessHelper;
+import tjacobs.ui.dialogs.ParamDialog;
 
 /**
  * This contains the actions specific to the interactive processing.
@@ -198,8 +200,8 @@ public class GuiActions extends UserFeedbackHelper {
                 insertCoordinates("PerspectiveAndCrop =");
                 break;
             case "preferences":
-                PreferenceWizard wizard = new PreferenceWizard();
-                wizard.getConfig();
+                JDialog userPrefDialog = new UserPreferences(mainFrame, true);
+                userPrefDialog.setVisible(true);
                 break;
             case "preview":
                 bsw.preview();
@@ -540,7 +542,7 @@ public class GuiActions extends UserFeedbackHelper {
     }
 
     private static class UploadImages implements Batch {
-        private UploadFile uploadFile;
+        private final UploadFile uploadFile;
 
         public UploadImages (UploadFile uploadFile) {
             this.uploadFile = uploadFile;

@@ -73,7 +73,7 @@ public class Metadata extends Operation{
         }
         if (!found && title != null) {
             String str = calcIdFromTitle(title);
-            newMeta.add(new KeyValue("identifier", str.toString()));
+            newMeta.add(new KeyValue("identifier", str));
         }
         return newMeta;
     }
@@ -123,7 +123,7 @@ public class Metadata extends Operation{
 
     public static class KeyValue implements Comparable<KeyValue> {
 
-        private String key;
+        private final String key;
         private String value;
 
         public KeyValue (String key, String value) {

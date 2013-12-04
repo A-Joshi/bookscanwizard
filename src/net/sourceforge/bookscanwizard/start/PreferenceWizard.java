@@ -31,7 +31,7 @@ import org.netbeans.spi.wizard.WizardPage;
 
 public class PreferenceWizard {
 
-    private Wizard wizard;
+    private final Wizard wizard;
 
     public PreferenceWizard() {
         wizard = WizardPage.createWizard(new Class[] {PreferencePage.class});

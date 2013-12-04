@@ -51,7 +51,7 @@ import net.sourceforge.bookscanwizard.util.Sequence;
  */
 public class ImportMonitor implements Runnable {
     private WatchService watcher;
-    private HashMap<WatchKey, Info> keyMap = new HashMap<>();
+    private final HashMap<WatchKey, Info> keyMap = new HashMap<>();
     private final Set<File> toProcess =
             Collections.synchronizedSet(new HashSet<File>());
     private final Map<File, Collection<QRData>> processed =
@@ -60,7 +60,7 @@ public class ImportMonitor implements Runnable {
     private File destination;
     private boolean useLR = false;
     private String title;
-    private Thread monitorThread = new Thread(this);
+    private final Thread monitorThread = new Thread(this);
     private boolean exitThread;
 
     public void setSource(File source) throws IOException {
@@ -105,6 +105,7 @@ public class ImportMonitor implements Runnable {
     }
 
     @Override
+    @SuppressWarnings({"BroadCatchBlock", "TooBroadCatch"})
     public void run() {
         try {
             processEvents();
@@ -328,11 +329,11 @@ public class ImportMonitor implements Runnable {
     }
 
     private class Info {
-        private Path path;
+        private final Path path;
         private String nextName;
         private String prefix;
         private String suffix;
-        private TreeMap<String, File> files = new TreeMap<>();
+        private final TreeMap<String, File> files = new TreeMap<>();
 
         public Info(Path path) {
             this.path = path;

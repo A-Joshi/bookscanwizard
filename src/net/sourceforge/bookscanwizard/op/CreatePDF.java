@@ -31,6 +31,7 @@ import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -161,7 +162,7 @@ public class CreatePDF extends Operation implements SaveOperation, ProcessDelete
                 }
                 pdfWriter.setViewerPreferences(pageLayout);
                 pdfWriter.setPageLabels(PageLabels.getPageLabels());
-                addMetaData(document);
+                addMetaData(document, holder);
             }
             int pageDPI = (int) holder.getDPI();
             if (pageDPI == 0) {
@@ -284,32 +285,47 @@ public class CreatePDF extends Operation implements SaveOperation, ProcessDelete
         }
     }
 
-    private void addMetaData(Document document) {
+    private void addMetaData(Document document, FileHolder holder) {
+        for (Map.Entry<String,String> entry : holder.getMetadata().entrySet()) {
+            addMeta(document, entry.getKey(), entry.getValue());
+        }
         for (KeyValue meta : Metadata.getMetaData()) {
             if (meta.getValue().isEmpty()) {
                 continue;
             }
-            // convert from the archive.org standard to the pdf standard.
             String key = meta.getKey();
-            switch (key) {
-                case "subject":
-                    document.addSubject(meta.getValue());
-                    break;
-                case "title":
-                    document.addTitle(meta.getValue());
-                    break;
-                case "creator":
-                    document.addAuthor(meta.getValue());
-                    break;
-                case "keywords":
-                    document.addKeywords(meta.getValue());
-                    break;
-                case "identifier":
-                    break;
-                default:
-                    document.addHeader(key, meta.getValue());
-                    break;
-            }
+            addMeta(document, key, meta.getValue());
+        }
+    }
+
+    /**
+     * Adds the metadata in the proper format for PDF's. 
+     */
+    private void addMeta(Document document, String key, String value) {
+        // convert from the archive.org standard uses lowercase keys, PDF uses
+        // uppercase
+        switch (key) {
+            case "Subject":
+            case "subject":
+                document.addSubject(value);
+                break;
+            case "Title":
+            case "title":
+                document.addTitle(value);
+                break;
+            case "Author":
+            case "creator":
+                document.addAuthor(value);
+                break;
+            case "Keywords":
+            case "keywords":
+                document.addKeywords(value);
+                break;
+            case "identifier":
+                break;
+            default:
+                document.addHeader(key, value);
+                break;
         }
     }
 }

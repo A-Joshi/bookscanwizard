@@ -49,6 +49,10 @@ public class Scale extends Operation implements ScaleOp {
     /**
      * This renders an image in a quality way, using interpolation for
      * values greater than 1, or subsample averaging for values less than 1
+     * @param img
+     * @param xScale
+     * @param yScale
+     * @return 
      */
     public static RenderedImage qualityScale(RenderedImage img, float xScale, float yScale)  {
         if (Float.isNaN(xScale) || Float.isNaN(yScale)) {

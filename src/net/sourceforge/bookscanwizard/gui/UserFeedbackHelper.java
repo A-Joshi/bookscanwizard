@@ -24,6 +24,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.EventObject;
+import java.util.concurrent.ExecutionException;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import net.sourceforge.bookscanwizard.BSW;
@@ -40,6 +41,7 @@ abstract public class UserFeedbackHelper implements ActionListener {
     public abstract void cursorActionPerformed(ActionEvent e) throws Exception;
 
     @Override
+    @SuppressWarnings({"BroadCatchBlock", "TooBroadCatch"})
     public final void actionPerformed(ActionEvent e) {
         MainFrame fr = BSW.instance().getMainFrame();
         try {
@@ -76,17 +78,27 @@ public void run() {
         } else {
             Runnable r = new Runnable() {
                 @Override
+                @SuppressWarnings("ThrowableResultIgnored")
                 public void run() {
-                    Throwable ue = ex;
-                    while(!(ue instanceof UserException) && ue.getCause() != null) {
+                    Throwable displayException = ex;
+                    if (displayException instanceof ExecutionException) {
+                        displayException = displayException.getCause();
+                    }
+                    Throwable ue = displayException;
+                    while(ue.getCause() != null) {
+                        if (ue instanceof UserException) {
+                            displayException = ue;
+                            break;
+                        }
                         ue = ue.getCause();
                     }
-                    JOptionPane.showMessageDialog(c, ue.toString(), "", JOptionPane.INFORMATION_MESSAGE);
+                    String message = displayException instanceof UserException 
+                            ? displayException.getMessage() : displayException.toString();
+                    JOptionPane.showMessageDialog(c, message, "", JOptionPane.INFORMATION_MESSAGE);
                 }
             };
             SwingUtilities.invokeLater(r);
             Toolkit.getDefaultToolkit().beep();
         }
     }
-
 }

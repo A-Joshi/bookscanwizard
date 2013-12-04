@@ -25,12 +25,12 @@ import javax.media.jai.Warp;
  * distortion. 
  */
 public final class WarpSpherical extends Warp {
-    private double amplitude3;
-    private double amplitude2;
-    private double amplitude1;
+    private final double amplitude3;
+    private final double amplitude2;
+    private final double amplitude1;
 
-    private double focusX;
-    private double focusY;
+    private final double focusX;
+    private final double focusY;
 
     /**
      * Create a new warp operation
@@ -41,7 +41,7 @@ public final class WarpSpherical extends Warp {
      * @param x the x coordinate of the focal point of the distortion
      * @param y the y coordinate of the focal point of the distortion
      * @param amplitude2
-     * @param amplitude
+     * @param amplitude1
      */
     public WarpSpherical(double x, double y, double amplitude3, double amplitude2, double amplitude1) {
         this.focusX = x;

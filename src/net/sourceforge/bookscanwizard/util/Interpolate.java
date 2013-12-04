@@ -22,10 +22,10 @@ package net.sourceforge.bookscanwizard.util;
  * Defines a linear interpolation.
  */
 public final class Interpolate {
-    private double x0;
-    private double x1;
-    private double y0;
-    private double y1;
+    private final double x0;
+    private final double x1;
+    private final double y0;
+    private final double y1;
 
     public Interpolate(double x0, double y0, double x1, double y1) {
         this.x0 = x0;
@@ -36,6 +36,8 @@ public final class Interpolate {
 
     /**
      * Interpolates the y value for a give x value
+     * @param x
+     * @return 
      */
     public double interpolate(double x) {
         return interpolate(x, x0, y0, x1, y1);
@@ -43,6 +45,8 @@ public final class Interpolate {
 
     /**
      * Returns the x value for a given Y value.
+     * @param y
+     * @return 
      */
     public double inverse(double y) {
         return interpolate(y, y0, x0, y1, x1);

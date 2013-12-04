@@ -26,6 +26,7 @@ import com.itextpdf.text.pdf.parser.TextRenderInfo;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -42,11 +43,13 @@ public class PDFReference {
 
     private PdfReader reader;
     private PdfReaderContentParser parser;
+
     private RenderListener listener;
     private RenderedImage lastImage;
     private File file;
     private PDFReferenceAlternate alternate;
     private float dpi;
+    private HashMap<String, String> metadata;
     
     protected PDFReference() {}
 
@@ -65,6 +68,7 @@ public class PDFReference {
         this.file = f;
         this.reader = new PdfReader(f.getPath());
         this.pageCount =  reader.getNumberOfPages();
+        this.metadata = reader.getInfo();
     }
 
     public int getPageCount() {
@@ -77,6 +81,10 @@ public class PDFReference {
         } else {
             return 0;
         }
+    }
+
+        public HashMap<String, String> getMetadata() {
+        return metadata;
     }
 
     public RenderedImage getThumbnail(int pg) throws IOException {

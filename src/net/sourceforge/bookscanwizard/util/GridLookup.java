@@ -26,9 +26,9 @@ import net.sourceforge.bookscanwizard.util.Bilinear.Solution;
  * interpolate if the coordinates are between samples.
  */
 public class GridLookup {
-    private int width;
-    private int height;
-    private float[] data;
+    private final int width;
+    private final int height;
+    private final float[] data;
     
     public GridLookup (int width, int height, float[] data) {
         this.width = width;
@@ -39,6 +39,10 @@ public class GridLookup {
 
     /**
      * Returns the source position of the x,y value
+     * @param x
+     * @param y
+     * @param results
+     * @return 
      */
     public float[] findPosition(float x, float y, float[] results) {
         // does a 2d binary search, followed by a  bi-linear inverse interpolation

@@ -30,6 +30,8 @@ import javax.imageio.ImageIO;
 import net.sourceforge.bookscanwizard.FileHolder;
 import net.sourceforge.bookscanwizard.Operation;
 import net.sourceforge.bookscanwizard.UserException;
+import net.sourceforge.bookscanwizard.gui.UserPreferenceBean;
+import net.sourceforge.bookscanwizard.util.OtsuThreshold;
 import net.sourceforge.bookscanwizard.util.ProcessHelper;
 import org.apache.commons.io.IOUtils;
 
@@ -60,11 +62,15 @@ public class OCR extends Operation {
         String[] args = getTextArgs();
         ProcessHelper.fixScript(args);
         String name = "tesseract";
-        if (args.length > 0) {
-             name = new File(args[0], name).getPath();
+        String dir = UserPreferenceBean.instance().getTesseractLocation();
+        if (dir != null && !dir.isEmpty()) {
+            name = new File(dir, name).getPath();
         }
         name = ProcessHelper.findPath(name);
         File parent = new File(name).getParentFile();
+        if (!new File(name).isFile()) {
+            throw new UserException("The executable \"tesseract\" could not be found.\nEnsure the directory is on the system path or the location is entered under Tools, Preferences");
+        }
         List<String> cmdList = new ArrayList<>();
         cmdList.add(name);
         String pngName = new File(pageSet.getDestinationDir(), holder.getName() + ".png").getCanonicalPath();
@@ -76,7 +82,8 @@ public class OCR extends Operation {
         }
         cmdList.add(new File(parent, "tessdata/configs/hocr").getCanonicalPath());
         try (OutputStream os = new BufferedOutputStream(new FileOutputStream(pngName))) {
-            ImageIO.write(img, "PNG", os);
+            ImageIO.write(OtsuThreshold.binarize(img), "PNG", os);
+//            ImageIO.write(SauvolaBinarisationFilter.filter(img), "PNG", os);
         }
         ProcessBuilder processBuilder = new ProcessBuilder(cmdList)
                 .directory(pageSet.getDestinationDir())

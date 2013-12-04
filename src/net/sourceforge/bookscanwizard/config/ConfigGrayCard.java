@@ -25,7 +25,7 @@ import javax.media.jai.JAI;
 import net.sourceforge.bookscanwizard.Operation;
 
 public class ConfigGrayCard {
-    private DecimalFormat formatter = new DecimalFormat("#.#");
+    private final DecimalFormat formatter = new DecimalFormat("#.#");
 
     public String getConfig(RenderedImage img) {
         StringBuilder retVal = new StringBuilder("Brightness = ");

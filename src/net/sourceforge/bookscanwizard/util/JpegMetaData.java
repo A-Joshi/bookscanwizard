@@ -15,7 +15,7 @@ import org.w3c.dom.NodeList;
  */
 
 public class JpegMetaData {
-    private static String JPEGMetaFormat = "javax_imageio_jpeg_image_1.0";
+    private static final String JPEGMetaFormat = "javax_imageio_jpeg_image_1.0";
     private IIOMetadata metaData;
 
     public JpegMetaData(File file) throws IOException {

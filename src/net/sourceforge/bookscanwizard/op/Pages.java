@@ -61,9 +61,9 @@ public class Pages extends Operation {
         List<String> strList = Arrays.asList(textArguments).subList(pos, textArguments.length);
         if (!strList.isEmpty()) {
             String str = getPageList(strList);
-            pageMatch = new PageMatch(str.toString());
+            pageMatch = new PageMatch(str);
         }
-        for (FileHolder holder : pageSet.getSourceFiles()) {
+        for (FileHolder holder : PageSet.getSourceFiles()) {
             if (position == 0 || position == holder.getPosition()) {
                 if (pageMatch == null || pageMatch.matches(holder.getName())) {
                     selectedPages.add(holder);

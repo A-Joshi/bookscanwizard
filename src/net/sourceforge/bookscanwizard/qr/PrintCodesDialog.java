@@ -26,7 +26,8 @@ import net.sourceforge.bookscanwizard.gui.UserFeedbackHelper;
 
 
 public class PrintCodesDialog extends javax.swing.JDialog {
-    /** Creates new form PrintCodesDialog */
+    /** Creates new form PrintCodesDialog
+     * @param parent */
     public PrintCodesDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();

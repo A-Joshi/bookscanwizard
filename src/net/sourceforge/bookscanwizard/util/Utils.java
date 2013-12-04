@@ -39,6 +39,7 @@ public class Utils {
         }
         ColorModel cm = img.getColorModel();
         WritableRaster raster = cm.createCompatibleWritableRaster(img.getWidth(), img.getHeight());
+        @SuppressWarnings("UseOfObsoleteCollectionType")
         Hashtable<String, Object> props = new Hashtable<>();
         String[] keys = img.getPropertyNames();
 
@@ -57,7 +58,7 @@ public class Utils {
      * {@code BufferedImage}. Unlike simple scaling, this will
      * work well with thumbnail images.
      *
-     * @param img the original image to be scaled
+     * @param renderedImage the original image to be scaled
      * @param targetWidth the desired width of the scaled instance,
      *    in pixels
      * @param targetHeight the desired height of the scaled instance,

@@ -34,18 +34,23 @@ import net.sourceforge.bookscanwizard.qr.ImportMonitor;
  */
 public class ImportImages extends javax.swing.JFrame {
     private static final Logger logger = Logger.getLogger(ImportImages.class.getName());
-    private static ImportImages instance = new ImportImages();
+    private static ImportImages instance;
     ImportMonitor monitor;
 
     
-    public static ImportImages getInstance() {
+    public static synchronized ImportImages getInstance() {
+        System.out.println("getinst");
+        if (instance == null) {
+            instance = new ImportImages();
+        }
         return instance;
     }
-
+    
     /**
      * Creates new form ImportImages
      */
     public ImportImages() {
+        instance = new ImportImages();
         initComponents();
     }
 
@@ -434,6 +439,14 @@ public class ImportImages extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
     public ImportImagesData getImportData() {
         return importImagesData1;
+    }
+    
+    public static ImportImagesData getStaticImportData() {
+        if (instance != null) {
+            return instance.importImagesData1;
+        } else {
+            return null;
+        }
     }
     
     public void setImportData(ImportImagesData data) {

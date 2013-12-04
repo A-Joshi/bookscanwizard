@@ -122,6 +122,7 @@ public class QRData {
 
     /**
      * Returns the size between the registration markers
+     * @return 
      */
     public float getSize() {
         return size;

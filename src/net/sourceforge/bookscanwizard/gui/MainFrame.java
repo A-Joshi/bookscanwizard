@@ -366,14 +366,14 @@ public final class MainFrame extends JFrame {
             }
         });
         toolsMenu.add(horizontalLayout);
+        // TODO:  get preferences worcking.
+        menuItem = new JMenuItem("Preferences");
+        menuItem.setMnemonic(KeyEvent.VK_P);
+        menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
+        menuItem.setActionCommand("preferences");
+        menuItem.addActionListener(menuHandler);
+        toolsMenu.add(menuItem);
         if (BSW.EXPERIMENTAL) {
-            // TODO:  get preferences worcking.
-            menuItem = new JMenuItem("Preferences");
-            menuItem.setMnemonic(KeyEvent.VK_P);
-            menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-            menuItem.setActionCommand("preferences");
-            menuItem.addActionListener(menuHandler);
-            toolsMenu.add(menuItem);
 
             menuItem = new JMenuItem("Laser Filter...");
             menuItem.setMnemonic(KeyEvent.VK_L);

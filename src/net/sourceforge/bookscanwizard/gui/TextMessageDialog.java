@@ -29,7 +29,7 @@ import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
 public class TextMessageDialog extends JDialog {
-    private JLabel label;
+    private final JLabel label;
 
     public TextMessageDialog(JFrame owner, String title, String message) {
         super(owner, "Book Scan Wizard", true);

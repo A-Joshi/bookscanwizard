@@ -28,7 +28,7 @@ public enum QRCodeControls {
     SKIP ("Skip this page"),
     DPI ("Set the Source DPI");
 
-    private String description;
+    private final String description;
 
     QRCodeControls(String description) {
         this.description = description;

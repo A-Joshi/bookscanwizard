@@ -34,6 +34,8 @@ import javax.swing.JSplitPane;
 import net.sourceforge.bookscanwizard.gui.ImportImages;
 import net.sourceforge.bookscanwizard.gui.MainFrame;
 import net.sourceforge.bookscanwizard.gui.TipsDialog;
+import net.sourceforge.bookscanwizard.gui.UserPreferenceBean;
+import net.sourceforge.bookscanwizard.gui.UserPreferences;
 import net.sourceforge.bookscanwizard.op.EstimateDPI;
 import net.sourceforge.bookscanwizard.qr.ImportImagesData;
 import net.sourceforge.bookscanwizard.start.AbstractPage;
@@ -101,30 +103,38 @@ public class PrefsHelper {
             }
             TipsDialog.setTipNumber(prefs.getInt("tipNumber", 0));
             mainFrame.getTipsDialog().getShowOnStartup().setSelected(prefs.getBoolean("showTips", true));
-            
+            tmp = getObject("userPrefs");
+            if (tmp != null) {
+                UserPreferenceBean.setPrefsBean((UserPreferenceBean) tmp);
+            }
         } catch (Exception ex) {
             logger.log(Level.WARNING, null, ex);
         }
     }
 
     private static void savePreferences() {
-        BSW bsw = BSW.instance();
-        MainFrame mainFrame = bsw.getMainFrame();
-        prefs.putBoolean("operationListVisible", mainFrame.getOperationList().isVisible());
-        prefs.putFloat("scale", mainFrame.getViewerPanel().getPostScale());
-        putObject("mainBounds", mainFrame.getBoundsHelper().getUnmaximizedBounds());
-        prefs.putInt("mainState", mainFrame.getBoundsHelper().getLastState());
-        putObject("helperBounds", mainFrame.getOperationList().getBoundsHelper().getUnmaximizedBounds());
-        prefs.putInt("helperState", mainFrame.getBoundsHelper().getLastState());
-        prefs.putBoolean("debug", mainFrame.getShowDebuggingInfo().isSelected());
-        prefs.putInt("dividerLocation", mainFrame.getSplitPane().getDividerLocation());
-        prefs.putInt("orientation", mainFrame.getSplitPane().getOrientation());
-        putObject("dpiInfo", EstimateDPI.getInfo());
-        putObject("wizard", (Serializable) AbstractPage.getDefaults());
-        putObject("miscPrefs", miscPrefs);
-        putObject("import", ImportImages.getInstance().getImportData());
-        prefs.putInt("tipNumber", TipsDialog.getTipNumber()+1);
-        prefs.putBoolean("showTips", mainFrame.getTipsDialog().getShowOnStartup().isSelected());
+        try {
+            BSW bsw = BSW.instance();
+            MainFrame mainFrame = bsw.getMainFrame();
+            prefs.putBoolean("operationListVisible", mainFrame.getOperationList().isVisible());
+            prefs.putFloat("scale", mainFrame.getViewerPanel().getPostScale());
+            putObject("mainBounds", mainFrame.getBoundsHelper().getUnmaximizedBounds());
+            prefs.putInt("mainState", mainFrame.getBoundsHelper().getLastState());
+            putObject("helperBounds", mainFrame.getOperationList().getBoundsHelper().getUnmaximizedBounds());
+            prefs.putInt("helperState", mainFrame.getBoundsHelper().getLastState());
+            prefs.putBoolean("debug", mainFrame.getShowDebuggingInfo().isSelected());
+            prefs.putInt("dividerLocation", mainFrame.getSplitPane().getDividerLocation());
+            prefs.putInt("orientation", mainFrame.getSplitPane().getOrientation());
+            putObject("dpiInfo", EstimateDPI.getInfo());
+            putObject("wizard", (Serializable) AbstractPage.getDefaults());
+            putObject("miscPrefs", miscPrefs);
+            putObject("import", ImportImages.getStaticImportData()); 
+            putObject("userPrefs", UserPreferences.getPrefsBean());
+            prefs.putInt("tipNumber", TipsDialog.getTipNumber()+1);
+            prefs.putBoolean("showTips", mainFrame.getTipsDialog().getShowOnStartup().isSelected());
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
     }
     
     synchronized public static Object getPref(String key) {
@@ -147,17 +157,12 @@ public class PrefsHelper {
         return value;
     }
     
-
-    /*            Logger parentLogger = Logger.getLogger(BSW.class.getPackage().getName());
-    if (System.)
-    parentLogger.setLevel(Level.FINEST);
-     */
     private static void putObject(String key, Serializable obj) {
-        try {
+        try (
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(bos);
+        ) {
             oos.writeObject(obj);
-            oos.close();
             byte[] array = bos.toByteArray();
             prefs.putByteArray(key, array);
         } catch (IOException e) {
@@ -166,20 +171,18 @@ public class PrefsHelper {
     }
 
     private static Object getObject(String key) {
-        try {
-            byte[] buf = prefs.getByteArray(key, null);
-            if (buf == null) {
-                return null;
-            } else {
-                ByteArrayInputStream bis = new ByteArrayInputStream(buf);
-                ObjectInputStream ois = new ObjectInputStream(bis);
-                ois.close();
+        byte[] buf = prefs.getByteArray(key, null);
+        if (buf == null) {
+            return null;
+        } else {
+            try (
+                ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(buf));
+            ) {
                 return ois.readObject();
+            } catch (IOException | ClassNotFoundException | RuntimeException e) {
+                logger.warning(e.getMessage());
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+            return null;
         }
     }
 }

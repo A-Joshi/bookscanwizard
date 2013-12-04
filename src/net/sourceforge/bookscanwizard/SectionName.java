@@ -19,7 +19,6 @@
 package net.sourceforge.bookscanwizard;
 
 import java.util.Arrays;
-import net.sourceforge.bookscanwizard.op.NormalizeLighting;
 import net.sourceforge.bookscanwizard.op.RemovePages;
 
 /**
@@ -37,8 +36,8 @@ public enum SectionName {
     SCALING ("Scaling", false),
     OUTPUT ("Output", false);
     
-    private String text;
-    private boolean separateLR;
+    private final String text;
+    private final boolean separateLR;
     
     SectionName(String text, boolean separateLR) {
         this.text = text;

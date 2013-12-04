@@ -33,7 +33,7 @@ import net.sourceforge.bookscanwizard.util.Spline;
  * Not ready for prime time
  */
 public class WhiteBalance extends Operation {
-    private static DecimalFormat formatter = new DecimalFormat("#.#");
+    private static final DecimalFormat formatter = new DecimalFormat("#.#");
     private LookupTableJAI lookupTable;
 
     @Override

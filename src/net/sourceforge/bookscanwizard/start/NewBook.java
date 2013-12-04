@@ -53,7 +53,7 @@ public class NewBook {
     public static final String ESTIMATED_DPI2= "estimated_dpi_2";
     public static final String FILE_FORMAT = "file_format";
 
-    private Wizard wizard;
+    private final Wizard wizard;
 
     public NewBook() {
         wizard = WizardPage.createWizard(new Class[] {Page1.class, Page2.class});

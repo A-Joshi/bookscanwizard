@@ -50,7 +50,7 @@ public final class Classes {
      * Mapping between a primitive type and its wrapper, if any.
      */
     
-    private static final Map<Class<?>,Classes> MAPPING = new HashMap<Class<?>,Classes>(16);
+    private static final Map<Class<?>,Classes> MAPPING = new HashMap<>(16);
     static {
         new Classes(Double   .TYPE, Double   .class, true,  false, (byte) Double   .SIZE, DOUBLE   );
         new Classes(Float    .TYPE, Float    .class, true,  false, (byte) Float    .SIZE, FLOAT    );
@@ -191,7 +191,7 @@ public final class Classes {
      * Returns all classes implemented by the given set of objects.
      */
     private static Set<Class<?>> getClasses(final Collection<?> objects) {
-        final Set<Class<?>> types = new LinkedHashSet<Class<?>>();
+        final Set<Class<?>> types = new LinkedHashSet<>();
         for (final Object object : objects) {
             if (object != null) {
                 types.add(object.getClass());
@@ -244,7 +244,7 @@ search: for (final Class<?> candidate : types) {
      */
     private static Class<?> commonSuperClass(final Collection<Class<?>> types) {
         // Build a list of all super classes.
-        final Set<Class<?>> superTypes = new LinkedHashSet<Class<?>>();
+        final Set<Class<?>> superTypes = new LinkedHashSet<>();
         for (Class<?> type : types) {
             while ((type = type.getSuperclass()) != null) {
                 if (!superTypes.add(type)) {
@@ -325,8 +325,7 @@ search: for (final Class<?> candidate : types) {
          * loops j=[0..n].
          */
         int n = 0;
-        for (int i=0; i<c2.length; i++) {
-            final Class<?> c = c2[i];
+        for (Class<?> c : c2) {
             if (base.isAssignableFrom(c)) {
                 c2[n++] = c;
             }
@@ -335,17 +334,16 @@ search: for (final Class<?> candidate : types) {
          * For each interface assignable to 'base' in the 'c1' array, check if
          * this interface exists also in the 'c2' array. Order doesn't matter.
          */
-compare:for (int i=0; i<c1.length; i++) {
-            final Class<?> c = c1[i];
-            if (base.isAssignableFrom(c)) {
-                for (int j=0; j<n; j++) {
-                    if (c.equals(c2[j])) {
-                        System.arraycopy(c2, j+1, c2, j, --n-j);
-                        continue compare;
-                    }
-                }
-                return false; // Interface not found in 'c2'.
+compare:for (Class<?> c : c1) {
+    if (base.isAssignableFrom(c)) {
+        for (int j=0; j<n; j++) {
+            if (c.equals(c2[j])) {
+                System.arraycopy(c2, j+1, c2, j, --n-j);
+                continue compare;
             }
+        }
+        return false; // Interface not found in 'c2'.
+    }
         }
         return n == 0; // If n>0, at least one interface was not found in 'c1'.
     }

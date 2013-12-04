@@ -28,7 +28,7 @@ import net.sourceforge.bookscanwizard.op.Color;
  * Calculates the autolevels for an image.
  */
 public class ConfigAutoLevels {
-    private DecimalFormat formatter = new DecimalFormat("#.#");
+    private final DecimalFormat formatter = new DecimalFormat("#.#");
 
     public String getConfig(RenderedImage img, boolean separateRGB) {
         if (!separateRGB) {

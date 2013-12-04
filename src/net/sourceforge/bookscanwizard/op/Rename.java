@@ -76,7 +76,7 @@ public class Rename extends Operation {
         }
         // verify there are no duplicates
         HashSet<String> pageNames = new HashSet<>();
-        for (FileHolder h : pageSet.getSourceFiles()) {
+        for (FileHolder h : PageSet.getSourceFiles()) {
             if (!pageNames.add(h.getName())) {
                 throw new UserException("Duplicate page:  There are muliple pages named: "+h.getName());
             }

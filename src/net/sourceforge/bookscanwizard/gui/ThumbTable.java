@@ -73,8 +73,8 @@ import net.sourceforge.bookscanwizard.util.Utils;
 public class ThumbTable extends JTable {
 
     public static final int IMAGE_WIDTH = 100;
-    private static List<FileHolder> holders = new ArrayList<>();
-    private static Map<FileHolder, RenderedImage> images =
+    private static final List<FileHolder> holders = new ArrayList<>();
+    private static final Map<FileHolder, RenderedImage> images =
             Collections.synchronizedMap(new HashMap<FileHolder, RenderedImage>());
     private static final BlockingLifoQueue<Runnable> lifoQueue = new BlockingLifoQueue<>();
     private static final int threadCt = BSW.getThreadCount() - 1;
@@ -153,6 +153,7 @@ public class ThumbTable extends JTable {
     /**
      * Returns a Page configuration setting based on the selected
      * table cells.
+     * @return the pages 
      */
     public String calcPageConfig() {
         final StringBuilder str = new StringBuilder();
@@ -277,11 +278,11 @@ public class ThumbTable extends JTable {
     }
 
     private class ThumbTableCellRenderer extends JPanel implements TableCellRenderer {
-        private Border selectedBorder;
-        private Border normalBorder;
-        private JLabel label = new JLabel();
+        private final Border selectedBorder;
+        private final Border normalBorder;
+        private final JLabel label = new JLabel();
         private boolean deleted;
-        private DisplayJAI thumb = new DisplayJAI() {
+        private final DisplayJAI thumb = new DisplayJAI() {
             @Override
             public void paintComponent(Graphics g) {
                 super.paintComponent(g);
@@ -336,8 +337,8 @@ public class ThumbTable extends JTable {
     }
 
     private class ImageRequest implements Runnable {
-        private FileHolder holder;
-        private int resetSeq;
+        private final FileHolder holder;
+        private final int resetSeq;
         
         public ImageRequest(FileHolder h, int resetSeq) {
             this.holder = h;

@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.HashMap;
 
 public class LazyHashMap<K,V> extends HashMap<K, V> {
-    private Class cls;
+    private final Class cls;
     
     public LazyHashMap(Class cls) {
         this.cls = cls;
@@ -33,7 +33,7 @@ public class LazyHashMap<K,V> extends HashMap<K, V> {
         if (value == null) {
             try {
                 value = (V) cls.newInstance();
-            } catch (Exception e) {
+            } catch (InstantiationException | IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
             put(key, value);

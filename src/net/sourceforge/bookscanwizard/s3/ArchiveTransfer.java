@@ -78,9 +78,9 @@ public class ArchiveTransfer {
     private static final boolean SKIP_DERIVE = false;
     private static final Pattern idPattern = Pattern.compile("[A-Za-z0-9\\-\\.\\_]*");
 
-    private LazyHashMap<String,List<String>> metadata = new LazyHashMap<>(ArrayList.class);
-    private String awsAccessKey;
-    private String awsSecretKey;
+    private final LazyHashMap<String,List<String>> metadata = new LazyHashMap<>(ArrayList.class);
+    private final String awsAccessKey;
+    private final String awsSecretKey;
     private ProgressListener progressListener;
 
     public ArchiveTransfer(String accessKey, String secretKey) {

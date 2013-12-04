@@ -94,6 +94,7 @@ public class OperationList extends JFrame {
         Scale.class,
         ScaleToDPI.class,
         ScaleToFirst.class,
+        ScanTailor.class,
         SetDestination.class,
         SetDestinationDPI.class,
         SetPreviewScale.class,

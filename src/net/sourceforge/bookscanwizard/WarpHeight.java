@@ -31,12 +31,12 @@ import net.sourceforge.bookscanwizard.util.Interpolate;
  */
 public final class WarpHeight extends Warp {
     private Raster heightMap;
-    private float cameraDistance;
+    private final float cameraDistance;
     private final Interpolate interpolate;
-    private RenderedImage newHeightMap;
-    private float centerX;
-    private float centerY;
-    private float dpi;
+    private final RenderedImage newHeightMap;
+    private final float centerX;
+    private final float centerY;
+    private final float dpi;
 
     public WarpHeight(RenderedImage heightMap, Interpolate interpolate, float cameraDistance, int centerX, int centerY, float dpi) {
         this.interpolate = interpolate;

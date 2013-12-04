@@ -38,13 +38,13 @@ public class RemovePages extends Operation implements ProcessDeleted {
 
     @Override
     public List<Operation> setup(List<Operation> operationList) throws Exception {
-        List<FileHolder> fileHolders = pageSet.getSourceFiles();
+        List<FileHolder> fileHolders = PageSet.getSourceFiles();
         String list = Pages.getPageList(Arrays.asList(getTextArgs()));
         list = list.replace("first", fileHolders.get(0).getName());
         list = list.replace("last", fileHolders.get(fileHolders.size()-1).getName());
         pageMatch = new PageMatch(list);
         allPages = new PageSet(pageSet);
-        allPages.setFileHolders(pageSet.getSourceFiles());
+        allPages.setFileHolders(PageSet.getSourceFiles());
         for (FileHolder h : getPageSet().getFileHolders()) {
             if (pageMatch.matches(h.getName())) {
                 h.setDeleted(true);
@@ -60,6 +60,8 @@ public class RemovePages extends Operation implements ProcessDeleted {
 
     /**
      * Draws an X through the image to indicate it is not to be included
+     * @param holder
+     * @param img
      * @return
      */
     @Override

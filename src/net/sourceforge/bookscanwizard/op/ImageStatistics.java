@@ -33,7 +33,7 @@ import net.sourceforge.bookscanwizard.Operation;
  */
 
 public class ImageStatistics extends Operation implements ColorOp {
-    private DecimalFormat formatter = new DecimalFormat("#.#");
+    private final DecimalFormat formatter = new DecimalFormat("#.#");
 
     @Override
     public RenderedImage performOperation(FileHolder holder, RenderedImage img) throws Exception {

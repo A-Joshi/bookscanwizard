@@ -30,7 +30,7 @@ import java.util.StringTokenizer;
 public class PageMatch {
     // This will pretty much guarentee that this will compare greater than
     // any filename.
-    private static String LAST_STRING =
+    private static final String LAST_STRING =
         new String(new char[] {Character.MAX_VALUE, Character.MAX_VALUE});
     
     ArrayList<String> minValues = new ArrayList<>();

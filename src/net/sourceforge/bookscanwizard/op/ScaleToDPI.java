@@ -41,12 +41,12 @@ public class ScaleToDPI extends Scale {
         if (args.length > 0) {
             destinationDPI = (float) args[0];
         } else {
-            destinationDPI = getPageSet().getDestinationDPI();
+            destinationDPI = PageSet.getDestinationDPI();
         }
         if (destinationDPI == 0) {
             throw new UserException("ScaleToDPI: Destination DPI is not set");
         }
-        if (getPageSet().getDestinationDPI() == 0) {
+        if (PageSet.getDestinationDPI() == 0) {
             PageSet.setDestinationDPI((int) destinationDPI);
         }
         if (sourceDPI == 0 || Float.isNaN(sourceDPI)) {

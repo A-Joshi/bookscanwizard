@@ -126,6 +126,7 @@ public final class ImageUtilities {
 		        {
 		        	final Class mImage=mediaLibImage;
 	                mediaLib=AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
+                             @Override
 	                     public Boolean run() {
 	                    	 try {
 	                    		//get the method
@@ -265,6 +266,8 @@ public final class ImageUtilities {
      * Suggests an {@link ImageLayout} for the specified image. All parameters are initially set
      * equal to those of the given {@link RenderedImage}, and then the {@linkplain #toTileSize
      * tile size is updated according the image size}. This method never returns {@code null}.
+     * @param image
+     * @return 
      */
     public static ImageLayout getImageLayout(final RenderedImage image) {
         return getImageLayout(image, true);
@@ -322,6 +325,8 @@ public final class ImageUtilities {
      * </ul>
      *
      * This method may returns {@code null} if no rendering hints is proposed.
+     * @param image
+     * @return 
      */
     public static RenderingHints getRenderingHints(final RenderedImage image) {
         final ImageLayout layout = getImageLayout(image, false);
@@ -360,6 +365,8 @@ public final class ImageUtilities {
      *       maximize the remainder of <var>image size</var> / <var>tile size</var> (in other
      *       words, the size that left as few empty pixels as possible).</li>
      * </ul>
+     * @param size
+     * @return 
      */
     public static Dimension toTileSize(final Dimension size) {
         Dimension defaultSize = JAI.getDefaultTileSize();
@@ -539,6 +546,7 @@ public final class ImageUtilities {
      * class name start with "CLib". It work for Sun's 1.0 implementation, but may change in
      * future versions. If this method doesn't recognize the class name, it does nothing.
      *
+     * @param <T>
      * @param format The format name (e.g. "png").
      * @param category {@code ImageReaderSpi.class} to set the reader, or
      *        {@code ImageWriterSpi.class} to set the writer.
@@ -553,8 +561,8 @@ public final class ImageUtilities {
         for (final Iterator<T> it = registry.getServiceProviders(category, false); it.hasNext();) {
             final T provider = it.next();
             final String[] formats = provider.getFormatNames();
-            for (int i=0; i<formats.length; i++) {
-                if (formats[i].equalsIgnoreCase(format)) {
+            for (String format1 : formats) {
+                if (format1.equalsIgnoreCase(format)) {
                     if (Classes.getShortClassName(provider).startsWith("CLib")) {
                         codeclib = provider;
                     } else {
@@ -576,6 +584,8 @@ public final class ImageUtilities {
     /**
      * Tiles the specified image.
      *
+     * @param image
+     * @return 
      * @todo Usually, the tiling doesn't need to be performed as a separated operation. The
      * {@link ImageLayout} hint with tile information can be provided to most JAI operators.
      * The {@link #getRenderingHints} method provides such tiling information only if the
