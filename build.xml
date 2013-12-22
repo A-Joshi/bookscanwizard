@@ -163,17 +163,4 @@
         </for>        
     </target>
 
-    <!-- Allows us to use the IzPack Ant task -->
-<taskdef name="IzPack" classpath="${basedir}/installer/standalone-compiler.jar"
-         classname="com.izforge.izpack.ant.IzPackTask"/>
-
-<target name="installers">
-<!-- We call IzPack -->
-<echo message="Makes the installer using IzPack"/>
-<IzPack input="${basedir}/installer/install.xml"
-        output="dist/IzPack-install.jar"
-        installerType="standard"
-        basedir="dist"
-        IzPackDir="dist/"/>    
-</target>
 </project>

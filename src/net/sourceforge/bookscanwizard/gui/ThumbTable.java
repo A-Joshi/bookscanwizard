@@ -77,7 +77,7 @@ public class ThumbTable extends JTable {
     private static final Map<FileHolder, RenderedImage> images =
             Collections.synchronizedMap(new HashMap<FileHolder, RenderedImage>());
     private static final BlockingLifoQueue<Runnable> lifoQueue = new BlockingLifoQueue<>();
-    private static final int threadCt = BSW.getThreadCount() - 1;
+    private static final int threadCt = Math.max(1, BSW.getThreadCount() - 1);
     private static final Executor executor = 
         new ThreadPoolExecutor(threadCt, threadCt, 0L, TimeUnit.MILLISECONDS, lifoQueue,
                                new BSWThreadFactory(Thread.MIN_PRIORITY));
