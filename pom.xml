@@ -26,6 +26,9 @@
     <xversion.zxing>3.5.1</xversion.zxing>
     <version.bric.image>1.0</version.bric.image>
 
+    <version.maven.depdency.plugin>3.5.0</version.maven.depdency.plugin>
+    <version.maven.jar.plugin>3.3.0</version.maven.jar.plugin>
+
     <name>BookScanWizard</name>
     <mainclass>net.sourceforge.bookscanwizard.BSW</mainclass>
   </properties>
@@ -36,6 +39,7 @@
   <plugin>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-dependency-plugin</artifactId>
+    <version>${version.maven.depdency.plugin}</version>
     <executions>
         <execution>
             <id>copy-dependencies</id>
@@ -55,6 +59,7 @@
 <plugin>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-jar-plugin</artifactId>
+    <version>${version.maven.jar.plugin}</version>
     <configuration>
         <archive>
             <manifest>
